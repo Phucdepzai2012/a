@@ -1,526 +1,830 @@
-<!doctype html>
-<html class=light lang=en-US translate=no>
-    <head>
-        <script crossorigin src=//statics.moonshot.cn/kimi-web-seo/assets/polyfills-BfUbHAD3.js type=module></script>
-        <meta charset=UTF-8>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Kimi AI with K2.5 | Visual Coding Meets Agent Swarm</title>
-        <link rel="canonical" href="https://www.kimi.com/">
-        <link rel="alternate" href="https://www.kimi.com/zh" hreflang="zh">
-        <link rel="alternate" href="https://www.kimi.com/en" hreflang="en">
-        <link rel="alternate" href="https://www.kimi.com/" hreflang="x-default">
-        <meta name="description" content="Try Kimi K2.5, the strongest open-source model for visual coding. Explore agent swarm preview for massive tasks. Simplify complex Office work with precision.">
-        <meta name="keywords" content="Kimi, K2.5, Kimi K2.5, visual coding, agent swarm, office, PPT, slides, presentation, Moonshot AI, 月之暗面, deep research, Excel, PDF, Word, websites">
-        <link rel="shortcut icon" href=//statics.moonshot.cn/kimi-web-seo/favicon.ico>
-        <meta content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0" name=viewport>
-        <meta content="IE=edge,chrome=1" http-equiv=X-UA-Compatible>
-        <meta content=webkit name=renderer>
-        <meta content=webkit name=force-rendering>
-        <meta content=yes name=mobile-web-app-capable>
-        <meta content=black name=apple-mobile-web-app-status-bar-style>
-        <meta content=Kimi name=apple-mobile-web-app-title>
-        <meta content="telephone=no,email=no" name=format-detection>
-        <meta content=38E0A3C40C0983D8FED5BD0B59E78653 name=msvalidate.01>
-        <meta content=codeva-oC0GIbxpdb name=baidu-site-verification>
-        <meta content=K4KQFuej81 name=sogou_site_verification>
-        <link rel="stylesheet" href="//statics.moonshot.cn/kimi-web-seo/assets/common-DegMAbrE.css">
-        <link rel="modulepreload" crossorigin href="//statics.moonshot.cn/kimi-web-seo/assets/common-BPqQ4LQ6.js">
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_AMS-Regular-BQhdFMY1.woff2" as="font" type="font/woff2" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_AMS-Regular-DMm9YOAa.woff" as="font" type="font/woff" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Caligraphic-Bold-Dq_IR9rO.woff2" as="font" type="font/woff2" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Caligraphic-Bold-BEiXGLvX.woff" as="font" type="font/woff" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Caligraphic-Regular-Di6jR-x-.woff2" as="font" type="font/woff2" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Caligraphic-Regular-CTRA-rTL.woff" as="font" type="font/woff" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Fraktur-Bold-CL6g_b3V.woff2" as="font" type="font/woff2" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Fraktur-Bold-BsDP51OF.woff" as="font" type="font/woff" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Fraktur-Regular-CTYiF6lA.woff2" as="font" type="font/woff2" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Fraktur-Regular-Dxdc4cR9.woff" as="font" type="font/woff" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Main-Bold-Cx986IdX.woff2" as="font" type="font/woff2" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Main-Bold-Jm3AIy58.woff" as="font" type="font/woff" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Main-BoldItalic-DxDJ3AOS.woff2" as="font" type="font/woff2" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Main-BoldItalic-SpSLRI95.woff" as="font" type="font/woff" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Main-Italic-NWA7e6Wa.woff2" as="font" type="font/woff2" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Main-Italic-BMLOBm91.woff" as="font" type="font/woff" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Main-Regular-B22Nviop.woff2" as="font" type="font/woff2" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Main-Regular-Dr94JaBh.woff" as="font" type="font/woff" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Math-BoldItalic-CZnvNsCZ.woff2" as="font" type="font/woff2" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Math-BoldItalic-iY-2wyZ7.woff" as="font" type="font/woff" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Math-Italic-t53AETM-.woff2" as="font" type="font/woff2" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Math-Italic-DA0__PXp.woff" as="font" type="font/woff" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_SansSerif-Bold-D1sUS0GD.woff2" as="font" type="font/woff2" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_SansSerif-Bold-DbIhKOiC.woff" as="font" type="font/woff" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_SansSerif-Italic-C3H0VqGB.woff2" as="font" type="font/woff2" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_SansSerif-Italic-DN2j7dab.woff" as="font" type="font/woff" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_SansSerif-Regular-DDBCnlJ7.woff2" as="font" type="font/woff2" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_SansSerif-Regular-CS6fqUqJ.woff" as="font" type="font/woff" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Script-Regular-D3wIWfF6.woff2" as="font" type="font/woff2" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Script-Regular-D5yQViql.woff" as="font" type="font/woff" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Size1-Regular-mCD8mA8B.woff2" as="font" type="font/woff2" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Size1-Regular-C195tn64.woff" as="font" type="font/woff" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Size2-Regular-Dy4dx90m.woff2" as="font" type="font/woff2" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Size2-Regular-oD1tc_U0.woff" as="font" type="font/woff" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Size3-Regular-CTq5MqoE.woff" as="font" type="font/woff" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Size4-Regular-Dl5lxZxV.woff2" as="font" type="font/woff2" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Size4-Regular-BF-4gkZK.woff" as="font" type="font/woff" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Typewriter-Regular-CO6r4hn1.woff2" as="font" type="font/woff2" crossorigin>
-        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Typewriter-Regular-C0xS9mPB.woff" as="font" type="font/woff" crossorigin>
-        <link rel="stylesheet" href="//statics.moonshot.cn/kimi-web-seo/assets/Index-CBMcp73q.css">
-        <link rel="stylesheet" href="//statics.moonshot.cn/kimi-web-seo/assets/common-DegMAbrE.css">
-        <link rel="modulepreload" crossorigin href="//statics.moonshot.cn/kimi-web-seo/assets/Index-Bvq9byp9.js">
-        <script src="https://www.googletagmanager.com/gtag/js?id=G-YXD8W70SZP" async></script>
-        <script>
-            window.dataLayer = window.dataLayer || []
-            function gtag() {
-                dataLayer.push(arguments)
-            }
-            gtag("js", new Date())
-            gtag("config", "G-YXD8W70SZP")
-        </script>
-        <script>
-            ;(function(w, d, s, l, i) {
-                w[l] = w[l] || []
-                w[l].push({
-                    "gtm.start": new Date().getTime(),
-                    event: "gtm.js"
-                })
-                var f = d.getElementsByTagName(s)[0]
-                  , j = d.createElement(s)
-                  , dl = l != "dataLayer" ? "&l=" + l : ""
-                j.async = true
-                j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl
-                f.parentNode.insertBefore(j, f)
-            }
-            )(window, document, "script", "dataLayer", "GTM-NT26Q3C9")
-        </script>
-        <script>
-            var _hmt = _hmt || [];
-            (function() {
-                var hm = document.createElement("script")
-                hm.src = "https://hm.baidu.com/hm.js?358cae4815e85d48f7e8ab7f3680a74b"
-                var s = document.getElementsByTagName("script")[0]
-                s.parentNode.insertBefore(hm, s)
-            }
-            )()
-        </script>
-        <script crossorigin src=//statics.moonshot.cn/kimi-web-seo/assets/index-By7MSNxj.js type=module></script>
-        <link crossorigin href=//statics.moonshot.cn/kimi-web-seo/assets/common-BPqQ4LQ6.js rel=modulepreload>
-        <link crossorigin href=//statics.moonshot.cn/kimi-web-seo/assets/common-DegMAbrE.css rel=stylesheet>
-        <link crossorigin href=//statics.moonshot.cn/kimi-web-seo/assets/index-BU440vEI.css rel=stylesheet>
-    </head>
-    <body>
-        <div id=app>
-            <div class="n-config-provider" data-v-3cdca8ad>
-                <!--[-->
-                <!--[-->
-                <!--[-->
-                <!--[-->
-                <div class="app has-sidebar" data-v-3cdca8ad>
-                    <div class="sidebar-placeholder not-mobile mobile-fold" data-v-3cdca8ad data-v-d531ad5b>
-                        <div class="mask" data-v-d531ad5b></div>
-                        <aside class="sidebar" data-v-d531ad5b>
-                            <div class="sidebar-header" data-v-d531ad5b>
-                                <a class="logo" data-v-d531ad5b href="/?chat_enter_method=new_chat">
-                                <!--[-->
-                                <!--]-->
-                                </a>
-                                <!--[-->
-                                <!---->
-                                <div class="expand-btn" data-v-d531ad5b>
-                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="20" height="20" viewBox="0 0 16 16" name="LeftBar" data-v-d531ad5b></svg>
-                                </div>
-                                <!---->
-                                <!--]-->
-                            </div>
-                            <div class="sidebar-nav" data-v-d531ad5b>
-                                <a class="new-chat-btn" data-v-d531ad5b href="/?chat_enter_method=new_chat">
-                                    <!--[-->
-                                    <div class="action-label" data-v-d531ad5b>
-                                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="20" height="20" viewBox="0 0 16 16" name="AddConversation" class="new-icon" data-v-d531ad5b></svg>
-                                        New Chat
-                                    </div>
-                                    <div class="action-opts" data-v-d531ad5b>
-                                        <div class="meta" data-v-d531ad5b>
-                                            <span data-v-d531ad5b>Ctrl</span>
-                                        </div>
-                                        <span class="meta" data-v-d531ad5b>K</span>
-                                    </div>
-                                    <!--]-->
-                                </a>
-                                <div class="kimi-plus-part" data-v-d531ad5b>
-                                    <ul data-v-d531ad5b data-v-c487fc0c>
-                                        <!--[-->
-                                        <li data-v-c487fc0c>
-                                            <a href="/websites" class="agent-item" data-v-c487fc0c>
-                                                <div class="agent-info" data-v-c487fc0c>
-                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Browser_b" class="agent-icon" data-v-c487fc0c></svg>
-                                                    <span class="agent-label" data-v-c487fc0c>Websites</span>
-                                                    <!--[-->
-                                                    <!--]-->
-                                                </div>
-                                            </a>
-                                        </li>
-                                        <li data-v-c487fc0c>
-                                            <a href="/docs" class="agent-item" data-v-c487fc0c>
-                                                <div class="agent-info" data-v-c487fc0c>
-                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Document" class="agent-icon" data-v-c487fc0c></svg>
-                                                    <span class="agent-label" data-v-c487fc0c>Docs</span>
-                                                    <!--[-->
-                                                    <!--]-->
-                                                </div>
-                                            </a>
-                                        </li>
-                                        <li data-v-c487fc0c>
-                                            <a href="/slides" class="agent-item" data-v-c487fc0c>
-                                                <div class="agent-info" data-v-c487fc0c>
-                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="PPT" class="agent-icon" data-v-c487fc0c></svg>
-                                                    <span class="agent-label" data-v-c487fc0c>Slides</span>
-                                                    <!--[-->
-                                                    <!--]-->
-                                                </div>
-                                            </a>
-                                        </li>
-                                        <li data-v-c487fc0c>
-                                            <a href="/sheets" class="agent-item" data-v-c487fc0c>
-                                                <div class="agent-info" data-v-c487fc0c>
-                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Excel" class="agent-icon" data-v-c487fc0c></svg>
-                                                    <span class="agent-label" data-v-c487fc0c>Sheets</span>
-                                                    <!--[-->
-                                                    <!--]-->
-                                                </div>
-                                            </a>
-                                        </li>
-                                        <li data-v-c487fc0c>
-                                            <a href="/deep-research" class="agent-item" data-v-c487fc0c>
-                                                <div class="agent-info" data-v-c487fc0c>
-                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Microscope" class="agent-icon" data-v-c487fc0c></svg>
-                                                    <span class="agent-label" data-v-c487fc0c>Deep Research</span>
-                                                    <!--[-->
-                                                    <!--]-->
-                                                </div>
-                                            </a>
-                                        </li>
-                                        <!--]-->
-                                    </ul>
-                                    <a href="/code?from=kimi_homepage_sidebar" class="nav-item kfc-item" target="_blank" data-v-d531ad5b>
-                                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="20" height="20" viewBox="0 0 16 16" name="Code" class="nav-icon" data-v-d531ad5b></svg>
-                                        <span data-v-d531ad5b>Kimi Code</span>
-                                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="20" height="20" viewBox="0 0 16 16" name="UpperRight" class="nav-icon open-in-new" data-v-d531ad5b></svg>
-                                    </a>
-                                    <a href="/bot" class="nav-item claw-item" data-v-d531ad5b>
-                                        <span class="nav-icon" data-v-d531ad5b></span>
-                                        <span data-v-d531ad5b>Kimi Claw</span>
-                                        <div class="beta-tag" data-v-d531ad5b></div>
-                                    </a>
-                                </div>
-                                <div class="history-part" data-v-d531ad5b>
-                                    <div class="nav-title" data-v-d531ad5b>
-                                        <div class="title-label" data-v-d531ad5b>
-                                            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="20" height="20" viewBox="0 0 16 16" name="History" class="nav-icon" data-v-d531ad5b></svg>
-                                            <span data-v-d531ad5b>Chat History</span>
-                                        </div>
-                                    </div>
-                                    <!---->
-                                </div>
-                            </div>
-                            <div class="sidebar-footer" data-v-d531ad5b>
-                                <!--[-->
-                                <!---->
-                                <div class="download-app-btn" data-v-d531ad5b>
-                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Mobile" class="user-nav-icon" data-v-d531ad5b></svg>
-                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Close" class="close-icon" data-v-d531ad5b></svg>
-                                    <span data-v-d531ad5b>Mobile App</span>
-                                </div>
-                                <!---->
-                                <!--]-->
-                                <div class="sidebar-footer-content" data-v-d531ad5b>
-                                    <ul class="user-nav" data-v-d531ad5b style="display:none;" data-v-d9e53cc5>
-                                        <!---->
-                                        <!---->
-                                        <!---->
-                                        <li class="sub-item" data-v-d9e53cc5>
-                                            <!--[-->
-                                            <div class="sub-item-content" aria-selected="true" aria-controls="sider-about-menu" data-v-d9e53cc5>
-                                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Info" class="user-nav-icon" data-v-d9e53cc5></svg>
-                                                <span data-v-d9e53cc5>About Us</span>
-                                            </div>
-                                            <div class="popover-wrapper" data-common-popover-content style="position:fixed;z-index:20;" id="sider-about-menu" data-v-4d6ddadc>
-                                                <div class="popover-inner" style="display:none;" data-v-4d6ddadc>
-                                                    <!--[-->
-                                                    <ul class="menu-list" data-v-d9e53cc5 data-v-0f3a5515>
-                                                        <li data-v-0f3a5515>
-                                                            <a class="menu-item" href="https://www.moonshot.ai/" target="_blank" data-v-0f3a5515>
-                                                                <span data-v-0f3a5515>Visit Moonshot AI</span>
-                                                                <span class="moonshot icon" data-v-0f3a5515></span>
-                                                            </a>
-                                                        </li>
-                                                        <li data-v-0f3a5515>
-                                                            <a class="menu-item" href="https://platform.moonshot.ai/" target="_blank" data-v-0f3a5515>
-                                                                <span data-v-0f3a5515>Open Platform</span>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="UpperRight" class="icon" data-v-0f3a5515></svg>
-                                                            </a>
-                                                        </li>
-                                                        <li data-v-0f3a5515>
-                                                            <a href="/features/?from=kimi_homepage" class="menu-item" target="_blank" data-v-0f3a5515>
-                                                                <span data-v-0f3a5515>Features</span>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="UpperRight" class="icon" data-v-0f3a5515></svg>
-                                                            </a>
-                                                        </li>
-                                                        <!---->
-                                                        <li data-v-0f3a5515>
-                                                            <a href="/user/agreement/modelUse?version=v2" class="menu-item" target="_blank" data-v-0f3a5515>
-                                                                <span data-v-0f3a5515>Terms of Service</span>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="UpperRight" class="icon" data-v-0f3a5515></svg>
-                                                            </a>
-                                                        </li>
-                                                        <li data-v-0f3a5515>
-                                                            <a href="/user/agreement/userPrivacy?version=v2" class="menu-item" target="_blank" data-v-0f3a5515>
-                                                                <span data-v-0f3a5515>Privacy Policy</span>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="UpperRight" class="icon" data-v-0f3a5515></svg>
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                    <!--]-->
-                                                </div>
-                                            </div>
-                                            <!--]-->
-                                        </li>
-                                        <li class="sub-item language-switch" data-v-d9e53cc5>
-                                            <!--[-->
-                                            <!---->
-                                            <div class="sub-item-content" data-v-d9e53cc5>
-                                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Translate" class="user-nav-icon" data-v-d9e53cc5></svg>
-                                                <span data-v-d9e53cc5>Language</span>
-                                            </div>
-                                            <!---->
-                                            <!--]-->
-                                        </li>
-                                        <li data-v-d9e53cc5>
-                                            <div class="sub-item-content" data-v-d9e53cc5>
-                                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Message" class="user-nav-icon" data-v-d9e53cc5></svg>
-                                                <span data-v-d9e53cc5>User Feedback</span>
-                                            </div>
-                                        </li>
-                                        <!---->
-                                    </ul>
-                                    <!---->
-                                </div>
-                            </div>
-                        </aside>
-                    </div>
-                    <div class="main" data-v-3cdca8ad>
-                        <!--[-->
-                        <!---->
-                        <div id="page-layout-container" class="layout-container transparent scrollbar-placeholder" data-v-3c8778a5 data-v-1ff57310>
-                            <div id="chat-container" class="layout-content" data-v-1ff57310>
-                                <div class="layout-header" data-v-1ff57310>
-                                    <div class="header-left" data-v-1ff57310>
-                                        <!--[-->
-                                        <!---->
-                                        <div class="icon-button expand-btn" style="width:32px;height:32px;display:none;" data-v-1ff57310 data-v-ec124ff2>
-                                            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="20" height="20" viewBox="0 0 16 16" name="LeftBar" data-v-ec124ff2></svg>
-                                            <!---->
-                                        </div>
-                                        <!---->
-                                        <!--]-->
-                                    </div>
-                                    <div class="header-center" data-v-1ff57310>
-                                    <!--[-->
-                                    <!---->
-                                    <!--]-->
-                                    </div>
-                                    <div class="header-right" data-v-1ff57310>
-                                    <!--[-->
-                                    <!--]-->
-                                    <!---->
-                                    </div>
-                                </div>
-                                <div class="layout-content-main" data-v-1ff57310>
-                                    <!--[-->
-                                    <div class="home-page" data-v-3c8778a5 data-v-3c8778a5>
-                                        <div class="home-top" data-v-3c8778a5>
-                                        <!---->
-                                        </div>
-                                        <div id="chat-box" class="chat-box" data-v-3c8778a5>
-                                            <div class="chat-editor" data-v-3c8778a5 data-v-ee64789b>
-                                                <!---->
-                                                <!---->
-                                                <!---->
-                                                <!---->
-                                                <!---->
-                                                <div class="chat-input" data-v-ee64789b data-v-7cdbed25>
-                                                    <div class="chat-input-prepend" data-v-7cdbed25>
-                                                    <!--[-->
-                                                    <!--]-->
-                                                    </div>
-                                                    <div class="chat-input-editor-container" data-v-7cdbed25>
-                                                        <!--[-->
-                                                        <!--[-->
-                                                        <!--[-->
-                                                        <div aria-multiline="false" aria-required="false" autocapitalize="false" autocomplete="false" autocorrect="false" contenteditable="false" spellcheck="true" class="chat-input-editor" data-v-7cdbed25></div>
-                                                        <!--]-->
-                                                        <!--[-->
-                                                        <div class="chat-input-placeholder" data-v-7cdbed25>Ask Anything...</div>
-                                                        <!--]-->
-                                                        <!--[-->
-                                                        <!--]-->
-                                                        <!--]-->
-                                                        <!---->
-                                                        <!---->
-                                                        <!---->
-                                                        <!--]-->
-                                                    </div>
-                                                </div>
-                                                <div class="chat-editor-action" data-v-ee64789b>
-                                                    <div class="left-area" data-v-ee64789b>
-                                                        <div data-v-ee64789b data-v-fba553a2>
-                                                            <!--[-->
-                                                            <!---->
-                                                            <!--[-->
-                                                            <!---->
-                                                            <div class="icon-button toolkit-trigger-btn" style="width:36px;height:36px;" data-v-fba553a2 data-v-ec124ff2>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="18" height="18" viewBox="0 0 16 16" name="Add" data-v-ec124ff2></svg>
-                                                                <!---->
-                                                            </div>
-                                                            <!---->
-                                                            <!--]-->
-                                                            <!---->
-                                                            <!--]-->
-                                                        </div>
-                                                        <!--[-->
-                                                        <div data-v-ee64789b>
-                                                            <div data-v-f23a2fe7 data-v-f23a2fe7>
-                                                                <div class="tool-switch small" data-v-f23a2fe7>
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="OKCompuer" class="icon" data-v-f23a2fe7></svg>
-                                                                    <!---->
-                                                                </div>
-                                                            </div>
-                                                            <a href="/agent" style="display:none;"></a>
-                                                        </div>
-                                                        <!--]-->
-                                                        <!---->
-                                                        <!---->
-                                                        <!---->
-                                                        <!---->
-                                                        <!---->
-                                                        <!---->
-                                                        <!---->
-                                                        <!---->
-                                                    </div>
-                                                    <div class="right-area" data-v-ee64789b>
-                                                        <!---->
-                                                        <div class="send-button-container disabled" data-v-ee64789b data-v-ac7e8d7d data-v-ac7e8d7d>
-                                                            <!---->
-                                                            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Send" class="send-icon" data-v-ac7e8d7d></svg>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="home-bottom" data-v-3c8778a5>
-                                            <div class="landing-area" data-v-3c8778a5 data-v-3c8778a5>
-                                                <div class="landing-route-list" data-v-3c8778a5 data-v-c48a62b2>
-                                                    <div class="carousel-container" data-v-c48a62b2 data-v-580c5ed1>
-                                                        <!---->
-                                                        <!---->
-                                                        <div class="carousel-scroll" data-v-580c5ed1>
-                                                            <!--[-->
-                                                            <div class="tab-line" data-v-c48a62b2>
-                                                                <!--[-->
-                                                                <a href="/websites" class="tab-item" data-v-c48a62b2 data-v-c48a62b2>
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Browser_b" class="tab-icon" data-v-c48a62b2></svg>
-                                                                    <span class="tab-label" data-v-c48a62b2>Websites</span>
-                                                                    <!---->
-                                                                </a>
-                                                                <a href="/docs" class="tab-item" data-v-c48a62b2 data-v-c48a62b2>
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Document" class="tab-icon" data-v-c48a62b2></svg>
-                                                                    <span class="tab-label" data-v-c48a62b2>Docs</span>
-                                                                    <!---->
-                                                                </a>
-                                                                <a href="/slides" class="tab-item" data-v-c48a62b2 data-v-c48a62b2>
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="PPT" class="tab-icon" data-v-c48a62b2></svg>
-                                                                    <span class="tab-label" data-v-c48a62b2>Slides</span>
-                                                                    <!---->
-                                                                </a>
-                                                                <a href="/sheets" class="tab-item" data-v-c48a62b2 data-v-c48a62b2>
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Excel" class="tab-icon" data-v-c48a62b2></svg>
-                                                                    <span class="tab-label" data-v-c48a62b2>Sheets</span>
-                                                                    <!---->
-                                                                </a>
-                                                                <a href="/deep-research" class="tab-item" data-v-c48a62b2 data-v-c48a62b2>
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Microscope" class="tab-icon" data-v-c48a62b2></svg>
-                                                                    <span class="tab-label" data-v-c48a62b2>Deep Research</span>
-                                                                    <!---->
-                                                                </a>
-                                                                <a href="/agent-swarm" class="tab-item" data-v-c48a62b2 data-v-c48a62b2>
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="TaskSubagent" class="tab-icon" data-v-c48a62b2></svg>
-                                                                    <span class="tab-label" data-v-c48a62b2>Agent Swarm</span>
-                                                                    <span class="tab-tag" data-v-c48a62b2>Beta</span>
-                                                                </a>
-                                                                <!--]-->
-                                                            </div>
-                                                            <!--]-->
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="case-list" data-nosnippet data-v-3c8778a5>
-                                                    <div class="show-case" data-v-3c8778a5 data-v-020d3530>
-                                                    <!---->
-                                                    <!---->
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!---->
-                                        </div>
-                                    </div>
-                                    <!--]-->
-                                </div>
-                            </div>
-                            <!--[-->
-                            <!--]-->
-                        </div>
-                        <!--]-->
-                    </div>
-                    <!---->
-                </div>
-                <!---->
-                <!--]-->
-                <!---->
-                <!--]-->
-                <!--]-->
-                <!---->
-                <!--]-->
-            </div>
-        </div>
-        <script>
-            window.OVERSEA = true
-        </script>
-        <script>
-            window.HYDRATION_INIT_STATE = {
-                "mutations": [],
-                "queries": [{
-                    "dehydratedAt": 1773541634633,
-                    "state": {
-                        "data": null,
-                        "dataUpdateCount": 1,
-                        "dataUpdatedAt": 1773541634622,
-                        "error": null,
-                        "errorUpdateCount": 0,
-                        "errorUpdatedAt": 0,
-                        "fetchFailureCount": 0,
-                        "fetchFailureReason": null,
-                        "fetchMeta": null,
-                        "isInvalidated": false,
-                        "status": "success",
-                        "fetchStatus": "idle"
-                    },
-                    "queryKey": ["kimiPlusInfo", "", "en-US"],
-                    "queryHash": "[\"kimiPlusInfo\",\"\",\"en-US\"]"
-                }]
-            }
-        </script>
-        <script src=//statics.moonshot.cn/kimi-web-seo/yidun-captcha.js></script>
-        <script async src=//res.wx.qq.com/connect/zh_CN/htmledition/js/wxLogin.js></script>
-        <script async src=//res.wx.qq.com/open/js/jweixin-1.6.0.js></script>
-    </body>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kimi AI - K2.5</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --bg2: #f7f7f5;
+    --bg3: #f0f0ec;
+    --sidebar: #1a1a1a;
+    --sidebar-hover: #2a2a2a;
+    --sidebar-active: #333;
+    --text: #1a1a1a;
+    --text2: #666;
+    --text3: #999;
+    --border: rgba(0,0,0,0.08);
+    --accent: #0f9d6e;
+    --accent-light: #e1f5ee;
+    --user-bubble: #1a1a1a;
+    --user-text: #ffffff;
+    --ai-bubble: #f7f7f5;
+    --ai-text: #1a1a1a;
+    --input-bg: #f7f7f5;
+    --send-bg: #1a1a1a;
+    --send-icon: #fff;
+    --ff: 'DM Sans', system-ui, sans-serif;
+    --fm: 'DM Mono', monospace;
+    --r: 14px;
+    --r-sm: 8px;
+  }
+
+  body {
+    font-family: var(--ff);
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: var(--sidebar);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .sidebar-logo {
+    padding: 20px 18px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+
+  .logo-icon {
+    width: 28px; height: 28px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .logo-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: -0.3px;
+  }
+
+  .logo-model {
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+    margin-left: auto;
+    background: rgba(255,255,255,0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: var(--fm);
+  }
+
+  .new-chat-btn {
+    margin: 8px 12px;
+    padding: 9px 14px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    color: rgba(255,255,255,0.85);
+    font-size: 13px;
+    font-family: var(--ff);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.15s;
+    font-weight: 400;
+  }
+
+  .new-chat-btn:hover { background: rgba(255,255,255,0.14); }
+
+  .plus-icon {
+    width: 16px; height: 16px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .nav-section {
+    padding: 6px 12px;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .nav-label {
+    font-size: 10px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 10px 6px 6px;
+    font-weight: 500;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    color: rgba(255,255,255,0.6);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 1px;
+  }
+
+  .nav-item:hover { background: var(--sidebar-hover); color: rgba(255,255,255,0.9); }
+  .nav-item.active { background: var(--sidebar-active); color: #fff; }
+
+  .nav-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .nav-item-icon {
+    width: 14px; height: 14px;
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+
+  .badge {
+    margin-left: auto;
+    font-size: 9px;
+    background: var(--accent);
+    color: white;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .sidebar-footer {
+    padding: 12px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .footer-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    color: rgba(255,255,255,0.4);
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .footer-btn:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); }
+
+  /* ── MAIN ── */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  .topbar {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+
+  .model-tag {
+    font-size: 12px;
+    color: var(--text2);
+    background: var(--bg2);
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    font-family: var(--fm);
+    display: flex; align-items: center; gap: 5px;
+  }
+
+  .model-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+
+  .topbar-right {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .icon-btn {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text2);
+    font-size: 14px;
+    transition: background 0.15s;
+  }
+
+  .icon-btn:hover { background: var(--bg2); }
+
+  /* ── CHAT AREA ── */
+  .chat-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    padding: 60px 24px 40px;
+    text-align: center;
+  }
+
+  .welcome-logo {
+    width: 56px; height: 56px;
+    background: var(--accent);
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .welcome h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+
+  .welcome p {
+    font-size: 14px;
+    color: var(--text2);
+    max-width: 360px;
+    line-height: 1.6;
+  }
+
+  .suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 24px;
+    max-width: 500px;
+  }
+
+  .suggestion-chip {
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    font-size: 12.5px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: var(--ff);
+  }
+
+  .suggestion-chip:hover {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ── MESSAGES ── */
+  .message-row {
+    padding: 8px 24px;
+    display: flex;
+    flex-direction: column;
+    max-width: 860px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .message-row.user { align-items: flex-end; }
+  .message-row.ai   { align-items: flex-start; }
+
+  .msg-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .msg-avatar {
+    width: 24px; height: 24px;
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .msg-avatar.ai-av   { background: var(--accent); color: white; }
+  .msg-avatar.user-av { background: var(--user-bubble); color: white; }
+
+  .msg-name { font-size: 12px; color: var(--text3); font-weight: 500; }
+
+  .bubble {
+    padding: 12px 16px;
+    border-radius: 14px;
+    font-size: 14px;
+    line-height: 1.7;
+    max-width: 75%;
+  }
+
+  .bubble.user {
+    background: var(--user-bubble);
+    color: var(--user-text);
+    border-radius: 14px 14px 4px 14px;
+  }
+
+  .bubble.ai {
+    background: var(--ai-bubble);
+    color: var(--ai-text);
+    border-radius: 14px 14px 14px 4px;
+    border: 1px solid var(--border);
+  }
+
+  .bubble code {
+    font-family: var(--fm);
+    font-size: 12.5px;
+    background: rgba(0,0,0,0.06);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  .bubble pre {
+    background: #1a1a1a;
+    color: #e8e8e8;
+    padding: 14px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 8px 0;
+    font-family: var(--fm);
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+
+  .bubble pre code { background: none; padding: 0; color: inherit; }
+
+  /* ── TYPING DOTS ── */
+  .typing-dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: blink 1s infinite;
+    margin: 0 2px;
+  }
+
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes blink {
+    0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+    40%           { opacity: 1;   transform: scale(1); }
+  }
+
+  /* ── INPUT ZONE ── */
+  .input-zone {
+    padding: 16px 24px 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  .input-wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    background: var(--input-bg);
+    border-radius: 16px;
+    border: 1.5px solid var(--border);
+    transition: border-color 0.15s;
+    overflow: hidden;
+  }
+
+  .input-wrap:focus-within {
+    border-color: rgba(15,157,110,0.4);
+    background: #fff;
+  }
+
+  .input-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 10px 14px;
+  }
+
+  textarea {
+    flex: 1;
+    border: none;
+    background: transparent;
+    resize: none;
+    font-family: var(--ff);
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 24px;
+    max-height: 180px;
+    outline: none;
+    padding: 0;
+    vertical-align: bottom;
+  }
+
+  textarea::placeholder { color: var(--text3); }
+
+  .send-btn {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    background: var(--send-bg);
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    align-self: flex-end;
+    margin-bottom: 1px;
+  }
+
+  .send-btn:hover   { transform: scale(1.05); }
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .input-tools {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 14px 10px;
+  }
+
+  .tool-chip {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: none;
+    font-size: 11.5px;
+    color: var(--text2);
+    cursor: pointer;
+    font-family: var(--ff);
+    transition: all 0.15s;
+  }
+
+  .tool-chip:hover {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .disc { font-size: 8px; }
+
+  .char-count {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--fm);
+  }
+
+  .error-msg {
+    background: #fff2f0;
+    border: 1px solid #ffccc7;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #cf1322;
+    max-width: 75%;
+  }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="3" fill="white" opacity="0.9"/>
+        <circle cx="3" cy="5" r="1.5" fill="white" opacity="0.6"/>
+        <circle cx="13" cy="5" r="1.5" fill="white" opacity="0.6"/>
+        <circle cx="3" cy="11" r="1.5" fill="white" opacity="0.6"/>
+        <circle cx="13" cy="11" r="1.5" fill="white" opacity="0.6"/>
+        <line x1="5" y1="7" x2="3" y2="5.5" stroke="white" stroke-width="0.8" opacity="0.5"/>
+        <line x1="11" y1="7" x2="13" y2="5.5" stroke="white" stroke-width="0.8" opacity="0.5"/>
+        <line x1="5" y1="9" x2="3" y2="10.5" stroke="white" stroke-width="0.8" opacity="0.5"/>
+        <line x1="11" y1="9" x2="13" y2="10.5" stroke="white" stroke-width="0.8" opacity="0.5"/>
+      </svg>
+    </div>
+    <span class="logo-text">Kimi</span>
+    <span class="logo-model">K2.5</span>
+  </div>
+
+  <button class="new-chat-btn" onclick="newChat()">
+    <div class="plus-icon">+</div>
+    New Chat
+  </button>
+
+  <div class="nav-section">
+    <div class="nav-label">Features</div>
+    <div class="nav-item active">
+      <svg class="nav-item-icon" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M2 3h12v2H2V3zm0 4h12v2H2V7zm0 4h8v2H2v-2z"/>
+      </svg>
+      Chat
+    </div>
+    <div class="nav-item">
+      <svg class="nav-item-icon" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 1C4.13 1 1 4.13 1 8s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7zm1 10.5H7v-5h2v5zm0-6.5H7V3h2v2z"/>
+      </svg>
+      Deep Research
+    </div>
+    <div class="nav-item">
+      <svg class="nav-item-icon" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M14 2H6L1 7v7h9l4-5V2zm-5 10H3V7.5L6.5 4H13v5l-4 3z"/>
+      </svg>
+      Docs
+    </div>
+    <div class="nav-item">
+      <svg class="nav-item-icon" viewBox="0 0 16 16" fill="currentColor">
+        <rect x="1" y="1" width="14" height="14" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M1 5h14M5 5v9"/>
+      </svg>
+      Sheets
+    </div>
+    <div class="nav-item">
+      <svg class="nav-item-icon" viewBox="0 0 16 16" fill="currentColor">
+        <rect x="2" y="1" width="12" height="14" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M5 5h6M5 8h6M5 11h4"/>
+      </svg>
+      Slides
+    </div>
+    <div class="nav-item">
+      <span class="nav-dot"></span>
+      Agent Swarm
+      <span class="badge">Beta</span>
+    </div>
+
+    <div class="nav-label" style="margin-top:12px;">Recent</div>
+    <div class="nav-item" style="font-size:12px; color: rgba(255,255,255,0.3);">No chats yet</div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="footer-btn">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+        <circle cx="8" cy="6" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M1 14c0-3.314 3.134-6 7-6s7 2.686 7 6" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      </svg>
+      Sign in
+    </div>
+    <div class="footer-btn">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 2a5 5 0 110 10A5 5 0 018 3zm0 7.5a.75.75 0 110 1.5.75.75 0 010-1.5zM8 5a.75.75 0 01.75.75v3a.75.75 0 01-1.5 0v-3A.75.75 0 018 5z"/>
+      </svg>
+      About
+    </div>
+  </div>
+</div>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+  <div class="topbar">
+    <div class="model-tag">
+      <div class="model-dot"></div>
+      Kimi K2.5 · claude-sonnet-4-20250514
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" title="Clear chat" onclick="newChat()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M2 4h12l-1 10H3L2 4zm5-3h2v2H7V1zM1 4h14v1H1V4z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="chat-area" id="chatArea">
+    <div class="welcome" id="welcome">
+      <div class="welcome-logo">
+        <svg width="26" height="26" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="3.5" fill="white" opacity="0.95"/>
+          <circle cx="2.5" cy="4.5" r="2" fill="white" opacity="0.55"/>
+          <circle cx="13.5" cy="4.5" r="2" fill="white" opacity="0.55"/>
+          <circle cx="2.5" cy="11.5" r="2" fill="white" opacity="0.55"/>
+          <circle cx="13.5" cy="11.5" r="2" fill="white" opacity="0.55"/>
+        </svg>
+      </div>
+      <h1>Hi, I'm Kimi</h1>
+      <p>Powered by claude-sonnet-4-20250514. Ask me anything — I can help with research, coding, writing, analysis and more.</p>
+      <div class="suggestions">
+        <div class="suggestion-chip" onclick="useSuggestion(this)">✨ Giải thích lượng tử đơn giản</div>
+        <div class="suggestion-chip" onclick="useSuggestion(this)">💻 Viết code Python cho tôi</div>
+        <div class="suggestion-chip" onclick="useSuggestion(this)">📊 Phân tích dữ liệu</div>
+        <div class="suggestion-chip" onclick="useSuggestion(this)">✍️ Hỗ trợ viết nội dung</div>
+        <div class="suggestion-chip" onclick="useSuggestion(this)">🌐 Dịch văn bản</div>
+        <div class="suggestion-chip" onclick="useSuggestion(this)">🧠 Brainstorm ý tưởng</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="input-zone">
+    <div class="input-wrap">
+      <div class="input-row">
+        <textarea
+          id="msgInput"
+          placeholder="Hỏi bất cứ điều gì..."
+          rows="1"
+          onkeydown="handleKey(event)"
+          oninput="autoResize(this); updateCount(this)"
+        ></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="white">
+            <path d="M8 2l6 6H10v6H6V8H2L8 2z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="input-tools">
+        <button class="tool-chip"><span class="disc">●</span> Search</button>
+        <button class="tool-chip"><span class="disc">●</span> Deep Think</button>
+        <span class="char-count" id="charCount">0</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let messages = [];
+  let isLoading = false;
+
+  const chatArea  = document.getElementById('chatArea');
+  const msgInput  = document.getElementById('msgInput');
+  const sendBtn   = document.getElementById('sendBtn');
+  const welcome   = document.getElementById('welcome');
+
+  msgInput.addEventListener('input', () => {
+    sendBtn.disabled = !msgInput.value.trim() || isLoading;
+  });
+
+  function updateCount(el) {
+    document.getElementById('charCount').textContent = el.value.length;
+  }
+
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 180) + 'px';
+  }
+
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!sendBtn.disabled) sendMessage();
+    }
+  }
+
+  function useSuggestion(el) {
+    msgInput.value = el.textContent.replace(/^[\S]+ /, '');
+    msgInput.dispatchEvent(new Event('input'));
+    sendMessage();
+  }
+
+  function newChat() {
+    messages = [];
+    chatArea.innerHTML = '';
+    chatArea.appendChild(welcome);
+    welcome.style.display = 'flex';
+    msgInput.value = '';
+    autoResize(msgInput);
+    updateCount(msgInput);
+    sendBtn.disabled = true;
+  }
+
+  function escHtml(t) {
+    return t
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function renderMarkdown(text) {
+    return text
+      .replace(/```(\w+)?\n([\s\S]*?)```/g, (_, lang, code) =>
+        `<pre><code>${escHtml(code.trim())}</code></pre>`)
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/^### (.+)$/gm, '<h3 style="font-size:14px;font-weight:600;margin:10px 0 4px">$1</h3>')
+      .replace(/^## (.+)$/gm,  '<h2 style="font-size:15px;font-weight:600;margin:12px 0 5px">$1</h2>')
+      .replace(/^# (.+)$/gm,   '<h1 style="font-size:17px;font-weight:700;margin:14px 0 6px">$1</h1>')
+      .replace(/^- (.+)$/gm,   '• $1')
+      .replace(/\n/g, '<br>');
+  }
+
+  function appendMsg(role, content, streaming = false) {
+    welcome.style.display = 'none';
+
+    const row = document.createElement('div');
+    row.className = `message-row ${role === 'user' ? 'user' : 'ai'}`;
+
+    const header = document.createElement('div');
+    header.className = 'msg-header';
+
+    const av = document.createElement('div');
+    av.className = `msg-avatar ${role === 'user' ? 'user-av' : 'ai-av'}`;
+    av.textContent = role === 'user' ? 'U' : 'K';
+
+    const name = document.createElement('span');
+    name.className = 'msg-name';
+    name.textContent = role === 'user' ? 'You' : 'Kimi';
+
+    if (role === 'ai') {
+      header.appendChild(av);
+      header.appendChild(name);
+    } else {
+      header.appendChild(name);
+      header.appendChild(av);
+    }
+
+    const bubble = document.createElement('div');
+    bubble.className = `bubble ${role === 'user' ? 'user' : 'ai'}`;
+
+    if (streaming) {
+      bubble.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+    } else {
+      bubble.innerHTML = role === 'user' ? escHtml(content) : renderMarkdown(content);
+    }
+
+    row.appendChild(header);
+    row.appendChild(bubble);
+    chatArea.appendChild(row);
+    chatArea.scrollTop = chatArea.scrollHeight;
+    return bubble;
+  }
+
+  async function sendMessage() {
+    const text = msgInput.value.trim();
+    if (!text || isLoading) return;
+
+    isLoading = true;
+    sendBtn.disabled = true;
+    msgInput.value = '';
+    autoResize(msgInput);
+    updateCount(msgInput);
+
+    appendMsg('user', text);
+    messages.push({ role: 'user', content: text });
+
+    const aiBubble = appendMsg('ai', '', true);
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: 'You are Kimi, a helpful AI assistant made by Moonshot AI. You are friendly, smart, and concise. Respond in the same language the user writes in. If they write in Vietnamese, respond in Vietnamese. If English, respond in English.',
+          messages: messages
+        })
+      });
+
+      const data = await res.json();
+      if (data.error) throw new Error(data.error.message);
+
+      const reply = data.content?.find(b => b.type === 'text')?.text || '(no response)';
+      messages.push({ role: 'assistant', content: reply });
+      aiBubble.innerHTML = renderMarkdown(reply);
+
+    } catch (err) {
+      const errRow = document.createElement('div');
+      errRow.className = 'message-row ai';
+      errRow.innerHTML = `<div class="error-msg">Lỗi: ${err.message || 'Không kết nối được API'}</div>`;
+      aiBubble.closest('.message-row').replaceWith(errRow);
+    }
+
+    isLoading = false;
+    sendBtn.disabled = !msgInput.value.trim();
+    chatArea.scrollTop = chatArea.scrollHeight;
+  }
+</script>
+</body>
 </html>
