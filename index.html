@@ -1,0 +1,526 @@
+<!doctype html>
+<html class=light lang=en-US translate=no>
+    <head>
+        <script crossorigin src=//statics.moonshot.cn/kimi-web-seo/assets/polyfills-BfUbHAD3.js type=module></script>
+        <meta charset=UTF-8>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Kimi AI with K2.5 | Visual Coding Meets Agent Swarm</title>
+        <link rel="canonical" href="https://www.kimi.com/">
+        <link rel="alternate" href="https://www.kimi.com/zh" hreflang="zh">
+        <link rel="alternate" href="https://www.kimi.com/en" hreflang="en">
+        <link rel="alternate" href="https://www.kimi.com/" hreflang="x-default">
+        <meta name="description" content="Try Kimi K2.5, the strongest open-source model for visual coding. Explore agent swarm preview for massive tasks. Simplify complex Office work with precision.">
+        <meta name="keywords" content="Kimi, K2.5, Kimi K2.5, visual coding, agent swarm, office, PPT, slides, presentation, Moonshot AI, 月之暗面, deep research, Excel, PDF, Word, websites">
+        <link rel="shortcut icon" href=//statics.moonshot.cn/kimi-web-seo/favicon.ico>
+        <meta content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0" name=viewport>
+        <meta content="IE=edge,chrome=1" http-equiv=X-UA-Compatible>
+        <meta content=webkit name=renderer>
+        <meta content=webkit name=force-rendering>
+        <meta content=yes name=mobile-web-app-capable>
+        <meta content=black name=apple-mobile-web-app-status-bar-style>
+        <meta content=Kimi name=apple-mobile-web-app-title>
+        <meta content="telephone=no,email=no" name=format-detection>
+        <meta content=38E0A3C40C0983D8FED5BD0B59E78653 name=msvalidate.01>
+        <meta content=codeva-oC0GIbxpdb name=baidu-site-verification>
+        <meta content=K4KQFuej81 name=sogou_site_verification>
+        <link rel="stylesheet" href="//statics.moonshot.cn/kimi-web-seo/assets/common-DegMAbrE.css">
+        <link rel="modulepreload" crossorigin href="//statics.moonshot.cn/kimi-web-seo/assets/common-BPqQ4LQ6.js">
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_AMS-Regular-BQhdFMY1.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_AMS-Regular-DMm9YOAa.woff" as="font" type="font/woff" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Caligraphic-Bold-Dq_IR9rO.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Caligraphic-Bold-BEiXGLvX.woff" as="font" type="font/woff" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Caligraphic-Regular-Di6jR-x-.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Caligraphic-Regular-CTRA-rTL.woff" as="font" type="font/woff" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Fraktur-Bold-CL6g_b3V.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Fraktur-Bold-BsDP51OF.woff" as="font" type="font/woff" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Fraktur-Regular-CTYiF6lA.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Fraktur-Regular-Dxdc4cR9.woff" as="font" type="font/woff" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Main-Bold-Cx986IdX.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Main-Bold-Jm3AIy58.woff" as="font" type="font/woff" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Main-BoldItalic-DxDJ3AOS.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Main-BoldItalic-SpSLRI95.woff" as="font" type="font/woff" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Main-Italic-NWA7e6Wa.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Main-Italic-BMLOBm91.woff" as="font" type="font/woff" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Main-Regular-B22Nviop.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Main-Regular-Dr94JaBh.woff" as="font" type="font/woff" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Math-BoldItalic-CZnvNsCZ.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Math-BoldItalic-iY-2wyZ7.woff" as="font" type="font/woff" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Math-Italic-t53AETM-.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Math-Italic-DA0__PXp.woff" as="font" type="font/woff" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_SansSerif-Bold-D1sUS0GD.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_SansSerif-Bold-DbIhKOiC.woff" as="font" type="font/woff" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_SansSerif-Italic-C3H0VqGB.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_SansSerif-Italic-DN2j7dab.woff" as="font" type="font/woff" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_SansSerif-Regular-DDBCnlJ7.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_SansSerif-Regular-CS6fqUqJ.woff" as="font" type="font/woff" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Script-Regular-D3wIWfF6.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Script-Regular-D5yQViql.woff" as="font" type="font/woff" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Size1-Regular-mCD8mA8B.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Size1-Regular-C195tn64.woff" as="font" type="font/woff" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Size2-Regular-Dy4dx90m.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Size2-Regular-oD1tc_U0.woff" as="font" type="font/woff" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Size3-Regular-CTq5MqoE.woff" as="font" type="font/woff" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Size4-Regular-Dl5lxZxV.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Size4-Regular-BF-4gkZK.woff" as="font" type="font/woff" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Typewriter-Regular-CO6r4hn1.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="//statics.moonshot.cn/kimi-web-seo/assets/KaTeX_Typewriter-Regular-C0xS9mPB.woff" as="font" type="font/woff" crossorigin>
+        <link rel="stylesheet" href="//statics.moonshot.cn/kimi-web-seo/assets/Index-CBMcp73q.css">
+        <link rel="stylesheet" href="//statics.moonshot.cn/kimi-web-seo/assets/common-DegMAbrE.css">
+        <link rel="modulepreload" crossorigin href="//statics.moonshot.cn/kimi-web-seo/assets/Index-Bvq9byp9.js">
+        <script src="https://www.googletagmanager.com/gtag/js?id=G-YXD8W70SZP" async></script>
+        <script>
+            window.dataLayer = window.dataLayer || []
+            function gtag() {
+                dataLayer.push(arguments)
+            }
+            gtag("js", new Date())
+            gtag("config", "G-YXD8W70SZP")
+        </script>
+        <script>
+            ;(function(w, d, s, l, i) {
+                w[l] = w[l] || []
+                w[l].push({
+                    "gtm.start": new Date().getTime(),
+                    event: "gtm.js"
+                })
+                var f = d.getElementsByTagName(s)[0]
+                  , j = d.createElement(s)
+                  , dl = l != "dataLayer" ? "&l=" + l : ""
+                j.async = true
+                j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl
+                f.parentNode.insertBefore(j, f)
+            }
+            )(window, document, "script", "dataLayer", "GTM-NT26Q3C9")
+        </script>
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+                var hm = document.createElement("script")
+                hm.src = "https://hm.baidu.com/hm.js?358cae4815e85d48f7e8ab7f3680a74b"
+                var s = document.getElementsByTagName("script")[0]
+                s.parentNode.insertBefore(hm, s)
+            }
+            )()
+        </script>
+        <script crossorigin src=//statics.moonshot.cn/kimi-web-seo/assets/index-By7MSNxj.js type=module></script>
+        <link crossorigin href=//statics.moonshot.cn/kimi-web-seo/assets/common-BPqQ4LQ6.js rel=modulepreload>
+        <link crossorigin href=//statics.moonshot.cn/kimi-web-seo/assets/common-DegMAbrE.css rel=stylesheet>
+        <link crossorigin href=//statics.moonshot.cn/kimi-web-seo/assets/index-BU440vEI.css rel=stylesheet>
+    </head>
+    <body>
+        <div id=app>
+            <div class="n-config-provider" data-v-3cdca8ad>
+                <!--[-->
+                <!--[-->
+                <!--[-->
+                <!--[-->
+                <div class="app has-sidebar" data-v-3cdca8ad>
+                    <div class="sidebar-placeholder not-mobile mobile-fold" data-v-3cdca8ad data-v-d531ad5b>
+                        <div class="mask" data-v-d531ad5b></div>
+                        <aside class="sidebar" data-v-d531ad5b>
+                            <div class="sidebar-header" data-v-d531ad5b>
+                                <a class="logo" data-v-d531ad5b href="/?chat_enter_method=new_chat">
+                                <!--[-->
+                                <!--]-->
+                                </a>
+                                <!--[-->
+                                <!---->
+                                <div class="expand-btn" data-v-d531ad5b>
+                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="20" height="20" viewBox="0 0 16 16" name="LeftBar" data-v-d531ad5b></svg>
+                                </div>
+                                <!---->
+                                <!--]-->
+                            </div>
+                            <div class="sidebar-nav" data-v-d531ad5b>
+                                <a class="new-chat-btn" data-v-d531ad5b href="/?chat_enter_method=new_chat">
+                                    <!--[-->
+                                    <div class="action-label" data-v-d531ad5b>
+                                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="20" height="20" viewBox="0 0 16 16" name="AddConversation" class="new-icon" data-v-d531ad5b></svg>
+                                        New Chat
+                                    </div>
+                                    <div class="action-opts" data-v-d531ad5b>
+                                        <div class="meta" data-v-d531ad5b>
+                                            <span data-v-d531ad5b>Ctrl</span>
+                                        </div>
+                                        <span class="meta" data-v-d531ad5b>K</span>
+                                    </div>
+                                    <!--]-->
+                                </a>
+                                <div class="kimi-plus-part" data-v-d531ad5b>
+                                    <ul data-v-d531ad5b data-v-c487fc0c>
+                                        <!--[-->
+                                        <li data-v-c487fc0c>
+                                            <a href="/websites" class="agent-item" data-v-c487fc0c>
+                                                <div class="agent-info" data-v-c487fc0c>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Browser_b" class="agent-icon" data-v-c487fc0c></svg>
+                                                    <span class="agent-label" data-v-c487fc0c>Websites</span>
+                                                    <!--[-->
+                                                    <!--]-->
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li data-v-c487fc0c>
+                                            <a href="/docs" class="agent-item" data-v-c487fc0c>
+                                                <div class="agent-info" data-v-c487fc0c>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Document" class="agent-icon" data-v-c487fc0c></svg>
+                                                    <span class="agent-label" data-v-c487fc0c>Docs</span>
+                                                    <!--[-->
+                                                    <!--]-->
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li data-v-c487fc0c>
+                                            <a href="/slides" class="agent-item" data-v-c487fc0c>
+                                                <div class="agent-info" data-v-c487fc0c>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="PPT" class="agent-icon" data-v-c487fc0c></svg>
+                                                    <span class="agent-label" data-v-c487fc0c>Slides</span>
+                                                    <!--[-->
+                                                    <!--]-->
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li data-v-c487fc0c>
+                                            <a href="/sheets" class="agent-item" data-v-c487fc0c>
+                                                <div class="agent-info" data-v-c487fc0c>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Excel" class="agent-icon" data-v-c487fc0c></svg>
+                                                    <span class="agent-label" data-v-c487fc0c>Sheets</span>
+                                                    <!--[-->
+                                                    <!--]-->
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li data-v-c487fc0c>
+                                            <a href="/deep-research" class="agent-item" data-v-c487fc0c>
+                                                <div class="agent-info" data-v-c487fc0c>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Microscope" class="agent-icon" data-v-c487fc0c></svg>
+                                                    <span class="agent-label" data-v-c487fc0c>Deep Research</span>
+                                                    <!--[-->
+                                                    <!--]-->
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <!--]-->
+                                    </ul>
+                                    <a href="/code?from=kimi_homepage_sidebar" class="nav-item kfc-item" target="_blank" data-v-d531ad5b>
+                                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="20" height="20" viewBox="0 0 16 16" name="Code" class="nav-icon" data-v-d531ad5b></svg>
+                                        <span data-v-d531ad5b>Kimi Code</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="20" height="20" viewBox="0 0 16 16" name="UpperRight" class="nav-icon open-in-new" data-v-d531ad5b></svg>
+                                    </a>
+                                    <a href="/bot" class="nav-item claw-item" data-v-d531ad5b>
+                                        <span class="nav-icon" data-v-d531ad5b></span>
+                                        <span data-v-d531ad5b>Kimi Claw</span>
+                                        <div class="beta-tag" data-v-d531ad5b></div>
+                                    </a>
+                                </div>
+                                <div class="history-part" data-v-d531ad5b>
+                                    <div class="nav-title" data-v-d531ad5b>
+                                        <div class="title-label" data-v-d531ad5b>
+                                            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="20" height="20" viewBox="0 0 16 16" name="History" class="nav-icon" data-v-d531ad5b></svg>
+                                            <span data-v-d531ad5b>Chat History</span>
+                                        </div>
+                                    </div>
+                                    <!---->
+                                </div>
+                            </div>
+                            <div class="sidebar-footer" data-v-d531ad5b>
+                                <!--[-->
+                                <!---->
+                                <div class="download-app-btn" data-v-d531ad5b>
+                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Mobile" class="user-nav-icon" data-v-d531ad5b></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Close" class="close-icon" data-v-d531ad5b></svg>
+                                    <span data-v-d531ad5b>Mobile App</span>
+                                </div>
+                                <!---->
+                                <!--]-->
+                                <div class="sidebar-footer-content" data-v-d531ad5b>
+                                    <ul class="user-nav" data-v-d531ad5b style="display:none;" data-v-d9e53cc5>
+                                        <!---->
+                                        <!---->
+                                        <!---->
+                                        <li class="sub-item" data-v-d9e53cc5>
+                                            <!--[-->
+                                            <div class="sub-item-content" aria-selected="true" aria-controls="sider-about-menu" data-v-d9e53cc5>
+                                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Info" class="user-nav-icon" data-v-d9e53cc5></svg>
+                                                <span data-v-d9e53cc5>About Us</span>
+                                            </div>
+                                            <div class="popover-wrapper" data-common-popover-content style="position:fixed;z-index:20;" id="sider-about-menu" data-v-4d6ddadc>
+                                                <div class="popover-inner" style="display:none;" data-v-4d6ddadc>
+                                                    <!--[-->
+                                                    <ul class="menu-list" data-v-d9e53cc5 data-v-0f3a5515>
+                                                        <li data-v-0f3a5515>
+                                                            <a class="menu-item" href="https://www.moonshot.ai/" target="_blank" data-v-0f3a5515>
+                                                                <span data-v-0f3a5515>Visit Moonshot AI</span>
+                                                                <span class="moonshot icon" data-v-0f3a5515></span>
+                                                            </a>
+                                                        </li>
+                                                        <li data-v-0f3a5515>
+                                                            <a class="menu-item" href="https://platform.moonshot.ai/" target="_blank" data-v-0f3a5515>
+                                                                <span data-v-0f3a5515>Open Platform</span>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="UpperRight" class="icon" data-v-0f3a5515></svg>
+                                                            </a>
+                                                        </li>
+                                                        <li data-v-0f3a5515>
+                                                            <a href="/features/?from=kimi_homepage" class="menu-item" target="_blank" data-v-0f3a5515>
+                                                                <span data-v-0f3a5515>Features</span>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="UpperRight" class="icon" data-v-0f3a5515></svg>
+                                                            </a>
+                                                        </li>
+                                                        <!---->
+                                                        <li data-v-0f3a5515>
+                                                            <a href="/user/agreement/modelUse?version=v2" class="menu-item" target="_blank" data-v-0f3a5515>
+                                                                <span data-v-0f3a5515>Terms of Service</span>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="UpperRight" class="icon" data-v-0f3a5515></svg>
+                                                            </a>
+                                                        </li>
+                                                        <li data-v-0f3a5515>
+                                                            <a href="/user/agreement/userPrivacy?version=v2" class="menu-item" target="_blank" data-v-0f3a5515>
+                                                                <span data-v-0f3a5515>Privacy Policy</span>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="UpperRight" class="icon" data-v-0f3a5515></svg>
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                    <!--]-->
+                                                </div>
+                                            </div>
+                                            <!--]-->
+                                        </li>
+                                        <li class="sub-item language-switch" data-v-d9e53cc5>
+                                            <!--[-->
+                                            <!---->
+                                            <div class="sub-item-content" data-v-d9e53cc5>
+                                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Translate" class="user-nav-icon" data-v-d9e53cc5></svg>
+                                                <span data-v-d9e53cc5>Language</span>
+                                            </div>
+                                            <!---->
+                                            <!--]-->
+                                        </li>
+                                        <li data-v-d9e53cc5>
+                                            <div class="sub-item-content" data-v-d9e53cc5>
+                                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Message" class="user-nav-icon" data-v-d9e53cc5></svg>
+                                                <span data-v-d9e53cc5>User Feedback</span>
+                                            </div>
+                                        </li>
+                                        <!---->
+                                    </ul>
+                                    <!---->
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+                    <div class="main" data-v-3cdca8ad>
+                        <!--[-->
+                        <!---->
+                        <div id="page-layout-container" class="layout-container transparent scrollbar-placeholder" data-v-3c8778a5 data-v-1ff57310>
+                            <div id="chat-container" class="layout-content" data-v-1ff57310>
+                                <div class="layout-header" data-v-1ff57310>
+                                    <div class="header-left" data-v-1ff57310>
+                                        <!--[-->
+                                        <!---->
+                                        <div class="icon-button expand-btn" style="width:32px;height:32px;display:none;" data-v-1ff57310 data-v-ec124ff2>
+                                            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="20" height="20" viewBox="0 0 16 16" name="LeftBar" data-v-ec124ff2></svg>
+                                            <!---->
+                                        </div>
+                                        <!---->
+                                        <!--]-->
+                                    </div>
+                                    <div class="header-center" data-v-1ff57310>
+                                    <!--[-->
+                                    <!---->
+                                    <!--]-->
+                                    </div>
+                                    <div class="header-right" data-v-1ff57310>
+                                    <!--[-->
+                                    <!--]-->
+                                    <!---->
+                                    </div>
+                                </div>
+                                <div class="layout-content-main" data-v-1ff57310>
+                                    <!--[-->
+                                    <div class="home-page" data-v-3c8778a5 data-v-3c8778a5>
+                                        <div class="home-top" data-v-3c8778a5>
+                                        <!---->
+                                        </div>
+                                        <div id="chat-box" class="chat-box" data-v-3c8778a5>
+                                            <div class="chat-editor" data-v-3c8778a5 data-v-ee64789b>
+                                                <!---->
+                                                <!---->
+                                                <!---->
+                                                <!---->
+                                                <!---->
+                                                <div class="chat-input" data-v-ee64789b data-v-7cdbed25>
+                                                    <div class="chat-input-prepend" data-v-7cdbed25>
+                                                    <!--[-->
+                                                    <!--]-->
+                                                    </div>
+                                                    <div class="chat-input-editor-container" data-v-7cdbed25>
+                                                        <!--[-->
+                                                        <!--[-->
+                                                        <!--[-->
+                                                        <div aria-multiline="false" aria-required="false" autocapitalize="false" autocomplete="false" autocorrect="false" contenteditable="false" spellcheck="true" class="chat-input-editor" data-v-7cdbed25></div>
+                                                        <!--]-->
+                                                        <!--[-->
+                                                        <div class="chat-input-placeholder" data-v-7cdbed25>Ask Anything...</div>
+                                                        <!--]-->
+                                                        <!--[-->
+                                                        <!--]-->
+                                                        <!--]-->
+                                                        <!---->
+                                                        <!---->
+                                                        <!---->
+                                                        <!--]-->
+                                                    </div>
+                                                </div>
+                                                <div class="chat-editor-action" data-v-ee64789b>
+                                                    <div class="left-area" data-v-ee64789b>
+                                                        <div data-v-ee64789b data-v-fba553a2>
+                                                            <!--[-->
+                                                            <!---->
+                                                            <!--[-->
+                                                            <!---->
+                                                            <div class="icon-button toolkit-trigger-btn" style="width:36px;height:36px;" data-v-fba553a2 data-v-ec124ff2>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="18" height="18" viewBox="0 0 16 16" name="Add" data-v-ec124ff2></svg>
+                                                                <!---->
+                                                            </div>
+                                                            <!---->
+                                                            <!--]-->
+                                                            <!---->
+                                                            <!--]-->
+                                                        </div>
+                                                        <!--[-->
+                                                        <div data-v-ee64789b>
+                                                            <div data-v-f23a2fe7 data-v-f23a2fe7>
+                                                                <div class="tool-switch small" data-v-f23a2fe7>
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="OKCompuer" class="icon" data-v-f23a2fe7></svg>
+                                                                    <!---->
+                                                                </div>
+                                                            </div>
+                                                            <a href="/agent" style="display:none;"></a>
+                                                        </div>
+                                                        <!--]-->
+                                                        <!---->
+                                                        <!---->
+                                                        <!---->
+                                                        <!---->
+                                                        <!---->
+                                                        <!---->
+                                                        <!---->
+                                                        <!---->
+                                                    </div>
+                                                    <div class="right-area" data-v-ee64789b>
+                                                        <!---->
+                                                        <div class="send-button-container disabled" data-v-ee64789b data-v-ac7e8d7d data-v-ac7e8d7d>
+                                                            <!---->
+                                                            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Send" class="send-icon" data-v-ac7e8d7d></svg>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="home-bottom" data-v-3c8778a5>
+                                            <div class="landing-area" data-v-3c8778a5 data-v-3c8778a5>
+                                                <div class="landing-route-list" data-v-3c8778a5 data-v-c48a62b2>
+                                                    <div class="carousel-container" data-v-c48a62b2 data-v-580c5ed1>
+                                                        <!---->
+                                                        <!---->
+                                                        <div class="carousel-scroll" data-v-580c5ed1>
+                                                            <!--[-->
+                                                            <div class="tab-line" data-v-c48a62b2>
+                                                                <!--[-->
+                                                                <a href="/websites" class="tab-item" data-v-c48a62b2 data-v-c48a62b2>
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Browser_b" class="tab-icon" data-v-c48a62b2></svg>
+                                                                    <span class="tab-label" data-v-c48a62b2>Websites</span>
+                                                                    <!---->
+                                                                </a>
+                                                                <a href="/docs" class="tab-item" data-v-c48a62b2 data-v-c48a62b2>
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Document" class="tab-icon" data-v-c48a62b2></svg>
+                                                                    <span class="tab-label" data-v-c48a62b2>Docs</span>
+                                                                    <!---->
+                                                                </a>
+                                                                <a href="/slides" class="tab-item" data-v-c48a62b2 data-v-c48a62b2>
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="PPT" class="tab-icon" data-v-c48a62b2></svg>
+                                                                    <span class="tab-label" data-v-c48a62b2>Slides</span>
+                                                                    <!---->
+                                                                </a>
+                                                                <a href="/sheets" class="tab-item" data-v-c48a62b2 data-v-c48a62b2>
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Excel" class="tab-icon" data-v-c48a62b2></svg>
+                                                                    <span class="tab-label" data-v-c48a62b2>Sheets</span>
+                                                                    <!---->
+                                                                </a>
+                                                                <a href="/deep-research" class="tab-item" data-v-c48a62b2 data-v-c48a62b2>
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="Microscope" class="tab-icon" data-v-c48a62b2></svg>
+                                                                    <span class="tab-label" data-v-c48a62b2>Deep Research</span>
+                                                                    <!---->
+                                                                </a>
+                                                                <a href="/agent-swarm" class="tab-item" data-v-c48a62b2 data-v-c48a62b2>
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" style="" width="1em" height="1em" viewBox="0 0 16 16" name="TaskSubagent" class="tab-icon" data-v-c48a62b2></svg>
+                                                                    <span class="tab-label" data-v-c48a62b2>Agent Swarm</span>
+                                                                    <span class="tab-tag" data-v-c48a62b2>Beta</span>
+                                                                </a>
+                                                                <!--]-->
+                                                            </div>
+                                                            <!--]-->
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="case-list" data-nosnippet data-v-3c8778a5>
+                                                    <div class="show-case" data-v-3c8778a5 data-v-020d3530>
+                                                    <!---->
+                                                    <!---->
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!---->
+                                        </div>
+                                    </div>
+                                    <!--]-->
+                                </div>
+                            </div>
+                            <!--[-->
+                            <!--]-->
+                        </div>
+                        <!--]-->
+                    </div>
+                    <!---->
+                </div>
+                <!---->
+                <!--]-->
+                <!---->
+                <!--]-->
+                <!--]-->
+                <!---->
+                <!--]-->
+            </div>
+        </div>
+        <script>
+            window.OVERSEA = true
+        </script>
+        <script>
+            window.HYDRATION_INIT_STATE = {
+                "mutations": [],
+                "queries": [{
+                    "dehydratedAt": 1773541634633,
+                    "state": {
+                        "data": null,
+                        "dataUpdateCount": 1,
+                        "dataUpdatedAt": 1773541634622,
+                        "error": null,
+                        "errorUpdateCount": 0,
+                        "errorUpdatedAt": 0,
+                        "fetchFailureCount": 0,
+                        "fetchFailureReason": null,
+                        "fetchMeta": null,
+                        "isInvalidated": false,
+                        "status": "success",
+                        "fetchStatus": "idle"
+                    },
+                    "queryKey": ["kimiPlusInfo", "", "en-US"],
+                    "queryHash": "[\"kimiPlusInfo\",\"\",\"en-US\"]"
+                }]
+            }
+        </script>
+        <script src=//statics.moonshot.cn/kimi-web-seo/yidun-captcha.js></script>
+        <script async src=//res.wx.qq.com/connect/zh_CN/htmledition/js/wxLogin.js></script>
+        <script async src=//res.wx.qq.com/open/js/jweixin-1.6.0.js></script>
+    </body>
+</html>
