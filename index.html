@@ -678,8 +678,7 @@ async function send() {
   statusTag.classList.add('show');
 
   try {
-    // Build context string from history (last 10 turns to avoid huge URLs)
-    const ctx = history.slice(-10);
+    const ctx = history.slice(-6); // giữ 6 tin gần nhất
     let prompt = '';
     for (let i = 0; i < ctx.length - 1; i++) {
       const m = ctx[i];
@@ -689,7 +688,7 @@ async function send() {
 
     const url = 'https://text.pollinations.ai/'
       + encodeURIComponent(prompt)
-      + '?model=openai-large'
+      + '?model=openai'
       + '&system=' + encodeURIComponent(SYSTEM)
       + '&seed=' + Math.floor(Math.random() * 99999);
 
