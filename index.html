@@ -4,69 +4,69 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PHUCRAM AI</title>
-<!-- JSZip: CDN cực kỳ ổn định, dùng để tạo PPTX & DOCX mà không cần thư viện ngoài -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#fff;--bg2:#f7f7f5;--bg3:#f0f0ee;
+  --bg:#fff;--bg2:#f7f7f5;--bg3:#ebebea;
   --sb:#111;--sb2:#1e1e1e;--sb3:#2a2a2a;
   --tx:#1a1a1a;--tx2:#666;--tx3:#aaa;
-  --bd:rgba(0,0,0,.08);--bd2:rgba(0,0,0,.12);
+  --bd:rgba(0,0,0,.08);
   --gr:#0f9d6e;--grl:#e1f5ee;
   --rd:#d94a1e;--rdl:#fdf0ec;
   --bl:#1a5bbf;--bll:#e8f1fc;
+  --or:#c07a00;--orl:#fff8e6;
   --ff:'DM Sans',system-ui,sans-serif;
   --fm:'DM Mono',monospace;
 }
 html,body{height:100%;font-family:var(--ff);font-size:14px;line-height:1.6;color:var(--tx);background:var(--bg);overflow:hidden}
 body{display:flex}
 
-/* ──── SIDEBAR ──── */
+/* SIDEBAR */
 .sb{width:232px;flex-shrink:0;background:var(--sb);display:flex;flex-direction:column;overflow:hidden}
 @media(max-width:580px){.sb{display:none}}
-.sb-logo{padding:18px 14px 10px;display:flex;align-items:center;gap:8px;cursor:pointer}
+.sb-logo{padding:18px 14px 10px;display:flex;align-items:center;gap:8px}
 .logo-ico{width:26px;height:26px;background:var(--gr);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .logo-nm{font-size:15px;font-weight:700;color:#fff;letter-spacing:-.2px}
-.logo-tag{margin-left:auto;font-size:9.5px;color:rgba(255,255,255,.32);background:rgba(255,255,255,.07);padding:2px 6px;border-radius:4px;font-family:var(--fm)}
-.sb-newbtn{margin:4px 10px 6px;padding:8px 12px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);border-radius:9px;color:rgba(255,255,255,.8);font-size:13px;font-family:var(--ff);cursor:pointer;display:flex;align-items:center;gap:7px;transition:background .12s}
-.sb-newbtn:hover{background:rgba(255,255,255,.12)}
-.sb-plus{width:15px;height:15px;background:rgba(255,255,255,.18);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0;line-height:1}
+.logo-tag{margin-left:auto;font-size:9.5px;color:rgba(255,255,255,.3);background:rgba(255,255,255,.07);padding:2px 6px;border-radius:4px;font-family:var(--fm)}
+.sb-new{margin:4px 10px 6px;padding:8px 12px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);border-radius:9px;color:rgba(255,255,255,.8);font-size:13px;font-family:var(--ff);cursor:pointer;display:flex;align-items:center;gap:7px;transition:background .12s}
+.sb-new:hover{background:rgba(255,255,255,.12)}
+.sb-plus{width:15px;height:15px;background:rgba(255,255,255,.18);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0}
 .nav{padding:2px 8px;flex:1;overflow-y:auto}
 .nav::-webkit-scrollbar{width:3px}
-.nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:2px}
-.nav-lbl{font-size:9.5px;color:rgba(255,255,255,.25);letter-spacing:.1em;text-transform:uppercase;padding:9px 5px 4px;font-weight:600}
+.nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.07);border-radius:2px}
+.nl{font-size:9.5px;color:rgba(255,255,255,.25);letter-spacing:.1em;text-transform:uppercase;padding:9px 5px 4px;font-weight:600}
 .ni{display:flex;align-items:center;gap:7px;padding:7px 9px;border-radius:7px;color:rgba(255,255,255,.48);font-size:13px;cursor:pointer;transition:all .12s;margin-bottom:1px;user-select:none}
 .ni:hover{background:var(--sb2);color:rgba(255,255,255,.88)}
 .ni.on{background:var(--sb3);color:#fff}
-.ni.pni.on{background:#3a1208;color:#f4855a}
-.ni.pni:hover:not(.on){background:#2a0e05;color:#e8704a}
-.ni.dni.on{background:#0c2546;color:#6aacf0}
-.ni.dni:hover:not(.on){background:#091a33;color:#5a9ce0}
-.ni-ic{width:14px;height:14px;flex-shrink:0;opacity:.6}
-.ni-dot{width:6px;height:6px;border-radius:50%;background:var(--gr);flex-shrink:0}
-.ni-badge{margin-left:auto;font-size:9px;background:var(--gr);color:#fff;padding:2px 5px;border-radius:4px;font-weight:600}
+.ni.pni.on,.ni.pni:hover{background:#3a1208;color:#f4855a}
+.ni.dni.on,.ni.dni:hover{background:#0c2546;color:#6aacf0}
+.ni.oni.on,.ni.oni:hover{background:#3d2a00;color:#ffc44d}
+.nic{width:13px;height:13px;flex-shrink:0;opacity:.6}
+.ndot{width:6px;height:6px;border-radius:50%;background:var(--gr);flex-shrink:0}
+.nbadge{margin-left:auto;font-size:9px;background:var(--gr);color:#fff;padding:2px 5px;border-radius:4px;font-weight:600}
 .sb-ft{padding:8px 8px 12px;border-top:1px solid rgba(255,255,255,.05)}
-.ft-i{display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:7px;color:rgba(255,255,255,.28);font-size:11.5px;cursor:pointer;transition:all .12s}
-.ft-i:hover{background:rgba(255,255,255,.05);color:rgba(255,255,255,.6)}
+.fti{display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:7px;color:rgba(255,255,255,.28);font-size:11.5px;cursor:pointer;transition:all .12s}
+.fti:hover{background:rgba(255,255,255,.05);color:rgba(255,255,255,.6)}
 
-/* ──── MAIN ──── */
+/* MAIN */
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
 .topbar{height:48px;flex-shrink:0;display:flex;align-items:center;padding:0 16px;gap:8px;border-bottom:1px solid var(--bd)}
-.m-tag{font-size:11px;color:var(--tx2);background:var(--bg2);padding:3px 9px;border-radius:18px;border:1px solid var(--bd);font-family:var(--fm);display:flex;align-items:center;gap:4px;white-space:nowrap}
-.m-dot{width:5px;height:5px;border-radius:50%;background:var(--gr);flex-shrink:0}
-.m-pill{font-size:11px;font-weight:600;padding:3px 10px;border-radius:18px;display:none}
-.m-pill.on{display:block}
-.m-pill.p{background:var(--rdl);color:var(--rd)}
-.m-pill.d{background:var(--bll);color:var(--bl)}
+.mtag{font-size:11px;color:var(--tx2);background:var(--bg2);padding:3px 9px;border-radius:18px;border:1px solid var(--bd);font-family:var(--fm);display:flex;align-items:center;gap:4px;white-space:nowrap}
+.mdot{width:5px;height:5px;border-radius:50%;background:var(--gr);flex-shrink:0}
+.mpill{font-size:11px;font-weight:600;padding:3px 10px;border-radius:18px;display:none}
+.mpill.on{display:block}
+.mpill.p{background:var(--rdl);color:var(--rd)}
+.mpill.d{background:var(--bll);color:var(--bl)}
+.mpill.o{background:var(--orl);color:var(--or)}
 .stag{font-size:11px;color:var(--gr);background:var(--grl);padding:3px 9px;border-radius:18px;font-weight:500;display:none}
 .stag.on{display:block}
-.tb-r{margin-left:auto;display:flex;gap:5px}
+.tbr{margin-left:auto;display:flex;gap:5px}
 .icb{width:30px;height:30px;border-radius:7px;border:1px solid var(--bd);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--tx2);transition:background .12s}
 .icb:hover{background:var(--bg2)}
 
-/* ──── CHAT AREA ──── */
+/* CHAT AREA */
 .ca{flex:1;overflow-y:auto;display:flex;flex-direction:column;scroll-behavior:smooth}
 .ca::-webkit-scrollbar{width:3px}
 .ca::-webkit-scrollbar-thumb{background:rgba(0,0,0,.07);border-radius:2px}
@@ -76,22 +76,43 @@ body{display:flex}
 .wc.on{display:flex}
 .wc-logo{width:54px;height:54px;background:var(--gr);border-radius:16px;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
 .wc h1{font-size:22px;font-weight:600;letter-spacing:-.4px;margin-bottom:6px}
-.wc p{font-size:13.5px;color:var(--tx2);max-width:320px}
-.chips{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:16px;max-width:480px}
+.wc p{font-size:13.5px;color:var(--tx2);max-width:340px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:16px;max-width:500px}
 .chip{padding:6px 13px;border-radius:18px;border:1px solid var(--bd);background:var(--bg2);font-size:12.5px;color:var(--tx2);cursor:pointer;transition:all .12s;font-family:var(--ff)}
 .chip:hover{background:var(--grl);border-color:var(--gr);color:var(--gr)}
 .chip.rc:hover{background:var(--rdl);border-color:var(--rd);color:var(--rd)}
 .chip.bc:hover{background:var(--bll);border-color:var(--bl);color:var(--bl)}
+.chip.oc:hover{background:var(--orl);border-color:var(--or);color:var(--or)}
 /* Mode welcome */
-.mwc{flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;text-align:center}
+.mwc{flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px;text-align:center}
 .mwc.on{display:flex}
-.mwc-ic{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;font-size:26px}
-.mwc-ic.r{background:var(--rdl)}.mwc-ic.b{background:var(--bll)}
+.mwci{width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:24px}
+.mwci.r{background:var(--rdl)}.mwci.b{background:var(--bll)}.mwci.o{background:var(--orl)}
 .mwc h2{font-size:18px;font-weight:600;margin-bottom:6px}
-.mwc p{font-size:13.5px;color:var(--tx2);max-width:340px;line-height:1.65}
-.exs{display:flex;flex-direction:column;gap:6px;margin-top:16px;width:100%;max-width:380px}
+.mwc p{font-size:13.5px;color:var(--tx2);max-width:360px;line-height:1.65}
+.exs{display:flex;flex-direction:column;gap:6px;margin-top:14px;width:100%;max-width:400px}
 .ex{padding:9px 13px;border-radius:10px;border:1px solid var(--bd);background:var(--bg2);font-size:13px;color:var(--tx2);cursor:pointer;transition:all .12s;text-align:left}
 .ex:hover{background:#fff;border-color:var(--gr);color:var(--tx);transform:translateX(3px)}
+
+/* Custom panel */
+.custom-panel{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin-top:14px;width:100%;max-width:400px;text-align:left}
+.custom-panel h3{font-size:13px;font-weight:600;color:var(--tx);margin-bottom:10px}
+.cp-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.cp-row label{font-size:12px;color:var(--tx2);white-space:nowrap;min-width:100px}
+.cp-row select,.cp-row input[type=range]{flex:1}
+select{padding:4px 8px;border:1px solid var(--bd);border-radius:6px;font-family:var(--ff);font-size:12px;background:#fff;color:var(--tx);outline:none}
+input[type=range]{-webkit-appearance:none;height:4px;background:var(--bg3);border-radius:2px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--gr);cursor:pointer}
+.cp-val{font-size:12px;font-family:var(--fm);color:var(--gr);min-width:28px;text-align:right;font-weight:600}
+.cp-toggle{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.cp-toggle label{font-size:12px;color:var(--tx2)}
+.toggle{position:relative;display:inline-block;width:34px;height:18px}
+.toggle input{opacity:0;width:0;height:0}
+.slider-t{position:absolute;cursor:pointer;inset:0;background:var(--bg3);border-radius:18px;transition:.2s}
+.slider-t:before{content:'';position:absolute;width:14px;height:14px;left:2px;bottom:2px;background:#fff;border-radius:50%;transition:.2s}
+input:checked+.slider-t{background:var(--gr)}
+input:checked+.slider-t:before{transform:translateX(16px)}
+.cp-tip{font-size:11px;color:var(--tx3);margin-top:6px}
 
 /* Messages */
 .mw{padding:5px 16px;display:flex;flex-direction:column;max-width:780px;width:100%;margin:0 auto}
@@ -114,47 +135,49 @@ body{display:flex}
 .bub ul{padding-left:16px;margin:3px 0}.bub li{margin:2px 0}
 /* File card */
 .fc{padding:13px 14px;border-radius:13px;border:1px solid var(--bd);background:#fff;max-width:80%;min-width:250px;box-shadow:0 2px 12px rgba(0,0,0,.05)}
-.fc-h{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.fc-ic{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
-.fc-ic.r{background:var(--rdl)}.fc-ic.b{background:var(--bll)}
-.fc-nm{font-size:13px;font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
-.fc-mt{font-size:11px;color:var(--tx3);margin-top:2px}
-.dl-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;border-radius:9px;border:none;font-family:var(--ff);font-size:13px;font-weight:500;cursor:pointer;transition:opacity .12s;width:100%}
-.dl-btn.r{background:var(--rd);color:#fff}.dl-btn.b{background:var(--bl);color:#fff}
-.dl-btn:hover{opacity:.86}
+.fch{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.fcic{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.fcic.r{background:var(--rdl)}.fcic.b{background:var(--bll)}.fcic.o{background:var(--orl)}
+.fcnm{font-size:13px;font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.fcmt{font-size:11px;color:var(--tx3);margin-top:2px}
+.dlb{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;border-radius:9px;border:none;font-family:var(--ff);font-size:13px;font-weight:500;cursor:pointer;transition:opacity .12s;width:100%}
+.dlb.r{background:var(--rd);color:#fff}.dlb.b{background:var(--bl);color:#fff}.dlb.o{background:var(--or);color:#fff}
+.dlb:hover{opacity:.86}
 /* Progress */
-.pg{padding:12px 14px;border-radius:13px 13px 13px 3px;background:var(--bg2);border:1px solid var(--bd);max-width:80%;min-width:240px}
-.pg-lb{font-size:13px;color:var(--tx2);margin-bottom:8px}
-.pg-tr{height:3px;background:rgba(0,0,0,.07);border-radius:2px;overflow:hidden}
-.pg-fl{height:100%;background:var(--gr);border-radius:2px;transition:width .3s ease;width:0}
+.pg{padding:12px 14px;border-radius:13px 13px 13px 3px;background:var(--bg2);border:1px solid var(--bd);max-width:80%;min-width:260px}
+.pglb{font-size:13px;color:var(--tx2);margin-bottom:8px}
+.pgtr{height:3px;background:rgba(0,0,0,.07);border-radius:2px;overflow:hidden}
+.pgfl{height:100%;background:var(--gr);border-radius:2px;transition:width .3s ease;width:0}
 /* Typing */
 .typ{display:flex;align-items:center;gap:3px;padding:10px 13px;background:var(--bg2);border:1px solid var(--bd);border-radius:13px 13px 13px 3px;width:fit-content}
 .d{width:5px;height:5px;border-radius:50%;background:var(--gr);opacity:.28;animation:pu 1.1s infinite}
 .d:nth-child(2){animation-delay:.18s}.d:nth-child(3){animation-delay:.36s}
 @keyframes pu{0%,60%,100%{opacity:.22;transform:scale(.8)}30%{opacity:1;transform:scale(1)}}
 .err-bub{padding:10px 13px;border-radius:10px;background:#fff2f0;border:1px solid #ffccc7;color:#cf1322;font-size:13px;max-width:80%}
-.rt-btn{margin-left:8px;padding:2px 9px;border-radius:6px;border:1px solid #ffccc7;background:#fff;color:#cf1322;cursor:pointer;font-size:11.5px}
+.rtbtn{margin-left:8px;padding:2px 9px;border-radius:6px;border:1px solid #ffccc7;background:#fff;color:#cf1322;cursor:pointer;font-size:11.5px}
 
-/* ──── INPUT ──── */
+/* INPUT */
 .iz{flex-shrink:0;padding:11px 16px 15px;border-top:1px solid var(--bd)}
 .ib{max-width:780px;margin:0 auto;background:var(--bg2);border-radius:14px;border:1.5px solid var(--bd);transition:border-color .18s,background .18s;overflow:hidden}
 .ib:focus-within{border-color:rgba(15,157,110,.3);background:#fff}
 .ib.pm:focus-within{border-color:rgba(217,74,30,.3)}
 .ib.dm:focus-within{border-color:rgba(26,91,191,.3)}
+.ib.om:focus-within{border-color:rgba(192,122,0,.3)}
 .ir{display:flex;align-items:flex-end;gap:7px;padding:8px 11px}
 textarea{flex:1;border:none;background:transparent;resize:none;outline:none;font-family:var(--ff);font-size:14px;color:var(--tx);line-height:1.6;min-height:24px;max-height:140px;padding:0}
 textarea::placeholder{color:var(--tx3)}
-.snd-btn{width:32px;height:32px;border-radius:8px;border:none;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .12s;align-self:flex-end;margin-bottom:1px}
-.snd-btn:hover:not(:disabled){transform:scale(1.07)}
-.snd-btn:disabled{opacity:.3;cursor:not-allowed}
-.snd-btn.gc{background:#1a1a1a}.snd-btn.pc{background:var(--rd)}.snd-btn.dc{background:var(--bl)}
-.i-foot{display:flex;align-items:center;gap:5px;padding:0 11px 8px}
+.sndb{width:32px;height:32px;border-radius:8px;border:none;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .12s;align-self:flex-end;margin-bottom:1px}
+.sndb:hover:not(:disabled){transform:scale(1.07)}
+.sndb:disabled{opacity:.3;cursor:not-allowed}
+.sndb.gc{background:#1a1a1a}.sndb.pc{background:var(--rd)}.sndb.dc{background:var(--bl)}.sndb.oc{background:var(--or)}
+.ifoot{display:flex;align-items:center;gap:5px;padding:0 11px 8px}
 .tb{display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:16px;border:1px solid var(--bd);background:none;font-size:11px;color:var(--tx2);cursor:pointer;font-family:var(--ff);transition:all .12s}
 .tb:hover{background:var(--grl);border-color:var(--gr);color:var(--gr)}
-.tb.on.gc{background:var(--bg3);border-color:var(--bd2);color:#444;font-weight:600}
+.tb.on.gc{background:var(--bg3);border-color:rgba(0,0,0,.14);color:#444;font-weight:600}
 .tb.on.pc{background:var(--rdl);border-color:var(--rd);color:var(--rd);font-weight:600}
 .tb.on.dc{background:var(--bll);border-color:var(--bl);color:var(--bl);font-weight:600}
-.cc{margin-left:auto;font-size:11px;color:var(--tx3);font-family:var(--fm)}
+.tb.on.oc{background:var(--orl);border-color:var(--or);color:var(--or);font-weight:600}
+.cclb{margin-left:auto;font-size:11px;color:var(--tx3);font-family:var(--fm)}
 .ht{text-align:center;font-size:11px;color:var(--tx3);margin-top:6px;max-width:780px;margin-left:auto;margin-right:auto}
 /* Toast */
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:7px 16px;border-radius:16px;font-size:13px;z-index:9999;opacity:0;transition:opacity .18s;pointer-events:none;white-space:nowrap}
@@ -178,69 +201,76 @@ textarea::placeholder{color:var(--tx3)}
     <span class="logo-nm">PHUCRAM</span>
     <span class="logo-tag">AI</span>
   </div>
-
-  <button class="sb-newbtn" onclick="setMode('chat')">
+  <button class="sb-new" onclick="setMode('chat')">
     <div class="sb-plus">+</div> New Chat
   </button>
-
   <div class="nav">
-    <div class="nav-lbl">Features</div>
+    <div class="nl">Features</div>
     <div class="ni on" id="ni-chat" onclick="setMode('chat')">
-      <svg class="ni-ic" viewBox="0 0 16 16" fill="currentColor"><path d="M14 1H2a1 1 0 00-1 1v9a1 1 0 001 1h2v3l3-3h7a1 1 0 001-1V2a1 1 0 00-1-1z"/></svg>
+      <svg class="nic" viewBox="0 0 16 16" fill="currentColor"><path d="M14 1H2a1 1 0 00-1 1v9a1 1 0 001 1h2v3l3-3h7a1 1 0 001-1V2a1 1 0 00-1-1z"/></svg>
       Chat
     </div>
     <div class="ni pni" id="ni-ppt" onclick="setMode('ppt')">
-      <svg class="ni-ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4">
+      <svg class="nic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4">
         <rect x="1" y="2" width="14" height="9" rx="1"/>
         <line x1="8" y1="11" x2="8" y2="13.5"/>
         <line x1="5" y1="13.5" x2="11" y2="13.5"/>
       </svg>
       Slides (PPTX)
     </div>
+    <div class="ni pni" id="ni-img" onclick="setMode('img')">
+      <svg class="nic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4">
+        <rect x="1" y="2" width="14" height="9" rx="1"/>
+        <circle cx="5" cy="6" r="1.2" fill="currentColor" stroke="none"/>
+        <path d="M1 9l3-3 3 3 2-2 4 3"/>
+      </svg>
+      Slides + Ảnh
+    </div>
+    <div class="ni oni" id="ni-cus" onclick="setMode('cus')">
+      <svg class="nic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4">
+        <circle cx="8" cy="8" r="3"/>
+        <line x1="8" y1="1" x2="8" y2="3"/>
+        <line x1="8" y1="13" x2="8" y2="15"/>
+        <line x1="1" y1="8" x2="3" y2="8"/>
+        <line x1="13" y1="8" x2="15" y2="8"/>
+      </svg>
+      Tùy chỉnh Slide
+    </div>
     <div class="ni dni" id="ni-doc" onclick="setMode('doc')">
-      <svg class="ni-ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4">
+      <svg class="nic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4">
         <rect x="2" y="1" width="12" height="14" rx="1"/>
         <path d="M5 5h6M5 8h6M5 11h3"/>
       </svg>
       Docs (DOCX)
     </div>
-    <div class="ni">
-      <span class="ni-dot"></span>
-      Deep Research
-    </div>
-    <div class="ni">
-      <svg class="ni-ic" viewBox="0 0 16 16" fill="currentColor" opacity=".6"><circle cx="4" cy="8" r="2"/><circle cx="12" cy="4" r="2"/><circle cx="12" cy="12" r="2"/><path d="M6 7.5l4-2.5M6 8.5l4 2.5" stroke="currentColor" stroke-width="1"/></svg>
-      Agent Swarm
-      <span class="ni-badge">Beta</span>
-    </div>
-    <div class="nav-lbl" style="margin-top:10px">Lịch sử</div>
+    <div class="ni"><span class="ndot"></span> Agent Swarm <span class="nbadge">Beta</span></div>
+    <div class="nl" style="margin-top:10px">Lịch sử</div>
     <div id="hist"><div style="font-size:12px;color:rgba(255,255,255,.2);padding:5px 7px">Chưa có lịch sử</div></div>
   </div>
-
   <div class="sb-ft">
-    <div class="ft-i">
+    <div class="fti">
       <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="5.5" r="2.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M2 14c0-3 2.7-5 6-5s6 2 6 5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
       Đăng nhập
     </div>
-    <div class="ft-i">⚡ Pollinations AI · Miễn phí</div>
+    <div class="fti">⚡ Pollinations AI · Miễn phí</div>
   </div>
 </div>
 
 <!-- MAIN -->
 <div class="main">
   <div class="topbar">
-    <div class="m-tag"><div class="m-dot"></div><span id="m-lbl">Chat · openai</span></div>
-    <div class="m-pill" id="mpill"></div>
+    <div class="mtag"><div class="mdot"></div><span id="mlbl">Chat · openai</span></div>
+    <div class="mpill" id="mpill"></div>
     <div class="stag" id="stag">Đang xử lý...</div>
-    <div class="tb-r">
-      <button class="icb" title="Chat mới" onclick="setMode(curMode)">
+    <div class="tbr">
+      <button class="icb" onclick="setMode(curMode)">
         <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M14 1H2a1 1 0 00-1 1v9a1 1 0 001 1h2v3l3-3h7a1 1 0 001-1V2a1 1 0 00-1-1z"/></svg>
       </button>
     </div>
   </div>
 
   <div class="ca" id="ca">
-    <!-- Chat welcome -->
+    <!-- Chat -->
     <div class="wc on" id="wc-chat">
       <div class="wc-logo">
         <svg width="26" height="26" viewBox="0 0 16 16" fill="none">
@@ -252,21 +282,23 @@ textarea::placeholder{color:var(--tx3)}
         </svg>
       </div>
       <h1>Xin chào, tôi là PHUCRAM AI</h1>
-      <p>Trợ lý AI miễn phí — Chat thông minh, tạo Slide PowerPoint và tài liệu Word!</p>
+      <p>Trợ lý AI miễn phí — Chat, tạo PPTX, PPTX với ảnh, tùy chỉnh slide và DOCX!</p>
       <div class="chips">
         <div class="chip" onclick="chip(this)">✨ Giải thích AI đơn giản</div>
         <div class="chip" onclick="chip(this)">💻 Viết code Python</div>
         <div class="chip" onclick="chip(this)">✍️ Viết bài luận</div>
         <div class="chip" onclick="chip(this)">🧠 Brainstorm ý tưởng</div>
-        <div class="chip rc" onclick="setMode('ppt')">📊 Tạo PowerPoint</div>
+        <div class="chip rc" onclick="setMode('ppt')">📊 Slides PPTX</div>
+        <div class="chip rc" onclick="setMode('img')">🖼️ Slides + Ảnh</div>
+        <div class="chip oc" onclick="setMode('cus')">⚙️ Tùy chỉnh Slide</div>
         <div class="chip bc" onclick="setMode('doc')">📄 Tạo Word</div>
       </div>
     </div>
-    <!-- PPT welcome -->
+    <!-- PPT -->
     <div class="mwc" id="wc-ppt">
-      <div class="mwc-ic r">📊</div>
-      <h2>Tạo file PowerPoint</h2>
-      <p>Nhập chủ đề → AI soạn nội dung → tải file <strong>.pptx</strong> về máy!</p>
+      <div class="mwci r">📊</div>
+      <h2>Tạo Slide PowerPoint</h2>
+      <p>AI soạn nội dung → tải file <strong>.pptx</strong> về máy!</p>
       <div class="exs">
         <div class="ex" onclick="chip(this)">📌 8 slide về biến đổi khí hậu và giải pháp</div>
         <div class="ex" onclick="chip(this)">🚀 Slide giới thiệu startup AI, 6 trang</div>
@@ -274,11 +306,56 @@ textarea::placeholder{color:var(--tx3)}
         <div class="ex" onclick="chip(this)">🎓 Thuyết trình lịch sử Việt Nam, 7 slide</div>
       </div>
     </div>
-    <!-- DOC welcome -->
+    <!-- IMG -->
+    <div class="mwc" id="wc-img">
+      <div class="mwci r">🖼️</div>
+      <h2>Slides + Hình ảnh AI</h2>
+      <p>AI soạn nội dung + tự tạo hình ảnh minh họa đẹp → tải file <strong>.pptx</strong>!</p>
+      <div class="exs">
+        <div class="ex" onclick="chip(this)">🌍 8 slide về du lịch Việt Nam</div>
+        <div class="ex" onclick="chip(this)">🤖 Slide giới thiệu công nghệ AI, 6 trang</div>
+        <div class="ex" onclick="chip(this)">🌿 Bảo vệ môi trường, 7 slide có ảnh minh họa</div>
+        <div class="ex" onclick="chip(this)">🏙️ Phát triển đô thị thông minh, 5 slide</div>
+      </div>
+    </div>
+    <!-- CUSTOM -->
+    <div class="mwc" id="wc-cus">
+      <div class="mwci o">⚙️</div>
+      <h2>Tùy chỉnh Slide (1–100)</h2>
+      <p>Tự chọn số lượng slide, chủ đề màu, có/không có ảnh → AI tạo theo yêu cầu!</p>
+      <div class="custom-panel">
+        <h3>⚙️ Cài đặt Slide</h3>
+        <div class="cp-row">
+          <label>Số slide</label>
+          <input type="range" id="sl-count" min="1" max="100" value="8" oninput="document.getElementById('sl-val').textContent=this.value">
+          <span class="cp-val" id="sl-val">8</span>
+        </div>
+        <div class="cp-row">
+          <label>Màu theme</label>
+          <select id="sl-color">
+            <option value="blue">🔵 Blue (Chuyên nghiệp)</option>
+            <option value="green">🟢 Green (Tươi mát)</option>
+            <option value="dark">⚫ Dark (Hiện đại)</option>
+            <option value="red">🔴 Red (Năng động)</option>
+            <option value="purple">🟣 Purple (Sáng tạo)</option>
+          </select>
+        </div>
+        <div class="cp-toggle">
+          <label>Thêm hình ảnh AI</label>
+          <label class="toggle"><input type="checkbox" id="sl-img" checked><span class="slider-t"></span></label>
+        </div>
+        <div class="cp-toggle">
+          <label>Nội dung chi tiết</label>
+          <label class="toggle"><input type="checkbox" id="sl-detail"><span class="slider-t"></span></label>
+        </div>
+        <div class="cp-tip">💡 Nhập chủ đề vào ô chat bên dưới và nhấn gửi</div>
+      </div>
+    </div>
+    <!-- DOC -->
     <div class="mwc" id="wc-doc">
-      <div class="mwc-ic b">📄</div>
+      <div class="mwci b">📄</div>
       <h2>Tạo file Word</h2>
-      <p>Nhập yêu cầu → AI viết đầy đủ → tải file <strong>.docx</strong> về máy!</p>
+      <p>AI viết đầy đủ → tải file <strong>.docx</strong> về máy!</p>
       <div class="exs">
         <div class="ex" onclick="chip(this)">📝 Báo cáo thị trường AI Việt Nam 2025</div>
         <div class="ex" onclick="chip(this)">📋 Kế hoạch kinh doanh quán cà phê</div>
@@ -293,15 +370,17 @@ textarea::placeholder{color:var(--tx3)}
       <div class="ir">
         <textarea id="inp" placeholder="Nhắn tin với PHUCRAM AI..." rows="1"
           onkeydown="onK(event)" oninput="onI(this)"></textarea>
-        <button class="snd-btn gc" id="snd" onclick="go()" disabled>
+        <button class="sndb gc" id="snd" onclick="go()" disabled>
           <svg width="12" height="12" viewBox="0 0 16 16" fill="white"><path d="M8 1.5L14.5 8H10.5V14.5H5.5V8H1.5Z"/></svg>
         </button>
       </div>
-      <div class="i-foot">
+      <div class="ifoot">
         <button class="tb on gc" id="tb-chat" onclick="setMode('chat')">💬 Chat</button>
         <button class="tb" id="tb-ppt" onclick="setMode('ppt')">📊 Slides</button>
+        <button class="tb" id="tb-img" onclick="setMode('img')">🖼️ +Ảnh</button>
+        <button class="tb" id="tb-cus" onclick="setMode('cus')">⚙️ Tùy chỉnh</button>
         <button class="tb" id="tb-doc" onclick="setMode('doc')">📄 Docs</button>
-        <span class="cc" id="cc">0</span>
+        <span class="cclb" id="cclb">0</span>
       </div>
     </div>
     <div class="ht" id="ht">Enter gửi · Shift+Enter xuống dòng · Powered by Pollinations AI</div>
@@ -310,173 +389,152 @@ textarea::placeholder{color:var(--tx3)}
 <div class="toast" id="toast"></div>
 
 <script>
-/* ════════ PROMPTS ════════ */
+/* ═══ PROMPTS ═══ */
 const P_CHAT=`Bạn là PHUCRAM AI — thông minh, vui vẻ, thân thiện do Phúc tạo.
 LUÔN tiếng Việt. Xưng "mình", gọi "bạn". Trả lời mọi câu, ngắn gọn súc tích 😊`;
 
-const P_PPT=`You are a JSON generator. Output ONLY raw JSON, no markdown, no text before or after.
-JSON schema: {"title":"string","subtitle":"string","color":"blue","slides":[{"title":"string","points":["string","string","string"]}]}
-Rules: color must be one of: blue,green,dark,red,purple. Create 5-8 slides with 3-5 points each. All content in Vietnamese. Return JSON only, starting with { and ending with }.`;
+function P_PPT(n,detail){
+  return `You are a JSON generator. Output ONLY raw JSON starting with { ending with }, no markdown, no extra text.
+Schema: {"title":"string","subtitle":"string","color":"blue","slides":[{"title":"string","points":["string","string","string"]}]}
+Rules: color=blue|green|dark|red|purple. Create exactly ${n} slides with ${detail?'5-7':'3-5'} points each. All content in Vietnamese. Return JSON only.`;}
 
-const P_DOC=`You are a JSON generator. Output ONLY raw JSON, no markdown, no text before or after.
-JSON schema: {"title":"string","subtitle":"string","sections":[{"heading":"string","body":"string","items":["string","string"]}]}
-Rules: Create 4-7 sections. body is 2-3 Vietnamese sentences. items is a list (can be empty []). All content in Vietnamese. Return JSON only, starting with { and ending with }.`;
+function P_PPT_IMG(n,detail){
+  return `You are a JSON generator. Output ONLY raw JSON starting with { ending with }, no markdown, no extra text.
+Schema: {"title":"string","subtitle":"string","color":"blue","slides":[{"title":"string","points":["string","string"],"img":"english keywords for image"}]}
+Rules: color=blue|green|dark|red|purple. Create exactly ${n} slides with ${detail?'4-6':'3-4'} points. img=3-5 English words describing a beautiful illustration for the slide. All text in Vietnamese except img. Return JSON only.`;}
 
-/* ════════ STATE ════════ */
+const P_DOC=`You are a JSON generator. Output ONLY raw JSON starting with { ending with }, no markdown, no extra text.
+Schema: {"title":"string","subtitle":"string","sections":[{"heading":"string","body":"string","items":["string","string"]}]}
+Rules: 4-7 sections. body=2-3 Vietnamese sentences. items=bullets (can be []). All Vietnamese. Return JSON only.`;
+
+/* ═══ STATE ═══ */
 let hist=[],loading=false,cnt=0,curMode='chat';
 const ca=document.getElementById('ca'),
       inp=document.getElementById('inp'),
       snd=document.getElementById('snd'),
       stag=document.getElementById('stag'),
-      cc=document.getElementById('cc');
+      cclb=document.getElementById('cclb');
 
-/* ════════ MODE ════════ */
+/* ═══ MODE ═══ */
+const MODES=['chat','ppt','img','cus','doc'];
 function setMode(m){
   curMode=m; hist=[];
   ca.querySelectorAll('.mw').forEach(x=>x.remove());
-  ['chat','ppt','doc'].forEach(id=>{
-    document.getElementById('wc-'+id).classList.remove('on');
-    document.getElementById('tb-'+id).classList.remove('on','gc','pc','dc');
+  MODES.forEach(id=>{
+    document.getElementById('wc-'+id)?.classList.remove('on');
+    document.getElementById('tb-'+id)?.classList.remove('on','gc','pc','dc','oc');
     document.getElementById('ni-'+id)?.classList.remove('on');
   });
-  const pill=document.getElementById('mpill'),
-        lbl=document.getElementById('m-lbl'),
-        box=document.getElementById('ib'),
-        btn=snd,ht=document.getElementById('ht');
-  box.className='ib'; btn.className='snd-btn'; pill.className='m-pill';
+  const pill=document.getElementById('mpill'),lbl=document.getElementById('mlbl'),
+        box=document.getElementById('ib'),btn=snd,ht=document.getElementById('ht');
+  box.className='ib'; btn.className='sndb'; pill.className='mpill';
+
+  document.getElementById('wc-'+m).classList.add('on');
+  document.getElementById('ni-'+m)?.classList.add('on');
 
   if(m==='chat'){
-    document.getElementById('wc-chat').classList.add('on');
-    document.getElementById('ni-chat').classList.add('on');
-    document.getElementById('tb-chat').classList.add('on','gc');
-    lbl.textContent='Chat · openai'; btn.classList.add('gc');
+    document.getElementById('tb-chat').classList.add('on','gc'); btn.classList.add('gc');
+    lbl.textContent='Chat · openai';
     inp.placeholder='Nhắn tin với PHUCRAM AI...';
     ht.textContent='Enter gửi · Shift+Enter xuống dòng · Powered by Pollinations AI';
   } else if(m==='ppt'){
-    document.getElementById('wc-ppt').classList.add('on');
-    document.getElementById('ni-ppt').classList.add('on');
-    document.getElementById('tb-ppt').classList.add('on','pc');
-    pill.textContent='📊 Slides Mode'; pill.classList.add('on','p');
-    lbl.textContent='Slides · AI'; box.classList.add('pm'); btn.classList.add('pc');
-    inp.placeholder='Mô tả slide cần tạo... (VD: 6 slide marketing digital)';
-    ht.textContent='AI soạn nội dung → xuất file .pptx về máy';
-  } else {
-    document.getElementById('wc-doc').classList.add('on');
-    document.getElementById('ni-doc').classList.add('on');
-    document.getElementById('tb-doc').classList.add('on','dc');
-    pill.textContent='📄 Docs Mode'; pill.classList.add('on','d');
-    lbl.textContent='Docs · AI'; box.classList.add('dm'); btn.classList.add('dc');
-    inp.placeholder='Mô tả tài liệu cần tạo... (VD: báo cáo thị trường AI 2025)';
-    ht.textContent='AI viết nội dung → xuất file .docx về máy';
+    document.getElementById('tb-ppt').classList.add('on','pc'); btn.classList.add('pc');
+    pill.textContent='📊 Slides'; pill.classList.add('on','p');
+    lbl.textContent='Slides · AI'; box.classList.add('pm');
+    inp.placeholder='Nhập chủ đề slide... (VD: marketing digital, 6 slide)';
+    ht.textContent='AI soạn nội dung → xuất file .pptx';
+  } else if(m==='img'){
+    document.getElementById('tb-img').classList.add('on','pc'); btn.classList.add('pc');
+    pill.textContent='🖼️ Slides+Ảnh'; pill.classList.add('on','p');
+    lbl.textContent='Slides+Ảnh · AI'; box.classList.add('pm');
+    inp.placeholder='Nhập chủ đề slide có ảnh... (VD: du lịch Việt Nam, 6 slide)';
+    ht.textContent='AI soạn nội dung + tự tạo ảnh AI → xuất file .pptx';
+  } else if(m==='cus'){
+    document.getElementById('tb-cus').classList.add('on','oc'); btn.classList.add('oc');
+    pill.textContent='⚙️ Tùy chỉnh'; pill.classList.add('on','o');
+    lbl.textContent='Custom Slides · AI'; box.classList.add('om');
+    inp.placeholder='Nhập chủ đề... (số slide & màu đã cài ở trên)';
+    ht.textContent='Tùy chỉnh số slide 1-100 · chọn màu · bật/tắt ảnh';
+  } else if(m==='doc'){
+    document.getElementById('tb-doc').classList.add('on','dc'); btn.classList.add('dc');
+    pill.textContent='📄 Docs'; pill.classList.add('on','d');
+    lbl.textContent='Docs · AI'; box.classList.add('dm');
+    inp.placeholder='Nhập yêu cầu tài liệu... (VD: báo cáo thị trường AI)';
+    ht.textContent='AI viết nội dung → xuất file .docx';
   }
   inp.value=''; onI(inp);
 }
 
-/* ════════ HELPERS ════════ */
-function toast(msg,ms=2800){
-  const el=document.getElementById('toast');
-  el.textContent=msg; el.classList.add('on');
-  setTimeout(()=>el.classList.remove('on'),ms);
-}
+/* ═══ HELPERS ═══ */
+function toast(msg,ms=2800){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');setTimeout(()=>el.classList.remove('on'),ms);}
 function xe(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function md(t){
-  return t
-    .replace(/```(\w*)\n([\s\S]*?)```/g,(_,l,c)=>`<pre><code>${esc(c.trim())}</code></pre>`)
-    .replace(/`([^`\n]+)`/g,'<code>$1</code>')
-    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+  return t.replace(/```(\w*)\n([\s\S]*?)```/g,(_,l,c)=>`<pre><code>${esc(c.trim())}</code></pre>`)
+    .replace(/`([^`\n]+)`/g,'<code>$1</code>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>')
     .replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>')
-    .replace(/^[-*] (.+)$/gm,'<li>$1</li>')
-    .replace(/(<li>[\s\S]*?<\/li>(\n|$))+/g,m=>`<ul>${m}</ul>`)
-    .replace(/\n/g,'<br>');
-}
+    .replace(/^[-*] (.+)$/gm,'<li>$1</li>').replace(/(<li>[\s\S]*?<\/li>(\n|$))+/g,m=>`<ul>${m}</ul>`).replace(/\n/g,'<br>');}
 function scr(){ca.scrollTo({top:ca.scrollHeight,behavior:'smooth'})}
-function onI(el){
-  el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,140)+'px';
-  cc.textContent=el.value.length; snd.disabled=!el.value.trim()||loading;
-}
+function onI(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,140)+'px';cclb.textContent=el.value.length;snd.disabled=!el.value.trim()||loading;}
 function onK(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(!snd.disabled)go()}}
-function chip(el){const t=el.textContent.replace(/^.{2} /,'');inp.value=t;onI(inp);go()}
-function hideWelcome(){
-  ['chat','ppt','doc'].forEach(id=>document.getElementById('wc-'+id).classList.remove('on'));
-}
+function chip(el){const t=el.textContent.replace(/^.{2} /,'');inp.value=t;onI(inp);go();}
+function hideWc(){MODES.forEach(id=>document.getElementById('wc-'+id)?.classList.remove('on'));}
 function mkRow(role){
-  const w=document.createElement('div'); w.className=`mw ${role==='user'?'u':'a'}`;
-  const m=document.createElement('div'); m.className='mm';
-  const av=document.createElement('div'); av.className=`av ${role==='user'?'ua':'aa'}`; av.textContent=role==='user'?'U':'P';
-  const nm=document.createElement('span'); nm.className='mn'; nm.textContent=role==='user'?'Bạn':'PHUCRAM AI';
+  const w=document.createElement('div');w.className=`mw ${role==='user'?'u':'a'}`;
+  const m=document.createElement('div');m.className='mm';
+  const av=document.createElement('div');av.className=`av ${role==='user'?'ua':'aa'}`;av.textContent=role==='user'?'U':'P';
+  const nm=document.createElement('span');nm.className='mn';nm.textContent=role==='user'?'Bạn':'PHUCRAM AI';
   if(role==='user'){m.appendChild(nm);m.appendChild(av);}else{m.appendChild(av);m.appendChild(nm);}
-  w.appendChild(m); return w;
+  w.appendChild(m);return w;
 }
 function addMsg(role,html,typing=false){
-  hideWelcome();
-  const w=mkRow(role),c=document.createElement('div');
+  hideWc();const w=mkRow(role),c=document.createElement('div');
   if(typing){c.className='typ';c.innerHTML='<div class="d"></div><div class="d"></div><div class="d"></div>';}
   else{c.className=`bub ${role==='user'?'u':'a'}`;c.innerHTML=html;}
   w.appendChild(c);ca.appendChild(w);scr();return c;
 }
 function addProg(lb){
-  hideWelcome();
-  const w=mkRow('ai'),pb=document.createElement('div'); pb.className='pg';
-  pb.innerHTML=`<div class="pg-lb" id="pglb">${lb}</div><div class="pg-tr"><div class="pg-fl" id="pgfl"></div></div>`;
+  hideWc();const w=mkRow('ai'),pb=document.createElement('div');pb.className='pg';
+  pb.innerHTML=`<div class="pglb" id="pglb">${lb}</div><div class="pgtr"><div class="pgfl" id="pgfl"></div></div>`;
   w.appendChild(pb);ca.appendChild(w);scr();return w;
 }
 function setProg(pct,lb=''){
   const fl=document.getElementById('pgfl');if(fl)fl.style.width=pct+'%';
-  const lbEl=document.getElementById('pglb');if(lbEl&&lb)lbEl.textContent=lb;
+  const el=document.getElementById('pglb');if(el&&lb)el.textContent=lb;
 }
 function addCard(type,fname,blob){
-  hideWelcome();
-  const w=mkRow('ai'),fc=document.createElement('div'); fc.className='fc';
-  const h=document.createElement('div'); h.className='fc-h';
-  const ic=document.createElement('div'); ic.className=`fc-ic ${type==='ppt'?'r':'b'}`;
-  ic.textContent=type==='ppt'?'📊':'📄';
+  hideWc();const w=mkRow('ai'),fc=document.createElement('div');fc.className='fc';
+  const h=document.createElement('div');h.className='fch';
+  const ic=document.createElement('div');ic.className=`fcic ${type}`;
+  ic.textContent=type==='r'?'📊':type==='o'?'⚙️':'📄';
   const inf=document.createElement('div');
-  inf.innerHTML=`<div class="fc-nm">${fname}</div><div class="fc-mt">${type==='ppt'?'PowerPoint Presentation':'Word Document'} · Sẵn sàng tải về</div>`;
+  inf.innerHTML=`<div class="fcnm">${fname}</div><div class="fcmt">${type!=='b'?'PowerPoint Presentation':'Word Document'} · Sẵn sàng tải về</div>`;
   h.appendChild(ic);h.appendChild(inf);
   const btn=document.createElement('button');
-  btn.className=`dl-btn ${type==='ppt'?'r':'b'}`;
-  btn.innerHTML=`⬇ Tải về ${fname}`;
-  btn.onclick=()=>{
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);a.download=fname;a.click();
-    setTimeout(()=>URL.revokeObjectURL(a.href),60000);
-    toast('🎉 Đang tải file về máy!');
-  };
+  btn.className=`dlb ${type}`;btn.innerHTML=`⬇ Tải về ${fname}`;
+  btn.onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),60000);toast('🎉 Đang tải file về máy!');};
   fc.appendChild(h);fc.appendChild(btn);w.appendChild(fc);ca.appendChild(w);scr();
 }
-function addHist(msg,type){
-  cnt++;
-  const list=document.getElementById('hist');
+function addHist(msg,icon){
+  cnt++;const list=document.getElementById('hist');
   if(cnt===1)list.innerHTML='';
-  const el=document.createElement('div'); el.className='ni';
-  const ic=type==='ppt'?'📊':type==='doc'?'📄':'💬';
+  const el=document.createElement('div');el.className='ni';
   const lb=msg.length>25?msg.slice(0,25)+'…':msg;
-  el.innerHTML=`<span style="font-size:11px">${ic}</span> ${esc(lb)}`;
+  el.innerHTML=`<span style="font-size:11px">${icon}</span> ${esc(lb)}`;
   list.insertBefore(el,list.firstChild);
 }
 
-/* ════════ AI CALL ════════ */
+/* ═══ AI CALL ═══ */
 async function callAI(msg,sys,useHist=true){
-  const messages=[{role:'system',content:sys},
-    ...(useHist?hist.slice(-4):[]),
-    {role:'user',content:msg}];
+  const messages=[{role:'system',content:sys},...(useHist?hist.slice(-4):[]),{role:'user',content:msg}];
   const seed=Math.random()*99999|0;
   return Promise.any([
-    fetch('https://text.pollinations.ai/openai',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'openai',messages,seed})
-    }).then(r=>{if(!r.ok)throw 0;return r.json();})
-      .then(d=>{const t=d?.choices?.[0]?.message?.content?.trim();if(!t)throw 0;return t;}),
+    fetch('https://text.pollinations.ai/openai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'openai',messages,seed})})
+      .then(r=>{if(!r.ok)throw 0;return r.json();}).then(d=>{const t=d?.choices?.[0]?.message?.content?.trim();if(!t)throw 0;return t;}),
     fetch(`https://text.pollinations.ai/${encodeURIComponent(msg)}?model=openai&seed=${seed}&system=${encodeURIComponent(sys)}`)
-      .then(r=>{if(!r.ok)throw 0;return r.text();})
-      .then(t=>{if(!t||t.length<5)throw 0;return t.trim();}),
-    fetch('https://corsproxy.io/?'+encodeURIComponent('https://text.pollinations.ai/openai'),{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'openai',messages,seed})
-    }).then(r=>{if(!r.ok)throw 0;return r.json();})
-      .then(d=>{const t=d?.choices?.[0]?.message?.content?.trim();if(!t)throw 0;return t;})
+      .then(r=>{if(!r.ok)throw 0;return r.text();}).then(t=>{if(!t||t.length<5)throw 0;return t.trim();}),
+    fetch('https://corsproxy.io/?'+encodeURIComponent('https://text.pollinations.ai/openai'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'openai',messages,seed})})
+      .then(r=>{if(!r.ok)throw 0;return r.json();}).then(d=>{const t=d?.choices?.[0]?.message?.content?.trim();if(!t)throw 0;return t;})
   ]);
 }
 
@@ -484,406 +542,443 @@ function parseJSON(raw){
   let s=raw.replace(/```json/gi,'').replace(/```/g,'').trim();
   const a=s.indexOf('{'),b=s.lastIndexOf('}');
   if(a!==-1&&b>a){try{return JSON.parse(s.slice(a,b+1));}catch{}}
-  try{return JSON.parse(s);}catch{}
-  return null;
+  try{return JSON.parse(s);}catch{}return null;
 }
-
 async function callJSON(prompt,sys,check){
   for(let i=1;i<=4;i++){
     try{
-      const extra=i===1?'':i===2?'\n\nReturn ONLY JSON.':i===3?'\n\nJSON only! No other text.':'\n\nSTRICTLY output JSON only.';
+      const extra=i===1?'':i===2?'\n\nReturn ONLY JSON.':i===3?'\n\nJSON only, no explanation.':'\n\nSTRICTLY output JSON only starting with {';
       const raw=await callAI(prompt+extra,sys,false);
-      const d=parseJSON(raw);
-      if(d&&check(d))return d;
+      const d=parseJSON(raw);if(d&&check(d))return d;
     }catch{}
-    if(i<4)await new Promise(r=>setTimeout(r,600));
+    if(i<4)await new Promise(r=>setTimeout(r,700));
   }
   return null;
 }
 
-/* ════════ PPTX BUILDER (via JSZip, không cần pptxgenjs) ════════ */
+/* ═══ IMAGE FETCH ═══ */
+async function fetchImgB64(query){
+  try{
+    const seed=Math.random()*9999|0;
+    const q=encodeURIComponent(query+', vibrant professional illustration, clean background');
+    const url=`https://image.pollinations.ai/prompt/${q}?width=768&height=432&nologo=true&seed=${seed}`;
+    const ctrl=new AbortController();
+    const timer=setTimeout(()=>ctrl.abort(),18000);
+    const res=await fetch(url,{signal:ctrl.signal});
+    clearTimeout(timer);
+    if(!res.ok)return null;
+    const blob=await res.blob();
+    return new Promise(ok=>{
+      const r=new FileReader();
+      r.onload=()=>ok(r.result);
+      r.onerror=()=>ok(null);
+      r.readAsDataURL(blob);
+    });
+  }catch{return null;}
+}
+
+// b64 data URL → Uint8Array raw bytes
+function b64ToBytes(dataUrl){
+  const b64=dataUrl.split(',')[1];
+  const raw=atob(b64);
+  const arr=new Uint8Array(raw.length);
+  for(let i=0;i<raw.length;i++)arr[i]=raw.charCodeAt(i);
+  return arr;
+}
+
+/* ═══ PPTX THEMES ═══ */
 const TH={
-  blue: {bg:'1a3a5c',acc:'3d9be9',txt:'ffffff',body:'e8f4ff',ct:'1a3a5c'},
-  green:{bg:'1a3d2b',acc:'2dba6e',txt:'ffffff',body:'e8fff4',ct:'1a3d2b'},
-  dark: {bg:'0d1117',acc:'58a6ff',txt:'f0f6ff',body:'1f2937',ct:'c8d8f0'},
+  blue: {bg:'1a3a5c',acc:'3d9be9',txt:'ffffff',body:'eef5ff',ct:'1a3a5c'},
+  green:{bg:'1a3d2b',acc:'2dba6e',txt:'ffffff',body:'edfff6',ct:'1a3d2b'},
+  dark: {bg:'0d1117',acc:'58a6ff',txt:'f0f6ff',body:'161b22',ct:'d0e0f0'},
   red:  {bg:'5c1a1a',acc:'e84444',txt:'ffffff',body:'fff0f0',ct:'5c1a1a'},
-  purple:{bg:'2d1b5e',acc:'a855f7',txt:'ffffff',body:'faf5ff',ct:'2d1b5e'},
+  purple:{bg:'2d1b5e',acc:'a855f7',txt:'ffffff',body:'f5f0ff',ct:'2d1b5e'},
 };
 
-function pptXml_contentTypes(n){
+/* ═══ PPTX XML BUILDERS ═══ */
+function pptNS(){return `xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"`;}
+
+function makeContentTypes(n,hasImgs){
   const slides=Array.from({length:n},(_,i)=>`<Override PartName="/ppt/slides/slide${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slide+xml"/>`).join('');
+  const imgTypes=hasImgs?`<Default Extension="jpg" ContentType="image/jpeg"/><Default Extension="jpeg" ContentType="image/jpeg"/><Default Extension="png" ContentType="image/png"/>`:'';
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
 <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
 <Default Extension="xml" ContentType="application/xml"/>
+${imgTypes}
 <Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/>
 <Override PartName="/ppt/slideMasters/slideMaster1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slideMaster+xml"/>
 <Override PartName="/ppt/slideLayouts/slideLayout1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slideLayout+xml"/>
 <Override PartName="/ppt/theme/theme1.xml" ContentType="application/vnd.openxmlformats-officedocument.theme+xml"/>
-${slides}</Types>`;
-}
+${slides}</Types>`;}
 
-function pptXml_rootRels(){
+function makePresRels(n){
+  const items=Array.from({length:n},(_,i)=>`<Relationship Id="rId${i+2}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="slides/slide${i+1}.xml"/>`).join('');
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="ppt/presentation.xml"/>
-</Relationships>`;
-}
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideMaster" Target="slideMasters/slideMaster1.xml"/>
+${items}</Relationships>`;}
 
-function pptXml_presentation(n){
+function makePres(n){
   const ids=Array.from({length:n},(_,i)=>`<p:sldId id="${256+i}" r:id="rId${i+2}"/>`).join('');
-  const rels=Array.from({length:n},(_,i)=>`<Relationship Id="rId${i+2}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="slides/slide${i+1}.xml"/>`).join('');
-  return {
-    pres:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<p:presentation ${pptNS()}>
 <p:sldMasterIdLst><p:sldMasterId id="2147483648" r:id="rId1"/></p:sldMasterIdLst>
 <p:sldIdLst>${ids}</p:sldIdLst>
 <p:sldSz cx="9144000" cy="5143500"/>
 <p:notesSz cx="6858000" cy="9144000"/>
-</p:presentation>`,
-    rels:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideMaster" Target="slideMasters/slideMaster1.xml"/>
-${rels}</Relationships>`
-  };
-}
+</p:presentation>`;}
 
-function pptXml_theme(){
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="Office Theme">
-<a:themeElements>
-<a:clrScheme name="Office">
-<a:dk1><a:sysClr lastClr="000000" val="windowText"/></a:dk1>
-<a:lt1><a:sysClr lastClr="ffffff" val="window"/></a:lt1>
-<a:dk2><a:srgbClr val="1F3864"/></a:dk2>
-<a:lt2><a:srgbClr val="E7E6E6"/></a:lt2>
-<a:accent1><a:srgbClr val="4472C4"/></a:accent1>
-<a:accent2><a:srgbClr val="ED7D31"/></a:accent2>
-<a:accent3><a:srgbClr val="A9D18E"/></a:accent3>
-<a:accent4><a:srgbClr val="FFC000"/></a:accent4>
-<a:accent5><a:srgbClr val="5B9BD5"/></a:accent5>
-<a:accent6><a:srgbClr val="70AD47"/></a:accent6>
-<a:hlink><a:srgbClr val="0563C1"/></a:hlink>
-<a:folHlink><a:srgbClr val="954F72"/></a:folHlink>
-</a:clrScheme>
-<a:fontScheme name="Office">
-<a:majorFont><a:latin typeface="Calibri Light"/><a:ea typeface=""/><a:cs typeface=""/></a:majorFont>
-<a:minorFont><a:latin typeface="Calibri"/><a:ea typeface=""/><a:cs typeface=""/></a:minorFont>
-</a:fontScheme>
-<a:fmtScheme name="Office">
-<a:fillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:gradFill rotWithShape="1"><a:gsLst><a:gs pos="0"><a:schemeClr val="phClr"><a:tint val="67000"/></a:schemeClr></a:gs><a:gs pos="100000"><a:schemeClr val="phClr"><a:shade val="67000"/></a:schemeClr></a:gs></a:gsLst><a:lin ang="5400000" scaled="1"/></a:gradFill><a:gradFill rotWithShape="1"><a:gsLst><a:gs pos="0"><a:schemeClr val="phClr"><a:tint val="94000"/></a:schemeClr></a:gs><a:gs pos="100000"><a:schemeClr val="phClr"><a:shade val="78000"/></a:schemeClr></a:gs></a:gsLst><a:lin ang="5400000" scaled="0"/></a:gradFill></a:fillStyleLst>
-<a:lnStyleLst><a:ln w="6350" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:prstDash val="solid"/></a:ln><a:ln w="12700"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:prstDash val="solid"/></a:ln><a:ln w="19050"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:prstDash val="solid"/></a:ln></a:lnStyleLst>
-<a:effectStyleLst><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst><a:outerShdw blurRad="57150" dist="19050" dir="5400000" algn="ctr" rotWithShape="0"><a:srgbClr val="000000"><a:alpha val="63000"/></a:srgbClr></a:outerShdw></a:effectLst></a:effectStyle></a:effectStyleLst>
-<a:bgFillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"><a:tint val="95000"/></a:schemeClr></a:solidFill><a:gradFill rotWithShape="1"><a:gsLst><a:gs pos="0"><a:schemeClr val="phClr"><a:tint val="93000"/></a:schemeClr></a:gs><a:gs pos="100000"><a:schemeClr val="phClr"><a:shade val="63000"/></a:schemeClr></a:gs></a:gsLst><a:lin ang="5400000" scaled="0"/></a:gradFill></a:bgFillStyleLst>
-</a:fmtScheme>
-</a:themeElements>
-</a:theme>`;
-}
+function makeTheme(){return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="Ph"><a:themeElements>
+<a:clrScheme name="Ph"><a:dk1><a:sysClr lastClr="000000" val="windowText"/></a:dk1><a:lt1><a:sysClr lastClr="ffffff" val="window"/></a:lt1><a:dk2><a:srgbClr val="1F3864"/></a:dk2><a:lt2><a:srgbClr val="E7E6E6"/></a:lt2><a:accent1><a:srgbClr val="4472C4"/></a:accent1><a:accent2><a:srgbClr val="ED7D31"/></a:accent2><a:accent3><a:srgbClr val="A9D18E"/></a:accent3><a:accent4><a:srgbClr val="FFC000"/></a:accent4><a:accent5><a:srgbClr val="5B9BD5"/></a:accent5><a:accent6><a:srgbClr val="70AD47"/></a:accent6><a:hlink><a:srgbClr val="0563C1"/></a:hlink><a:folHlink><a:srgbClr val="954F72"/></a:folHlink></a:clrScheme>
+<a:fontScheme name="Ph"><a:majorFont><a:latin typeface="Arial"/><a:ea typeface=""/><a:cs typeface=""/></a:majorFont><a:minorFont><a:latin typeface="Arial"/><a:ea typeface=""/><a:cs typeface=""/></a:minorFont></a:fontScheme>
+<a:fmtScheme name="Ph"><a:fillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:fillStyleLst><a:lnStyleLst><a:ln w="6350"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:ln><a:ln w="12700"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:ln><a:ln w="19050"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:ln></a:lnStyleLst><a:effectStyleLst><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst/></a:effectStyle></a:effectStyleLst><a:bgFillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:bgFillStyleLst></a:fmtScheme>
+</a:themeElements></a:theme>`;}
 
-function pptXml_slideMaster(){
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<p:sldMaster xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-<p:cSld><p:spTree>
-<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>
-<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>
-</p:spTree></p:cSld>
-<p:clrMap bg1="lt1" tx1="dk1" bg2="lt2" tx2="dk2" accent1="accent1" accent2="accent2" accent3="accent3" accent4="accent4" accent5="accent5" accent6="accent6" hlink="hlink" folHlink="folHlink"/>
-<p:sldLayoutIdLst><p:sldLayoutId id="2147483649" r:id="rId1"/></p:sldLayoutIdLst>
-<p:txStyles>
-<p:titleStyle><a:lvl1pPr algn="ctr"><a:defRPr sz="4400" b="1"><a:solidFill><a:schemeClr val="lt1"/></a:solidFill></a:defRPr></a:lvl1pPr></p:titleStyle>
-<p:bodyStyle><a:lvl1pPr marL="457200" indent="-457200"><a:buChar char="&#x2022;"/><a:defRPr sz="2400"><a:solidFill><a:schemeClr val="lt1"/></a:solidFill></a:defRPr></a:lvl1pPr></p:bodyStyle>
-<p:otherStyle><a:defPPr><a:defRPr lang="vi-VN"/></a:defPPr></p:otherStyle>
-</p:txStyles>
-</p:sldMaster>`;
-}
+function makeSlideMaster(){return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<p:sldMaster ${pptNS()}><p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr></p:spTree></p:cSld><p:clrMap bg1="lt1" tx1="dk1" bg2="lt2" tx2="dk2" accent1="accent1" accent2="accent2" accent3="accent3" accent4="accent4" accent5="accent5" accent6="accent6" hlink="hlink" folHlink="folHlink"/><p:sldLayoutIdLst><p:sldLayoutId id="2147483649" r:id="rId1"/></p:sldLayoutIdLst><p:txStyles><p:titleStyle><a:lvl1pPr><a:defRPr sz="3600" b="1"/></a:lvl1pPr></p:titleStyle><p:bodyStyle><a:lvl1pPr><a:defRPr sz="2400"/></a:lvl1pPr></p:bodyStyle><p:otherStyle><a:defPPr><a:defRPr/></a:defPPr></p:otherStyle></p:txStyles></p:sldMaster>`;}
 
-function pptXml_slideLayout(){
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<p:sldLayout xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" type="blank">
-<p:cSld name="Blank"><p:spTree>
-<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>
-<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>
-</p:spTree></p:cSld>
-<p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr>
-</p:sldLayout>`;
-}
-
-function pptXml_slideRels(){
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout1.xml"/>
-</Relationships>`;
-}
-
-function pptShape(id,name,x,y,w,h,xml){
-  return `<p:sp>
-<p:nvSpPr><p:cNvPr id="${id}" name="${name}"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
-<p:spPr><a:xfrm><a:off x="${x}" y="${y}"/><a:ext cx="${w}" cy="${h}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom>${xml}</p:spPr>`;
-}
-
-function pptTitleSlide(title,subtitle,cl){
-  const ns=`xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"`;
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<p:sld ${ns}>
-<p:cSld><p:bg><p:bgPr><a:solidFill><a:srgbClr val="${cl.bg}"/></a:solidFill><a:effectLst/></p:bgPr></p:bg>
-<p:spTree>
-<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>
-<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>
-<!-- top accent bar -->
-<p:sp><p:nvSpPr><p:cNvPr id="2" name="bar"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
-<p:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="9144000" cy="60000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val="${cl.acc}"/></a:solidFill></p:spPr>
-<p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>
-<!-- title -->
-<p:sp><p:nvSpPr><p:cNvPr id="3" name="title"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
-<p:spPr><a:xfrm><a:off x="457200" y="1200000"/><a:ext cx="8229600" cy="1800000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>
-<p:txBody><a:bodyPr anchor="ctr"/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="vi-VN" sz="4000" b="1" dirty="0"><a:solidFill><a:srgbClr val="${cl.txt}"/></a:solidFill><a:latin typeface="Arial"/></a:rPr><a:t>${xe(title)}</a:t></a:r></a:p></p:txBody></p:sp>
-<!-- subtitle -->
-<p:sp><p:nvSpPr><p:cNvPr id="4" name="sub"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
-<p:spPr><a:xfrm><a:off x="457200" y="3160000"/><a:ext cx="8229600" cy="700000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>
-<p:txBody><a:bodyPr/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="vi-VN" sz="2200" i="1" dirty="0"><a:solidFill><a:srgbClr val="${cl.acc}"/></a:solidFill><a:latin typeface="Arial"/></a:rPr><a:t>${xe(subtitle||'')}</a:t></a:r></a:p></p:txBody></p:sp>
-<!-- creator -->
-<p:sp><p:nvSpPr><p:cNvPr id="5" name="cr"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
-<p:spPr><a:xfrm><a:off x="457200" y="4600000"/><a:ext cx="8229600" cy="300000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>
-<p:txBody><a:bodyPr/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="vi-VN" sz="1200" dirty="0"><a:solidFill><a:srgbClr val="${cl.acc}"/></a:solidFill><a:latin typeface="Arial"/></a:rPr><a:t>PHUCRAM AI</a:t></a:r></a:p></p:txBody></p:sp>
-</p:spTree></p:cSld>
-<p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr>
-</p:sld>`;
-}
-
-function pptContentSlide(slideTitle,points,cl,idx,total){
-  const ns=`xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"`;
-  const bullets=(points||[]).map(pt=>`<a:p>
-<a:pPr marL="342900" indent="-342900"><a:buClr><a:srgbClr val="${cl.acc}"/></a:buClr><a:buFont typeface="Arial"/><a:buChar char="&#x2022;"/></a:pPr>
-<a:r><a:rPr lang="vi-VN" sz="1800" dirty="0"><a:solidFill><a:srgbClr val="${cl.ct}"/></a:solidFill><a:latin typeface="Arial"/></a:rPr><a:t>${xe(pt)}</a:t></a:r></a:p>`).join('');
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<p:sld ${ns}>
-<p:cSld><p:bg><p:bgPr><a:solidFill><a:srgbClr val="${cl.body}"/></a:solidFill><a:effectLst/></p:bgPr></p:bg>
-<p:spTree>
-<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>
-<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>
-<!-- header bg -->
-<p:sp><p:nvSpPr><p:cNvPr id="2" name="hbg"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
-<p:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="9144000" cy="686000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val="${cl.bg}"/></a:solidFill></p:spPr>
-<p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>
-<!-- accent line -->
-<p:sp><p:nvSpPr><p:cNvPr id="3" name="aln"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
-<p:spPr><a:xfrm><a:off x="0" y="686000"/><a:ext cx="9144000" cy="30000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val="${cl.acc}"/></a:solidFill></p:spPr>
-<p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>
-<!-- slide number -->
-<p:sp><p:nvSpPr><p:cNvPr id="4" name="num"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
-<p:spPr><a:xfrm><a:off x="8200000" y="100000"/><a:ext cx="700000" cy="480000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>
-<p:txBody><a:bodyPr anchor="ctr"/><a:lstStyle/><a:p><a:pPr algn="r"/><a:r><a:rPr lang="vi-VN" sz="1100" dirty="0"><a:solidFill><a:srgbClr val="${cl.acc}"/></a:solidFill><a:latin typeface="Arial"/></a:rPr><a:t>${idx}/${total}</a:t></a:r></a:p></p:txBody></p:sp>
-<!-- slide title -->
-<p:sp><p:nvSpPr><p:cNvPr id="5" name="stitle"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
-<p:spPr><a:xfrm><a:off x="320000" y="100000"/><a:ext cx="7800000" cy="490000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>
-<p:txBody><a:bodyPr anchor="ctr"/><a:lstStyle/><a:p><a:r><a:rPr lang="vi-VN" sz="2000" b="1" dirty="0"><a:solidFill><a:srgbClr val="${cl.txt}"/></a:solidFill><a:latin typeface="Arial"/></a:rPr><a:t>${xe(slideTitle)}</a:t></a:r></a:p></p:txBody></p:sp>
-<!-- content -->
-<p:sp><p:nvSpPr><p:cNvPr id="6" name="content"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
-<p:spPr><a:xfrm><a:off x="457200" y="800000"/><a:ext cx="8229600" cy="4200000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>
-<p:txBody><a:bodyPr/><a:lstStyle/>${bullets}</p:txBody></p:sp>
-</p:spTree></p:cSld>
-<p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr>
-</p:sld>`;
-}
-
-async function buildPPTX(data){
-  if(typeof JSZip==='undefined')throw new Error('JSZip chưa tải!');
-  const cl=TH[data.color]||TH.blue;
-  const allSlides=[
-    pptTitleSlide(data.title,data.subtitle,cl),
-    ...(data.slides||[]).map((s,i)=>pptContentSlide(s.title,s.points,cl,i+1,data.slides.length))
-  ];
-  const total=allSlides.length;
-  const zip=new JSZip();
-  zip.file('[Content_Types].xml',pptXml_contentTypes(total));
-  zip.file('_rels/.rels',pptXml_rootRels());
-  const {pres,rels}=pptXml_presentation(total);
-  zip.file('ppt/presentation.xml',pres);
-  zip.file('ppt/_rels/presentation.xml.rels',rels);
-  zip.file('ppt/theme/theme1.xml',pptXml_theme());
-  zip.file('ppt/slideMasters/slideMaster1.xml',pptXml_slideMaster());
-  zip.file('ppt/slideMasters/_rels/slideMaster1.xml.rels',
-    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+function makeSlideMasterRels(){return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
 <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout1.xml"/>
 <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="../theme/theme1.xml"/>
-</Relationships>`);
-  zip.file('ppt/slideLayouts/slideLayout1.xml',pptXml_slideLayout());
-  zip.file('ppt/slideLayouts/_rels/slideLayout1.xml.rels',
-    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+</Relationships>`;}
+
+function makeSlideLayout(){return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<p:sldLayout ${pptNS()} type="blank"><p:cSld name="Blank"><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr></p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sldLayout>`;}
+
+function makeSlideLayoutRels(){return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
 <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideMaster" Target="../slideMasters/slideMaster1.xml"/>
+</Relationships>`;}
+
+function makeSlideRels(hasImg){
+  const imgRel=hasImg?`<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/slide_img_PLACEHOLDER.jpg"/>`:'';
+  return (imgId)=>`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout1.xml"/>
+${hasImg?`<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/img${imgId}.jpg"/>`:''}
+</Relationships>`;}
+
+// Title slide XML
+function makeTitleSlide(title,subtitle,cl){
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<p:sld ${pptNS()}><p:cSld>
+<p:bg><p:bgPr><a:solidFill><a:srgbClr val="${cl.bg}"/></a:solidFill><a:effectLst/></p:bgPr></p:bg>
+<p:spTree>
+<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>
+<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>
+<p:sp><p:nvSpPr><p:cNvPr id="2" name="bar"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
+<p:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="9144000" cy="55000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val="${cl.acc}"/></a:solidFill></p:spPr><p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>
+<p:sp><p:nvSpPr><p:cNvPr id="3" name="title"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
+<p:spPr><a:xfrm><a:off x="457200" y="1143000"/><a:ext cx="8229600" cy="1800000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>
+<p:txBody><a:bodyPr anchor="ctr"/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="vi-VN" sz="4000" b="1" dirty="0"><a:solidFill><a:srgbClr val="${cl.txt}"/></a:solidFill><a:latin typeface="Arial"/></a:rPr><a:t>${xe(title)}</a:t></a:r></a:p></p:txBody></p:sp>
+<p:sp><p:nvSpPr><p:cNvPr id="4" name="sub"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
+<p:spPr><a:xfrm><a:off x="457200" y="3085000"/><a:ext cx="8229600" cy="650000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>
+<p:txBody><a:bodyPr/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="vi-VN" sz="2200" i="1" dirty="0"><a:solidFill><a:srgbClr val="${cl.acc}"/></a:solidFill><a:latin typeface="Arial"/></a:rPr><a:t>${xe(subtitle||'')}</a:t></a:r></a:p></p:txBody></p:sp>
+<p:sp><p:nvSpPr><p:cNvPr id="5" name="foot"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
+<p:spPr><a:xfrm><a:off x="457200" y="4600000"/><a:ext cx="8229600" cy="300000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>
+<p:txBody><a:bodyPr/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="vi-VN" sz="1200" dirty="0"><a:solidFill><a:srgbClr val="${cl.acc}"/></a:solidFill><a:latin typeface="Arial"/></a:rPr><a:t>✦ PHUCRAM AI</a:t></a:r></a:p></p:txBody></p:sp>
+</p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sld>`;}
+
+// Content slide without image
+function makeContentSlide(sTitle,points,cl,idx,total){
+  const bullets=(points||[]).map(pt=>`<a:p>
+<a:pPr marL="342900" indent="-342900"><a:buClr><a:srgbClr val="${cl.acc}"/></a:buClr><a:buFont typeface="Arial"/><a:buChar char="•"/></a:pPr>
+<a:r><a:rPr lang="vi-VN" sz="1800" dirty="0"><a:solidFill><a:srgbClr val="${cl.ct}"/></a:solidFill><a:latin typeface="Arial"/></a:rPr><a:t>${xe(pt)}</a:t></a:r></a:p>`).join('');
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<p:sld ${pptNS()}><p:cSld>
+<p:bg><p:bgPr><a:solidFill><a:srgbClr val="${cl.body}"/></a:solidFill><a:effectLst/></p:bgPr></p:bg>
+<p:spTree>
+<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>
+<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>
+<p:sp><p:nvSpPr><p:cNvPr id="2" name="hdr"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
+<p:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="9144000" cy="686000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val="${cl.bg}"/></a:solidFill></p:spPr><p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>
+<p:sp><p:nvSpPr><p:cNvPr id="3" name="acc"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
+<p:spPr><a:xfrm><a:off x="0" y="686000"/><a:ext cx="9144000" cy="28000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val="${cl.acc}"/></a:solidFill></p:spPr><p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>
+<p:sp><p:nvSpPr><p:cNvPr id="4" name="num"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
+<p:spPr><a:xfrm><a:off x="8200000" y="120000"/><a:ext cx="700000" cy="450000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>
+<p:txBody><a:bodyPr anchor="ctr"/><a:lstStyle/><a:p><a:pPr algn="r"/><a:r><a:rPr lang="vi-VN" sz="1100" dirty="0"><a:solidFill><a:srgbClr val="${cl.acc}"/></a:solidFill><a:latin typeface="Arial"/></a:rPr><a:t>${idx}/${total}</a:t></a:r></a:p></p:txBody></p:sp>
+<p:sp><p:nvSpPr><p:cNvPr id="5" name="ttl"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
+<p:spPr><a:xfrm><a:off x="320000" y="110000"/><a:ext cx="7760000" cy="470000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>
+<p:txBody><a:bodyPr anchor="ctr"/><a:lstStyle/><a:p><a:r><a:rPr lang="vi-VN" sz="2000" b="1" dirty="0"><a:solidFill><a:srgbClr val="${cl.txt}"/></a:solidFill><a:latin typeface="Arial"/></a:rPr><a:t>${xe(sTitle)}</a:t></a:r></a:p></p:txBody></p:sp>
+<p:sp><p:nvSpPr><p:cNvPr id="6" name="body"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
+<p:spPr><a:xfrm><a:off x="457200" y="800000"/><a:ext cx="8229600" cy="4200000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>
+<p:txBody><a:bodyPr/><a:lstStyle/>${bullets}</p:txBody></p:sp>
+</p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sld>`;}
+
+// Content slide WITH image (right side)
+function makeContentSlideImg(sTitle,points,cl,idx,total,imgId){
+  const bullets=(points||[]).map(pt=>`<a:p>
+<a:pPr marL="342900" indent="-342900"><a:buClr><a:srgbClr val="${cl.acc}"/></a:buClr><a:buFont typeface="Arial"/><a:buChar char="•"/></a:pPr>
+<a:r><a:rPr lang="vi-VN" sz="1700" dirty="0"><a:solidFill><a:srgbClr val="${cl.ct}"/></a:solidFill><a:latin typeface="Arial"/></a:rPr><a:t>${xe(pt)}</a:t></a:r></a:p>`).join('');
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<p:sld ${pptNS()}><p:cSld>
+<p:bg><p:bgPr><a:solidFill><a:srgbClr val="${cl.body}"/></a:solidFill><a:effectLst/></p:bgPr></p:bg>
+<p:spTree>
+<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>
+<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>
+<p:sp><p:nvSpPr><p:cNvPr id="2" name="hdr"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
+<p:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="9144000" cy="686000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val="${cl.bg}"/></a:solidFill></p:spPr><p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>
+<p:sp><p:nvSpPr><p:cNvPr id="3" name="acc"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
+<p:spPr><a:xfrm><a:off x="0" y="686000"/><a:ext cx="9144000" cy="28000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val="${cl.acc}"/></a:solidFill></p:spPr><p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>
+<p:sp><p:nvSpPr><p:cNvPr id="4" name="num"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
+<p:spPr><a:xfrm><a:off x="8200000" y="120000"/><a:ext cx="700000" cy="450000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>
+<p:txBody><a:bodyPr anchor="ctr"/><a:lstStyle/><a:p><a:pPr algn="r"/><a:r><a:rPr lang="vi-VN" sz="1100" dirty="0"><a:solidFill><a:srgbClr val="${cl.acc}"/></a:solidFill><a:latin typeface="Arial"/></a:rPr><a:t>${idx}/${total}</a:t></a:r></a:p></p:txBody></p:sp>
+<p:sp><p:nvSpPr><p:cNvPr id="5" name="ttl"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
+<p:spPr><a:xfrm><a:off x="320000" y="110000"/><a:ext cx="7760000" cy="470000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>
+<p:txBody><a:bodyPr anchor="ctr"/><a:lstStyle/><a:p><a:r><a:rPr lang="vi-VN" sz="2000" b="1" dirty="0"><a:solidFill><a:srgbClr val="${cl.txt}"/></a:solidFill><a:latin typeface="Arial"/></a:rPr><a:t>${xe(sTitle)}</a:t></a:r></a:p></p:txBody></p:sp>
+<p:sp><p:nvSpPr><p:cNvPr id="6" name="body"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
+<p:spPr><a:xfrm><a:off x="457200" y="800000"/><a:ext cx="4800000" cy="4200000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>
+<p:txBody><a:bodyPr/><a:lstStyle/>${bullets}</p:txBody></p:sp>
+<p:pic><p:nvPicPr><p:cNvPr id="7" name="img${imgId}"/><p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr><p:nvPr/></p:nvPicPr>
+<p:blipFill><a:blip r:embed="rId2"/><a:stretch><a:fillRect/></a:stretch></p:blipFill>
+<p:spPr><a:xfrm><a:off x="5400000" y="820000"/><a:ext cx="3500000" cy="4000000"/></a:xfrm><a:prstGeom prst="roundRect"><a:avLst><a:gd name="adj" fmla="val 30000"/></a:avLst></a:prstGeom></p:spPr></p:pic>
+</p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sld>`;}
+
+/* ═══ BUILD PPTX ═══ */
+async function buildPPTX(data, withImgs=false){
+  if(typeof JSZip==='undefined') throw new Error('JSZip chưa tải! Hãy F5 lại trang.');
+  const cl=TH[data.color]||TH.blue;
+  const slides=data.slides||[];
+  const totalSlides=slides.length+1; // +1 for title
+  let imgBytes={}; // imgId -> Uint8Array
+
+  if(withImgs){
+    // fetch all images in parallel
+    const imgQueries=slides.map(s=>s.img||s.title+' illustration');
+    const b64arr=await Promise.all(imgQueries.map(q=>fetchImgB64(q)));
+    b64arr.forEach((b64,i)=>{
+      if(b64){try{imgBytes[i+1]=b64ToBytes(b64);}catch{}}
+    });
+  }
+
+  const zip=new JSZip();
+  zip.file('[Content_Types].xml', makeContentTypes(totalSlides, withImgs&&Object.keys(imgBytes).length>0));
+  zip.file('_rels/.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="ppt/presentation.xml"/>
 </Relationships>`);
-  allSlides.forEach((xml,i)=>{
-    zip.file(`ppt/slides/slide${i+1}.xml`,xml);
-    zip.file(`ppt/slides/_rels/slide${i+1}.xml.rels`,pptXml_slideRels());
-  });
-  return zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.presentationml.presentation'});
+  zip.file('ppt/presentation.xml', makePres(totalSlides));
+  zip.file('ppt/_rels/presentation.xml.rels', makePresRels(totalSlides));
+  zip.file('ppt/theme/theme1.xml', makeTheme());
+  zip.file('ppt/slideMasters/slideMaster1.xml', makeSlideMaster());
+  zip.file('ppt/slideMasters/_rels/slideMaster1.xml.rels', makeSlideMasterRels());
+  zip.file('ppt/slideLayouts/slideLayout1.xml', makeSlideLayout());
+  zip.file('ppt/slideLayouts/_rels/slideLayout1.xml.rels', makeSlideLayoutRels());
+
+  // Add images to media folder
+  if(withImgs){
+    for(const[id,bytes] of Object.entries(imgBytes)){
+      zip.file(`ppt/media/img${id}.jpg`, bytes);
+    }
+  }
+
+  // Title slide (slide1)
+  zip.file('ppt/slides/slide1.xml', makeTitleSlide(data.title, data.subtitle, cl));
+  zip.file('ppt/slides/_rels/slide1.xml.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout1.xml"/>
+</Relationships>`);
+
+  // Content slides
+  for(let i=0;i<slides.length;i++){
+    const sl=slides[i];
+    const slideNum=i+2;
+    const imgId=i+1;
+    const hasImg=withImgs&&!!imgBytes[imgId];
+    const xml=hasImg
+      ? makeContentSlideImg(sl.title,sl.points,cl,i+1,slides.length,imgId)
+      : makeContentSlide(sl.title,sl.points,cl,i+1,slides.length);
+    zip.file(`ppt/slides/slide${slideNum}.xml`, xml);
+    const rels=hasImg
+      ? `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout1.xml"/>
+<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/img${imgId}.jpg"/>
+</Relationships>`
+      : `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout1.xml"/>
+</Relationships>`;
+    zip.file(`ppt/slides/_rels/slide${slideNum}.xml.rels`, rels);
+  }
+
+  return zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.presentationml.presentation',compression:'DEFLATE',compressionOptions:{level:6}});
 }
 
-/* ════════ DOCX BUILDER (via JSZip) ════════ */
-function docXml_contentTypes(){
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+/* ═══ DOCX BUILDER ═══ */
+function dxe(s){return xe(s)}
+function docP(text,opts={}){
+  const{style='',bold=false,sz=24,color='',align='',spBefore=0,spAfter=160}=opts;
+  const pPr=`<w:pPr>${style?`<w:pStyle w:val="${style}"/>`:''}${align?`<w:jc w:val="${align}"/>`:''}${(spBefore||spAfter!==160)?`<w:spacing w:before="${spBefore}" w:after="${spAfter}"/>`:'<w:spacing w:after="160"/>'}${style==='Normal'?'<w:spacing w:after="160"/>':''}</w:pPr>`;
+  const rPr=`<w:rPr>${bold?'<w:b/>':''}${sz!==24?`<w:sz w:val="${sz}"/><w:szCs w:val="${sz}"/>`:''} ${color?`<w:color w:val="${color}"/>`:''}  <w:lang w:val="vi-VN"/></w:rPr>`;
+  return `<w:p>${pPr}<w:r>${rPr}<w:t xml:space="preserve">${dxe(text)}</w:t></w:r></w:p>`;
+}
+function docBullet(text){return `<w:p><w:pPr><w:spacing w:after="80"/><w:ind w:left="720" w:hanging="360"/></w:pPr><w:r><w:rPr><w:lang w:val="vi-VN"/></w:rPr><w:t xml:space="preserve">• ${dxe(text)}</w:t></w:r></w:p>`;}
+function docHR(){return `<w:p><w:pPr><w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="0f9d6e"/></w:pBdr><w:spacing w:after="240"/></w:pPr></w:p>`;}
+
+async function buildDOCX(data){
+  if(typeof JSZip==='undefined') throw new Error('JSZip chưa tải! Hãy F5 lại trang.');
+  let body='';
+  body+=docP(data.title||'',{style:'',bold:true,sz:52,color:'1a3a5c',align:'center',spAfter:120});
+  if(data.subtitle) body+=docP(data.subtitle,{sz:24,color:'555555',align:'center',spAfter:100});
+  body+=docP(`Tác giả: PHUCRAM AI   ·   ${new Date().toLocaleDateString('vi-VN')}`,{sz:18,color:'999999',align:'center',spAfter:200});
+  body+=docHR();
+  for(const sec of (data.sections||[])){
+    body+=docP(sec.heading||'',{bold:true,sz:34,color:'1a3a5c',spBefore:260,spAfter:100});
+    if(sec.body) body+=docP(sec.body,{sz:24,spAfter:120});
+    for(const item of (sec.items||[])) body+=docBullet(item);
+  }
+  body+=`<w:p><w:pPr><w:spacing w:before="400"/><w:pBdr><w:top w:val="single" w:sz="4" w:space="1" w:color="dddddd"/></w:pBdr></w:pPr></w:p>`;
+  body+=docP('— Tài liệu được tạo bởi PHUCRAM AI —',{sz:16,color:'aaaaaa',align:'center'});
+
+  const doc=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:body>${body}<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/></w:sectPr></w:body></w:document>`;
+
+  const zip=new JSZip();
+  zip.file('[Content_Types].xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
 <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
 <Default Extension="xml" ContentType="application/xml"/>
 <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
-<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
-</Types>`;
-}
-function docXml_rootRels(){
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+</Types>`);
+  zip.file('_rels/.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
 <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
-</Relationships>`;
-}
-function docXml_docRels(){
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
-</Relationships>`;
-}
-function docXml_styles(){
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-<w:style w:type="paragraph" w:default="1" w:styleId="Normal">
-<w:name w:val="Normal"/>
-<w:rPr><w:sz w:val="24"/><w:szCs w:val="24"/><w:lang w:val="vi-VN"/></w:rPr>
-</w:style>
-<w:style w:type="paragraph" w:styleId="Heading1">
-<w:name w:val="heading 1"/>
-<w:basedOn w:val="Normal"/>
-<w:pPr><w:spacing w:before="300" w:after="120"/></w:pPr>
-<w:rPr><w:b/><w:sz w:val="36"/><w:szCs w:val="36"/><w:color w:val="1a3a5c"/></w:rPr>
-</w:style>
-<w:style w:type="paragraph" w:styleId="Title">
-<w:name w:val="Title"/>
-<w:basedOn w:val="Normal"/>
-<w:pPr><w:jc w:val="center"/><w:spacing w:after="200"/></w:pPr>
-<w:rPr><w:b/><w:sz w:val="52"/><w:szCs w:val="52"/><w:color w:val="1a3a5c"/></w:rPr>
-</w:style>
-</w:styles>`;
-}
-
-function docParagraph(text,style,bold,size,color,align){
-  const pPr=style?`<w:pStyle w:val="${style}"/>`:'';
-  const jc=align?`<w:jc w:val="${align}"/>`:'';
-  const rPr=[
-    bold?'<w:b/>':'',
-    size?`<w:sz w:val="${size}"/><w:szCs w:val="${size}"/>`:'' ,
-    color?`<w:color w:val="${color}"/>`:'',
-    '<w:lang w:val="vi-VN"/>'
-  ].join('');
-  return `<w:p><w:pPr>${pPr}${jc}<w:spacing w:after="160"/></w:pPr><w:r><w:rPr>${rPr}</w:rPr><w:t xml:space="preserve">${xe(text)}</w:t></w:r></w:p>`;
-}
-function docBullet(text){
-  return `<w:p>
-<w:pPr><w:spacing w:after="80"/><w:ind w:left="720" w:hanging="360"/></w:pPr>
-<w:r><w:rPr><w:lang w:val="vi-VN"/></w:rPr><w:t xml:space="preserve">• ${xe(text)}</w:t></w:r></w:p>`;
-}
-function docHRule(){
-  return `<w:p><w:pPr><w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="0f9d6e"/></w:pBdr><w:spacing w:after="240"/></w:pPr></w:p>`;
-}
-
-function docXml_document(data){
-  const ns=`xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"`;
-  let body='';
-  // Title
-  body+=docParagraph(data.title,'Title',true,52,'1a3a5c','center');
-  if(data.subtitle) body+=docParagraph(data.subtitle,'',false,24,'555555','center');
-  body+=docParagraph(`Tác giả: PHUCRAM AI   ·   ${new Date().toLocaleDateString('vi-VN')}`,
-    '',false,18,'999999','center');
-  body+=docHRule();
-  // Sections
-  for(const sec of (data.sections||[])){
-    body+=docParagraph(sec.heading,'Heading1',true,36,'1a3a5c');
-    if(sec.body) body+=docParagraph(sec.body,'',false,24,'333333');
-    for(const item of (sec.items||[])) body+=docBullet(item);
-  }
-  // Footer
-  body+=`<w:p><w:pPr><w:spacing w:before="400"/><w:pBdr><w:top w:val="single" w:sz="4" w:space="1" w:color="dddddd"/></w:pBdr></w:pPr></w:p>`;
-  body+=docParagraph('— Tài liệu được tạo bởi PHUCRAM AI —','',false,16,'aaaaaa','center');
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document ${ns}><w:body>${body}<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/></w:sectPr></w:body></w:document>`;
-}
-
-async function buildDOCX(data){
-  if(typeof JSZip==='undefined')throw new Error('JSZip chưa tải!');
-  const zip=new JSZip();
-  zip.file('[Content_Types].xml',docXml_contentTypes());
-  zip.file('_rels/.rels',docXml_rootRels());
-  zip.file('word/document.xml',docXml_document(data));
-  zip.file('word/_rels/document.xml.rels',docXml_docRels());
-  zip.file('word/styles.xml',docXml_styles());
+</Relationships>`);
+  zip.file('word/document.xml', doc);
+  zip.file('word/_rels/document.xml.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>`);
   return zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
 }
 
-/* ════════ MAKE PPT ════════ */
+/* ═══ MAKE PPT (no img) ═══ */
 async function makePPT(desc){
   const pw=addProg('🤖 AI đang soạn nội dung slides...'); setProg(15);
-  const data=await callJSON(
-    `Create PowerPoint about: ${desc}`,
-    P_PPT,
-    d=>Array.isArray(d.slides)&&d.slides.length>0
-  );
-  if(!data){pw.remove();addMsg('ai','😅 AI không tạo được nội dung sau 4 lần thử. Hãy đổi mô tả ngắn hơn và thử lại nhé!');return;}
-  setProg(60,'🔨 Đang tạo file PowerPoint...');
+  const data=await callJSON(`Create PowerPoint about: ${desc}`,P_PPT(8,false),d=>Array.isArray(d.slides)&&d.slides.length>0);
+  if(!data){pw.remove();addMsg('ai','😅 AI không tạo được nội dung. Thử mô tả ngắn hơn và thử lại nhé!');return;}
+  setProg(55,'🔨 Đang tạo file PowerPoint...');
   try{
-    const blob=await buildPPTX(data);
+    const blob=await buildPPTX(data,false);
     pw.remove();
-    const fname=(data.title||'Presentation').replace(/[^\wÀ-ỹ ]/g,'').trim().slice(0,40)+'.pptx';
-    addCard('ppt',fname,blob);
-    addHist(desc,'ppt');
-    toast(`✅ Đã tạo ${data.slides.length+1} slides!`);
+    const fname=(data.title||'Slides').replace(/[^\wÀ-ỹ ]/g,'').trim().slice(0,40)+'.pptx';
+    addCard('r',fname,blob); addHist(desc,'📊'); toast(`✅ Đã tạo ${(data.slides.length)+1} slides!`);
   }catch(e){pw.remove();addMsg('ai',`⚠️ Lỗi: ${e.message}`);}
 }
 
-/* ════════ MAKE DOC ════════ */
+/* ═══ MAKE PPT WITH IMAGES ═══ */
+async function makePPTImg(desc){
+  const pw=addProg('🤖 AI đang soạn nội dung + chuẩn bị ảnh...'); setProg(10);
+  const data=await callJSON(`Create PowerPoint about: ${desc}`,P_PPT_IMG(6,false),d=>Array.isArray(d.slides)&&d.slides.length>0);
+  if(!data){pw.remove();addMsg('ai','😅 AI không tạo được nội dung. Thử lại nhé!');return;}
+  setProg(30,'🖼️ Đang tạo hình ảnh AI cho từng slide...');
+  try{
+    const blob=await buildPPTX(data,true);
+    pw.remove();
+    const fname=(data.title||'Slides').replace(/[^\wÀ-ỹ ]/g,'').trim().slice(0,40)+'_with_images.pptx';
+    addCard('r',fname,blob); addHist(desc,'🖼️'); toast(`✅ Đã tạo ${(data.slides.length)+1} slides có ảnh!`);
+  }catch(e){pw.remove();addMsg('ai',`⚠️ Lỗi: ${e.message}`);}
+}
+
+/* ═══ MAKE CUSTOM SLIDES ═══ */
+async function makeCustom(desc){
+  const n=parseInt(document.getElementById('sl-count').value)||8;
+  const color=document.getElementById('sl-color').value||'blue';
+  const withImg=document.getElementById('sl-img').checked;
+  const detail=document.getElementById('sl-detail').checked;
+
+  const pw=addProg(`🤖 AI đang soạn ${n} slides...`); setProg(10);
+
+  // For large slide counts, split into batches if needed
+  let allSlides=[];
+  const sys=withImg?P_PPT_IMG(n,detail):P_PPT(n,detail);
+
+  // If > 20 slides, ask AI multiple times and merge
+  if(n>20){
+    const batchSize=Math.min(20,Math.ceil(n/Math.ceil(n/15)));
+    const numBatches=Math.ceil(n/batchSize);
+    setProg(15,`🤖 Tạo ${numBatches} nhóm slides...`);
+    for(let b=0;b<numBatches;b++){
+      const remaining=n-allSlides.length;
+      const bN=Math.min(batchSize,remaining);
+      const bSys=withImg?P_PPT_IMG(bN,detail):P_PPT(bN,detail);
+      const bData=await callJSON(
+        `Create PowerPoint batch ${b+1} of ${numBatches} about: ${desc}. Start from slide ${allSlides.length+1}.`,
+        bSys, d=>Array.isArray(d.slides)&&d.slides.length>0
+      );
+      if(bData&&bData.slides) allSlides.push(...bData.slides.slice(0,bN));
+      setProg(15+Math.round((b+1)/numBatches*45),`🤖 Đã tạo ${allSlides.length}/${n} slides...`);
+      if(allSlides.length>=n)break;
+    }
+    // Get title from first batch
+    const titleData=await callJSON(`Give me a title and subtitle for a presentation about: ${desc}`,
+      'Return ONLY JSON: {"title":"...","subtitle":"...","color":"'+color+'"}',d=>!!d.title);
+    var mergedData={title:titleData?.title||desc,subtitle:titleData?.subtitle||'',color,slides:allSlides.slice(0,n)};
+  } else {
+    const data=await callJSON(`Create PowerPoint about: ${desc}`,sys,d=>Array.isArray(d.slides)&&d.slides.length>0);
+    if(!data){pw.remove();addMsg('ai','😅 AI không tạo được nội dung. Thử lại nhé!');return;}
+    data.color=color;
+    var mergedData=data;
+  }
+
+  if(!mergedData||!mergedData.slides||mergedData.slides.length===0){
+    pw.remove();addMsg('ai','😅 Không tạo được slide. Thử mô tả khác nhé!');return;
+  }
+
+  setProg(60,`🔨 Đang xây dựng ${mergedData.slides.length+1} slides...`);
+  if(withImg) setProg(62,'🖼️ Đang tạo ảnh AI...');
+
+  try{
+    const blob=await buildPPTX(mergedData,withImg);
+    pw.remove();
+    const fname=(mergedData.title||'Custom').replace(/[^\wÀ-ỹ ]/g,'').trim().slice(0,40)+`_${mergedData.slides.length}slides.pptx`;
+    addCard('o',fname,blob);
+    addHist(desc,'⚙️');
+    toast(`✅ Hoàn tất ${mergedData.slides.length+1} slides${withImg?' có ảnh':''}!`);
+  }catch(e){pw.remove();addMsg('ai',`⚠️ Lỗi: ${e.message}`);}
+}
+
+/* ═══ MAKE DOC ═══ */
 async function makeDoc(desc){
   const pw=addProg('🤖 AI đang viết nội dung tài liệu...'); setProg(15);
-  const data=await callJSON(
-    `Create Word document about: ${desc}`,
-    P_DOC,
-    d=>Array.isArray(d.sections)&&d.sections.length>0
-  );
+  const data=await callJSON(`Create Word document about: ${desc}`,P_DOC,d=>Array.isArray(d.sections)&&d.sections.length>0);
   if(!data){pw.remove();addMsg('ai','😅 AI không tạo được nội dung. Thử lại nhé!');return;}
   setProg(65,'🔨 Đang tạo file Word...');
   try{
     const blob=await buildDOCX(data);
     pw.remove();
     const fname=(data.title||'Document').replace(/[^\wÀ-ỹ ]/g,'').trim().slice(0,40)+'.docx';
-    addCard('doc',fname,blob);
-    addHist(desc,'doc');
-    toast(`✅ Đã tạo tài liệu ${data.sections.length} mục!`);
+    addCard('b',fname,blob); addHist(desc,'📄'); toast(`✅ Tài liệu ${data.sections.length} mục!`);
   }catch(e){pw.remove();addMsg('ai',`⚠️ Lỗi: ${e.message}`);}
 }
 
-/* ════════ SEND ════════ */
+/* ═══ SEND ═══ */
 async function go(){
   const text=inp.value.trim();
   if(!text||loading)return;
   loading=true; snd.disabled=true;
-  inp.value=''; inp.style.height='auto'; cc.textContent='0';
+  inp.value=''; inp.style.height='auto'; cclb.textContent='0';
   addMsg('user',esc(text).replace(/\n/g,'<br>'));
   stag.classList.add('on');
 
-  if(curMode==='ppt'){
-    hist.push({role:'user',content:text});
-    await makePPT(text);
-  } else if(curMode==='doc'){
-    hist.push({role:'user',content:text});
-    await makeDoc(text);
-  } else {
+  if(curMode==='ppt') { hist.push({role:'user',content:text}); await makePPT(text); }
+  else if(curMode==='img') { hist.push({role:'user',content:text}); await makePPTImg(text); }
+  else if(curMode==='cus') { hist.push({role:'user',content:text}); await makeCustom(text); }
+  else if(curMode==='doc') { hist.push({role:'user',content:text}); await makeDoc(text); }
+  else {
     hist.push({role:'user',content:text});
     const typ=addMsg('ai','',true);
     try{
       const reply=await callAI(text,P_CHAT,true);
       hist.push({role:'assistant',content:reply});
-      const b=document.createElement('div'); b.className='bub a'; b.innerHTML=md(reply);
-      typ.replaceWith(b); addHist(text,'chat');
+      const b=document.createElement('div');b.className='bub a';b.innerHTML=md(reply);
+      typ.replaceWith(b); addHist(text,'💬');
     }catch{
-      const er=document.createElement('div'); er.className='err-bub';
-      er.innerHTML=`⚠ Không kết nối được. <button class="rt-btn" onclick="retry(this)">🔄 Thử lại</button>`;
+      const er=document.createElement('div');er.className='err-bub';
+      er.innerHTML=`⚠ Không kết nối được. <button class="rtbtn" onclick="retry(this)">🔄 Thử lại</button>`;
       typ.replaceWith(er);
     }
   }
