@@ -4,26 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PHUCRAM AI</title>
-<script>
-// Load PptxGenJS với fallback
-(function(){
-  function tryLoad(urls, i){
-    if(i>=urls.length)return;
-    var s=document.createElement('script');
-    s.src=urls[i];
-    s.onerror=function(){tryLoad(urls,i+1);};
-    document.head.appendChild(s);
-  }
-  tryLoad([
-    'https://unpkg.com/pptxgenjs@3.12.0/libs/pptxgen.bundle.js',
-    'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/libs/pptxgen.bundle.js'
-  ],0);
-  tryLoad([
-    'https://unpkg.com/docx@8.5.0/build/index.umd.min.js',
-    'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js'
-  ],0);
-})();
-</script>
+<!-- PptxGenJS: thử unpkg trước, jsdelivr làm fallback qua script inline -->
+<script src="https://unpkg.com/pptxgenjs@3.12.0/libs/pptxgen.bundle.js"
+  onerror="var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/libs/pptxgen.bundle.js';document.head.appendChild(s)"></script>
+<!-- docx -->
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.min.js"
+  onerror="var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js';document.head.appendChild(s)"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -581,13 +567,16 @@ const TH={
 };
 
 /* ════════════ WAIT FOR LIB ════════════ */
-function waitLib(name, ms=8000){
+function waitLib(name, ms=20000){
   return new Promise((ok,fail)=>{
     if(window[name])return ok();
     const t=Date.now(), iv=setInterval(()=>{
       if(window[name]){clearInterval(iv);ok();}
-      else if(Date.now()-t>ms){clearInterval(iv);fail(new Error(`${name} chưa tải xong. Thử F5 rồi làm lại nhé!`));}
-    },100);
+      else if(Date.now()-t>ms){
+        clearInterval(iv);
+        fail(new Error(`Thư viện ${name} chưa tải được. Kiểm tra mạng rồi F5 thử lại nhé!`));
+      }
+    },200);
   });
 }
 
@@ -879,6 +868,28 @@ function retry(btn){
 }
 
 setMode('chat');
+
+// Kiểm tra thư viện sau 3s
+setTimeout(()=>{
+  const missing=[];
+  if(!window.PptxGenJS) missing.push('PptxGenJS');
+  if(!window.docx) missing.push('docx');
+  if(missing.length){
+    console.warn('Thư viện chưa tải:',missing);
+    // Thử load lại lần nữa
+    missing.forEach(name=>{
+      const urls = name==='PptxGenJS'
+        ? ['https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js',
+           'https://unpkg.com/pptxgenjs@3.12.0/libs/pptxgen.bundle.js']
+        : ['https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/index.umd.min.js',
+           'https://unpkg.com/docx@8.5.0/build/index.umd.min.js'];
+      const s=document.createElement('script');
+      s.src=urls[0];
+      s.onerror=()=>{const s2=document.createElement('script');s2.src=urls[1];document.head.appendChild(s2);};
+      document.head.appendChild(s);
+    });
+  }
+},3000);
 </script>
 </body>
 </html>
