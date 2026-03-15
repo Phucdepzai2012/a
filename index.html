@@ -541,65 +541,57 @@ function addMsg(role, html, isTyping = false) {
   return content;
 }
 
-/* ── 3 endpoint fallback, ưu tiên nhanh nhất ── */
+/* ── Gọi song song 3 endpoint, lấy kết quả nhanh nhất ── */
 async function callAI(text) {
-  const messages = [{ role: 'system', content: SYSTEM }, ...history.slice(-6)];
   const seed = Math.floor(Math.random() * 99999);
+  const messages = [{ role: 'system', content: SYSTEM }, ...history.slice(-6)];
 
-  // 1. GET nhanh nhất — không overhead của POST
-  try {
-    const ctx = history.slice(-4);
-    let p = '';
-    for (let i = 0; i < ctx.length - 1; i++)
-      p += (ctx[i].role === 'user' ? 'Bạn: ' : 'PHUCRAM AI: ') + ctx[i].content + '\n';
-    p += text;
-    const url = 'https://text.pollinations.ai/' + encodeURIComponent(p)
+  // Build GET prompt
+  const ctx = history.slice(-4);
+  let p = '';
+  for (let i = 0; i < ctx.length - 1; i++)
+    p += (ctx[i].role === 'user' ? 'Bạn: ' : 'PHUCRAM AI: ') + ctx[i].content + '\n';
+  p += text;
+
+  const attempts = [
+    // GET endpoint
+    fetch('https://text.pollinations.ai/' + encodeURIComponent(p)
       + '?model=openai&seed=' + seed
-      + '&system=' + encodeURIComponent(SYSTEM);
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 12000);
-    const res = await fetch(url, { signal: controller.signal });
-    clearTimeout(timer);
-    if (res.ok) {
-      const r = (await res.text()).trim();
-      if (r && r.length > 2) return r;
-    }
-  } catch(_) {}
+      + '&system=' + encodeURIComponent(SYSTEM))
+      .then(r => r.ok ? r.text() : Promise.reject())
+      .then(t => { const s = t.trim(); if (s.length > 2) return s; return Promise.reject(); }),
 
-  // 2. POST openai-compatible
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 12000);
-    const res = await fetch('https://text.pollinations.ai/openai', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'openai', messages, seed }),
-      signal: controller.signal
-    });
-    clearTimeout(timer);
-    if (res.ok) {
-      const data = await res.json();
-      const r = data?.choices?.[0]?.message?.content?.trim();
-      if (r) return r;
-    }
-  } catch(_) {}
-
-  // 3. CORS proxy dự phòng
-  try {
-    const proxy = 'https://corsproxy.io/?' + encodeURIComponent('https://text.pollinations.ai/openai');
-    const res = await fetch(proxy, {
+    // POST openai endpoint
+    fetch('https://text.pollinations.ai/openai', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ model: 'openai', messages, seed })
-    });
-    if (res.ok) {
-      const data = await res.json();
-      const r = data?.choices?.[0]?.message?.content?.trim();
-      if (r) return r;
-    }
-  } catch(_) {}
+    })
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(d => {
+        const s = d?.choices?.[0]?.message?.content?.trim();
+        if (s) return s; return Promise.reject();
+      }),
 
-  throw new Error('Không kết nối được. Kiểm tra mạng và thử lại!');
+    // CORS proxy endpoint
+    fetch('https://corsproxy.io/?' + encodeURIComponent('https://text.pollinations.ai/openai'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'openai', messages, seed })
+    })
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(d => {
+        const s = d?.choices?.[0]?.message?.content?.trim();
+        if (s) return s; return Promise.reject();
+      })
+  ];
+
+  // Lấy kết quả đầu tiên thành công
+  try {
+    return await Promise.any(attempts);
+  } catch(_) {
+    throw new Error('Tất cả server đều không phản hồi. Thử lại sau nhé!');
+  }
 }
 
 async function send() {
