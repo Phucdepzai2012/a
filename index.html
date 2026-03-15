@@ -4,8 +4,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PHUCRAM AI</title>
-<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/libs/pptxgen.bundle.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js"></script>
+<script>
+// Load PptxGenJS với fallback
+(function(){
+  function tryLoad(urls, i){
+    if(i>=urls.length)return;
+    var s=document.createElement('script');
+    s.src=urls[i];
+    s.onerror=function(){tryLoad(urls,i+1);};
+    document.head.appendChild(s);
+  }
+  tryLoad([
+    'https://unpkg.com/pptxgenjs@3.12.0/libs/pptxgen.bundle.js',
+    'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/libs/pptxgen.bundle.js'
+  ],0);
+  tryLoad([
+    'https://unpkg.com/docx@8.5.0/build/index.umd.min.js',
+    'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js'
+  ],0);
+})();
+</script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -542,6 +560,17 @@ const TH={
   purple:{bg:'2d1b5e',acc:'a855f7',hd:'ffffff',tx:'ddd6fe',cs:'faf5ff',ct:'2d1b5e',line:'6d3db5'},
 };
 
+/* ════════════ WAIT FOR LIB ════════════ */
+function waitLib(name, ms=8000){
+  return new Promise((ok,fail)=>{
+    if(window[name])return ok();
+    const t=Date.now(), iv=setInterval(()=>{
+      if(window[name]){clearInterval(iv);ok();}
+      else if(Date.now()-t>ms){clearInterval(iv);fail(new Error(`${name} chưa tải xong. Thử F5 rồi làm lại nhé!`));}
+    },100);
+  });
+}
+
 /* ════════════ MAKE PPTX ════════════ */
 async function makePPT(desc){
   const pw=addProg('🤖 AI đang soạn nội dung slides...'); setProg(10);
@@ -563,7 +592,7 @@ async function makePPT(desc){
   setProg(65,'🔨 Đang xây dựng file PowerPoint...');
 
   try{
-    if(typeof PptxGenJS==='undefined')throw new Error('PptxGenJS not loaded');
+    await waitLib('PptxGenJS');
     const cl=TH[data.color]||TH.blue;
     const pptx=new PptxGenJS();
     pptx.layout='LAYOUT_16x9';
@@ -674,7 +703,7 @@ async function makeDoc(desc){
   setProg(65,'🔨 Đang tạo file Word...');
 
   try{
-    if(typeof docx==='undefined')throw new Error('docx not loaded');
+    await waitLib('docx');
     const {Document,Packer,Paragraph,TextRun,HeadingLevel,
            AlignmentType,BorderStyle,ImageRun,WidthType,Table,TableRow,TableCell}=docx;
 
