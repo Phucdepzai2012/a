@@ -323,21 +323,16 @@ const SYS_CHAT = `Bạn là PHUCRAM AI — trợ lý thông minh, vui vẻ, thâ
 LUÔN trả lời TIẾNG VIỆT. Xưng "mình", gọi "bạn". Emoji vừa phải 😄
 Trả lời mọi câu hỏi, ngắn gọn súc tích, đúng trọng tâm. Không từ chối câu hỏi nào.`;
 
-const SYS_PPT = `Tạo nội dung PowerPoint chuyên nghiệp. Chỉ trả về JSON thuần (không markdown, không backtick, không text thừa).
-{"title":"...","subtitle":"...","color":"blue","slides":[{"title":"...","points":["...","...","..."],"imgQuery":"từ khóa tiếng Anh để tìm ảnh minh họa cho slide này"}]}
-Quy tắc:
-- color: blue|green|dark|red|purple
-- 5-8 slides. Mỗi slide 3-5 points bằng TIẾNG VIỆT ngắn gọn.
-- imgQuery: 3-5 từ tiếng Anh mô tả hình ảnh đẹp cho slide (VD: "climate change earth", "business team meeting").
-- Chỉ JSON. Không có gì khác.`;
+// Prompt siêu đơn giản — chỉ cần JSON nhỏ, dễ parse
+const SYS_PPT = `Return ONLY valid JSON, no other text, no markdown, no explanation.
+Example output:
+{"title":"Climate Change","subtitle":"Causes and Solutions","color":"blue","slides":[{"title":"Overview","points":["Point one","Point two","Point three"],"img":"nature earth"}]}
+Rules: color=blue|green|dark|red|purple. 5-8 slides. 3-5 points each. img=2-4 English words for image search. All text in Vietnamese except img field. Return JSON only.`;
 
-const SYS_DOC = `Tạo tài liệu Word chuyên nghiệp. Chỉ trả về JSON thuần (không markdown, không backtick, không text thừa).
-{"title":"...","subtitle":"...","sections":[{"heading":"...","body":"...","items":["...","..."],"imgQuery":"từ khóa tiếng Anh để tìm ảnh minh họa"}]}
-Quy tắc:
-- 4-7 sections. body mỗi section 2-4 câu tiếng Việt đầy đủ ý.
-- items: danh sách bullet (có thể []).
-- imgQuery: 3-5 từ tiếng Anh mô tả ảnh minh họa phù hợp với section (VD: "coffee shop interior", "technology innovation").
-- Chỉ JSON. Không có gì khác.`;
+const SYS_DOC = `Return ONLY valid JSON, no other text, no markdown, no explanation.
+Example output:
+{"title":"Document Title","subtitle":"Subtitle here","sections":[{"heading":"Section 1","body":"Body text here.","items":["Item one","Item two"],"img":"business office"}]}
+Rules: 4-7 sections. body=2-3 Vietnamese sentences. items=bullet list (can be []). img=2-4 English words for image search. All text in Vietnamese except img. Return JSON only.`;
 
 /* ════════════ STATE ════════════ */
 let hist=[], loading=false, cnt=0, curMode='chat';
@@ -488,41 +483,66 @@ function addHist(msg,type){
   list.insertBefore(el,list.firstChild);
 }
 
-/* ════════════ AI CALL ════════════ */
+/* ════════════ AI CALL — POST only, nhanh & ổn định ════════════ */
 async function callAI(userMsg, sys, withHist=true){
-  const msgs=[{role:'system',content:sys},
+  const msgs=[
+    {role:'system',content:sys},
     ...(withHist?hist.slice(-4):[]),
-    {role:'user',content:userMsg}];
+    {role:'user',content:userMsg}
+  ];
   const seed=Math.random()*99999|0;
 
+  // Gọi song song POST + GET, lấy cái nào xong trước
   return Promise.any([
-    // POST
     fetch('https://text.pollinations.ai/openai',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'openai',messages:msgs,seed})
-    }).then(r=>r.ok?r.json():Promise.reject())
+    }).then(r=>{if(!r.ok)throw 0;return r.json();})
       .then(d=>{const t=d?.choices?.[0]?.message?.content?.trim();if(!t)throw 0;return t;}),
 
-    // GET — thường nhanh hơn
     fetch(`https://text.pollinations.ai/${encodeURIComponent(userMsg)}?model=openai&seed=${seed}&system=${encodeURIComponent(sys)}`)
-      .then(r=>r.ok?r.text():Promise.reject())
-      .then(t=>{const s=t.trim();if(s.length<3)throw 0;return s;}),
+      .then(r=>{if(!r.ok)throw 0;return r.text();})
+      .then(t=>{if(!t||t.length<5)throw 0;return t.trim();}),
 
-    // Proxy fallback
     fetch('https://corsproxy.io/?'+encodeURIComponent('https://text.pollinations.ai/openai'),{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'openai',messages:msgs,seed})
-    }).then(r=>r.ok?r.json():Promise.reject())
+    }).then(r=>{if(!r.ok)throw 0;return r.json();})
       .then(d=>{const t=d?.choices?.[0]?.message?.content?.trim();if(!t)throw 0;return t;})
   ]);
 }
 
-/* ════════════ JSON EXTRACT ════════════ */
+/* ════════════ JSON EXTRACT — nhiều strategy ════════════ */
 function extractJSON(raw){
-  let s=raw.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
+  // Xóa markdown fences
+  let s=raw.replace(/```json/gi,'').replace(/```/g,'').trim();
+  // Tìm { đầu tiên đến } cuối cùng
   const a=s.indexOf('{'), b=s.lastIndexOf('}');
-  if(a===-1||b===-1)throw new Error('JSON not found');
-  return JSON.parse(s.slice(a,b+1));
+  if(a!==-1&&b>a){
+    try{return JSON.parse(s.slice(a,b+1));}catch{}
+  }
+  // Thử parse toàn bộ
+  try{return JSON.parse(s);}catch{}
+  throw new Error('parse_fail');
+}
+
+/* ════════════ AI JSON — retry tự động 3 lần ════════════ */
+async function callJSON(prompt, sys, validate){
+  for(let attempt=1; attempt<=3; attempt++){
+    try{
+      // Thêm nhấn mạnh JSON mỗi lần retry
+      const msg = attempt===1 ? prompt
+        : attempt===2 ? prompt+'\n\nQUAN TRỌNG: Chỉ trả JSON, không có gì khác!'
+        : prompt+'\n\nBắt buộc JSON thuần. Ví dụ format: {"key":"value"}';
+
+      const raw=await callAI(msg, sys, false);
+      const data=extractJSON(raw);
+      if(validate(data)) return data;
+    }catch(e){}
+    // Chờ chút trước khi thử lại
+    if(attempt<3) await new Promise(r=>setTimeout(r,800));
+  }
+  return null;
 }
 
 /* ════════════ IMAGE FETCH ════════════ */
@@ -574,20 +594,25 @@ function waitLib(name, ms=8000){
 /* ════════════ MAKE PPTX ════════════ */
 async function makePPT(desc){
   const pw=addProg('🤖 AI đang soạn nội dung slides...'); setProg(10);
-  let data;
-  try{
-    const raw=await callAI(`Tạo bài thuyết trình PowerPoint về: ${desc}`, SYS_PPT, false);
-    data=extractJSON(raw);
-    if(!Array.isArray(data.slides)||data.slides.length===0)throw new Error('no slides');
-  }catch(e){
-    pw.remove(); addMsg('ai','⚠️ AI không trả về đúng định dạng. Thử lại với mô tả khác nhé!'); return;
+
+  const data=await callJSON(
+    `Create PowerPoint presentation about: ${desc}`,
+    SYS_PPT,
+    d=>Array.isArray(d.slides)&&d.slides.length>0
+  );
+
+  if(!data){
+    pw.remove();
+    addMsg('ai','😅 AI không tạo được nội dung sau 3 lần thử. Hãy thử lại hoặc đổi mô tả ngắn hơn nhé!');
+    return;
   }
 
   setProg(30,'🖼️ Đang tải hình ảnh minh họa...');
 
-  // Fetch title image + slide images song song
-  const queries=[data.slides[0]?.imgQuery||desc, ...data.slides.map(s=>s.imgQuery||s.title)];
-  const imgs=await fetchImgs(queries.slice(0,data.slides.length+1));
+  // Dùng field img (mới) hoặc imgQuery (cũ) làm fallback
+  const queries=data.slides.map(s=>s.img||s.imgQuery||s.title);
+  const coverQ=data.slides[0]?.img||desc;
+  const allImgs=await fetchImgs([coverQ,...queries]);
 
   setProg(65,'🔨 Đang xây dựng file PowerPoint...');
 
@@ -601,10 +626,8 @@ async function makePPT(desc){
 
     /* ── TITLE SLIDE ── */
     const s0=pptx.addSlide();
-    // Background: image or color
-    if(imgs[0]){
-      s0.addImage({data:imgs[0],x:0,y:0,w:'100%',h:'100%'});
-      // dark overlay
+    if(allImgs[0]){
+      s0.addImage({data:allImgs[0],x:0,y:0,w:'100%',h:'100%'});
       s0.addShape(pptx.ShapeType.rect,{x:0,y:0,w:'100%',h:'100%',fill:{color:'000000',transparency:45}});
     }else{
       s0.background={color:cl.bg};
@@ -627,7 +650,7 @@ async function makePPT(desc){
     /* ── CONTENT SLIDES ── */
     for(let i=0;i<data.slides.length;i++){
       const sl=data.slides[i];
-      const img=imgs[i+1];
+      const img=allImgs[i+1];
       const s=pptx.addSlide();
       s.background={color:cl.cs};
 
@@ -685,19 +708,22 @@ async function makePPT(desc){
 /* ════════════ MAKE DOCX ════════════ */
 async function makeDoc(desc){
   const pw=addProg('🤖 AI đang viết nội dung tài liệu...'); setProg(10);
-  let data;
-  try{
-    const raw=await callAI(`Viết tài liệu Word chi tiết về: ${desc}`, SYS_DOC, false);
-    data=extractJSON(raw);
-    if(!Array.isArray(data.sections)||data.sections.length===0)throw new Error('no sections');
-  }catch(e){
-    pw.remove(); addMsg('ai','⚠️ AI không trả về đúng định dạng. Thử lại nhé!'); return;
+
+  const data=await callJSON(
+    `Create Word document about: ${desc}`,
+    SYS_DOC,
+    d=>Array.isArray(d.sections)&&d.sections.length>0
+  );
+
+  if(!data){
+    pw.remove();
+    addMsg('ai','😅 AI không tạo được nội dung sau 3 lần thử. Hãy thử lại hoặc đổi mô tả ngắn hơn nhé!');
+    return;
   }
 
   setProg(30,'🖼️ Đang tải hình ảnh minh họa...');
 
-  // Fetch cover + per-section images song song
-  const queries=[desc,...data.sections.map(s=>s.imgQuery||s.heading)];
+  const queries=[desc,...data.sections.map(s=>s.img||s.imgQuery||s.heading)];
   const imgs=await fetchImgs(queries);
 
   setProg(65,'🔨 Đang tạo file Word...');
