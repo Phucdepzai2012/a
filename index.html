@@ -425,7 +425,22 @@ textarea::placeholder { color: var(--text3); }
 <div class="toast" id="toast"></div>
 
 <script>
-const SYSTEM = 'You are PHUCRAM AI, a smart, friendly and helpful AI assistant. Always reply in the same language the user uses — if Vietnamese then Vietnamese, if English then English. Be concise and clear.';
+const SYSTEM = `Bạn là PHUCRAM AI — trợ lý AI thông minh, vui vẻ, thân thiện và cực kỳ hữu ích, được tạo ra bởi Phúc.
+
+TÍNH CÁCH:
+- Nói chuyện tự nhiên, gần gũi như người bạn thân, dùng tiếng Việt thông thường (không cứng nhắc)
+- Hài hước nhẹ nhàng khi phù hợp, thỉnh thoảng dùng emoji cho sinh động 😄
+- Nhiệt tình, luôn sẵn sàng giúp đỡ, không từ chối câu hỏi nào
+- Trả lời thẳng vào vấn đề, không vòng vo, không dài dòng không cần thiết
+
+QUY TẮC QUAN TRỌNG:
+- LUÔN trả lời bằng tiếng Việt, kể cả khi người dùng hỏi bằng tiếng Anh
+- Trả lời MỌI câu hỏi — không từ chối, không nói "tôi không thể"
+- Nếu hỏi về code, toán, khoa học → giải thích rõ ràng, có ví dụ cụ thể
+- Nếu hỏi chuyện cá nhân, tâm sự → lắng nghe, đồng cảm, đưa ra lời khuyên thực tế
+- Nếu hỏi sáng tạo (thơ, truyện, slogan...) → làm ngay, sáng tạo hết mình
+- Xưng "mình" với người dùng, gọi người dùng là "bạn"
+- Câu trả lời ngắn gọn súc tích trừ khi cần giải thích chi tiết`;
 
 let history   = [];
 let loading   = false;
@@ -526,18 +541,42 @@ function addMsg(role, html, isTyping = false) {
   return content;
 }
 
-/* ── 3 endpoint fallback ── */
+/* ── 3 endpoint fallback, ưu tiên nhanh nhất ── */
 async function callAI(text) {
-  const messages = [{ role: 'system', content: SYSTEM }, ...history.slice(-8)];
+  const messages = [{ role: 'system', content: SYSTEM }, ...history.slice(-6)];
   const seed = Math.floor(Math.random() * 99999);
 
-  // 1. POST /openai
+  // 1. GET nhanh nhất — không overhead của POST
   try {
+    const ctx = history.slice(-4);
+    let p = '';
+    for (let i = 0; i < ctx.length - 1; i++)
+      p += (ctx[i].role === 'user' ? 'Bạn: ' : 'PHUCRAM AI: ') + ctx[i].content + '\n';
+    p += text;
+    const url = 'https://text.pollinations.ai/' + encodeURIComponent(p)
+      + '?model=openai&seed=' + seed
+      + '&system=' + encodeURIComponent(SYSTEM);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 12000);
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timer);
+    if (res.ok) {
+      const r = (await res.text()).trim();
+      if (r && r.length > 2) return r;
+    }
+  } catch(_) {}
+
+  // 2. POST openai-compatible
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 12000);
     const res = await fetch('https://text.pollinations.ai/openai', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'openai', messages, seed })
+      body: JSON.stringify({ model: 'openai', messages, seed }),
+      signal: controller.signal
     });
+    clearTimeout(timer);
     if (res.ok) {
       const data = await res.json();
       const r = data?.choices?.[0]?.message?.content?.trim();
@@ -545,24 +584,7 @@ async function callAI(text) {
     }
   } catch(_) {}
 
-  // 2. GET với model mistral
-  try {
-    const ctx = history.slice(-4);
-    let p = '';
-    for (let i = 0; i < ctx.length - 1; i++)
-      p += (ctx[i].role === 'user' ? 'User: ' : 'AI: ') + ctx[i].content + '\n';
-    p += text;
-    const url = 'https://text.pollinations.ai/' + encodeURIComponent(p)
-      + '?model=mistral&seed=' + seed
-      + '&system=' + encodeURIComponent(SYSTEM);
-    const res = await fetch(url);
-    if (res.ok) {
-      const r = (await res.text()).trim();
-      if (r) return r;
-    }
-  } catch(_) {}
-
-  // 3. CORS proxy
+  // 3. CORS proxy dự phòng
   try {
     const proxy = 'https://corsproxy.io/?' + encodeURIComponent('https://text.pollinations.ai/openai');
     const res = await fetch(proxy, {
