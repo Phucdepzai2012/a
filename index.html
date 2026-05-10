@@ -3,1188 +3,427 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LuaForge AI — Vietnam Life Game</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Orbitron:wght@600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-
-<!-- Firebase Compat -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
-
+<title>Kingdom Apocalypse 3D</title>
 <style>
-:root {
-  --bg:       #060810;
-  --surface:  #0d1117;
-  --panel:    #111827;
-  --border:   #1e2d3d;
-  --green:    #00ff88;
-  --cyan:     #00d4ff;
-  --orange:   #ff6b35;
-  --yellow:   #ffd60a;
-  --red:      #ff3b6b;
-  --text:     #e2e8f0;
-  --muted:    #64748b;
-  --code-bg:  #0a1628;
-  --glow-g:   0 0 20px #00ff8840;
-  --glow-c:   0 0 20px #00d4ff40;
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
+body{overflow:hidden;background:black}
+#ui{
+position:absolute;
+top:15px;
+left:15px;
+z-index:10;
+width:340px;
+background:rgba(0,0,0,0.65);
+backdrop-filter:blur(12px);
+padding:18px;
+border-radius:24px;
+color:white;
+border:1px solid rgba(255,255,255,0.15)
 }
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  font-family: 'Inter', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  height: 100vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+.title{font-size:32px;font-weight:bold;margin-bottom:10px}
+.stat{margin-top:6px;font-size:15px}
+button{
+width:100%;
+padding:12px;
+border:none;
+margin-top:8px;
+border-radius:14px;
+font-weight:bold;
+cursor:pointer;
+color:white;
+font-size:15px;
+transition:0.2s
 }
-
-/* ── CANVAS BACKGROUND ── */
-#bg-canvas {
-  position: fixed; inset: 0; z-index: 0;
-  opacity: 0.08; pointer-events: none;
-}
-
-/* ── TOPBAR ── */
-#topbar {
-  position: relative; z-index: 10;
-  display: flex; align-items: center; gap: 16px;
-  padding: 0 20px; height: 56px;
-  background: rgba(13,17,23,0.96);
-  border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(12px);
-}
-
-#logo {
-  display: flex; align-items: center; gap: 10px;
-  font-family: 'Orbitron', monospace;
-  font-size: 15px; font-weight: 700; letter-spacing: 2px;
-  color: var(--green);
-  text-shadow: var(--glow-g);
-  text-decoration: none;
-}
-#logo .dot { color: var(--cyan); }
-#logo svg { width: 28px; height: 28px; }
-
-.badge {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px; padding: 2px 8px;
-  border: 1px solid var(--green); border-radius: 20px;
-  color: var(--green); letter-spacing: 1px;
-  box-shadow: var(--glow-g);
-}
-
-.spacer { flex: 1; }
-
-#auth-area { display: flex; align-items: center; gap: 10px; }
-
-#user-info { display: none; align-items: center; gap: 10px; }
-#user-avatar {
-  width: 32px; height: 32px; border-radius: 50%;
-  border: 2px solid var(--green);
-  box-shadow: var(--glow-g);
-}
-#user-name { font-size: 13px; font-weight: 500; color: var(--text); }
-
-.btn {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 8px 16px; border-radius: 8px;
-  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500;
-  cursor: pointer; border: none; transition: all 0.2s;
-}
-.btn-login {
-  background: var(--green); color: #000;
-  font-weight: 600;
-}
-.btn-login:hover { background: #00e87a; transform: translateY(-1px); box-shadow: var(--glow-g); }
-.btn-logout {
-  background: transparent; color: var(--red);
-  border: 1px solid var(--red); padding: 6px 12px;
-}
-.btn-logout:hover { background: #ff3b6b18; }
-.btn-primary {
-  background: linear-gradient(135deg, var(--green), var(--cyan));
-  color: #000; font-weight: 700; font-size: 14px;
-  padding: 10px 22px; border-radius: 10px;
-}
-.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px #00ff8860; }
-.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-.btn-secondary {
-  background: var(--panel); color: var(--cyan);
-  border: 1px solid var(--border);
-}
-.btn-secondary:hover { border-color: var(--cyan); box-shadow: var(--glow-c); }
-
-/* ── MAIN LAYOUT ── */
-#app { display: flex; flex: 1; overflow: hidden; position: relative; z-index: 1; }
-
-/* ── SIDEBAR ── */
-#sidebar {
-  width: 72px; background: var(--surface);
-  border-right: 1px solid var(--border);
-  display: flex; flex-direction: column; align-items: center;
-  padding: 16px 0; gap: 6px;
-}
-
-.nav-btn {
-  width: 48px; height: 48px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 3px; border-radius: 10px; cursor: pointer;
-  border: 1px solid transparent;
-  transition: all 0.2s; color: var(--muted);
-  background: transparent;
-  font-size: 10px; font-family: 'Inter', sans-serif; font-weight: 500;
-}
-.nav-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
-.nav-btn:hover { background: var(--panel); color: var(--text); border-color: var(--border); }
-.nav-btn.active {
-  background: var(--panel); color: var(--green);
-  border-color: var(--green); box-shadow: var(--glow-g);
-}
-
-#sidebar-bottom { margin-top: auto; }
-
-/* ── WORKSPACE ── */
-#workspace { flex: 1; display: flex; overflow: hidden; }
-
-/* ── LEFT PANEL (input) ── */
-#left-panel {
-  width: 50%; display: flex; flex-direction: column;
-  border-right: 1px solid var(--border);
-}
-#right-panel { width: 50%; display: flex; flex-direction: column; }
-
-.panel-header {
-  display: flex; align-items: center; gap: 10px;
-  padding: 12px 16px; background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  font-size: 12px; font-weight: 500; color: var(--muted);
-  letter-spacing: 0.5px; flex-shrink: 0;
-}
-.panel-header .dot-status {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--green); box-shadow: var(--glow-g);
-  animation: pulse 2s infinite;
-}
-@keyframes pulse {
-  0%,100% { opacity: 1; } 50% { opacity: 0.4; }
-}
-
-.panel-title { font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
-.panel-title.green { color: var(--green); }
-.panel-title.cyan  { color: var(--cyan);  }
-
-/* Tab modes */
-#mode-tabs {
-  display: flex; gap: 0; background: var(--surface);
-  border-bottom: 1px solid var(--border); flex-shrink: 0;
-}
-.mode-tab {
-  flex: 1; padding: 10px; text-align: center;
-  font-size: 12px; font-weight: 600; cursor: pointer;
-  color: var(--muted); border-bottom: 2px solid transparent;
-  transition: all 0.2s; letter-spacing: 0.3px;
-}
-.mode-tab:hover { color: var(--text); background: var(--panel); }
-.mode-tab.active { color: var(--green); border-bottom-color: var(--green); background: var(--panel); }
-
-/* Editor area */
-.editor-wrap {
-  flex: 1; display: flex; flex-direction: column; overflow: hidden;
-}
-.editor-label {
-  padding: 8px 16px 4px;
-  font-size: 11px; color: var(--muted);
-  font-family: 'JetBrains Mono', monospace;
-  background: var(--code-bg); flex-shrink: 0;
-}
-
-textarea.code-editor {
-  flex: 1; resize: none; outline: none; border: none;
-  background: var(--code-bg);
-  color: #a8d8a8;
-  font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.7;
-  padding: 14px 16px; caret-color: var(--green);
-  tab-size: 4;
-}
-textarea.code-editor::placeholder { color: #334155; }
-
-textarea.desc-input {
-  flex: 1; resize: none; outline: none; border: none;
-  background: var(--code-bg);
-  color: var(--text);
-  font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.8;
-  padding: 20px; caret-color: var(--cyan);
-}
-textarea.desc-input::placeholder { color: #334155; }
-
-/* Action bar */
-#action-bar {
-  padding: 12px 16px; background: var(--surface);
-  border-top: 1px solid var(--border);
-  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
-}
-#char-count {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px; color: var(--muted); margin-left: auto;
-}
-
-/* Output */
-#output-wrap {
-  flex: 1; overflow-y: auto; background: var(--code-bg);
-}
-
-.output-block {
-  padding: 16px;
-  animation: fadeIn 0.3s ease;
-}
-@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-.output-section {
-  margin-bottom: 20px;
-  border: 1px solid var(--border);
-  border-radius: 10px; overflow: hidden;
-}
-.output-section-header {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 14px; background: var(--panel);
-  font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
-}
-.output-section-header.green { color: var(--green); border-left: 3px solid var(--green); }
-.output-section-header.cyan  { color: var(--cyan);  border-left: 3px solid var(--cyan);  }
-.output-section-header.orange{ color: var(--orange);border-left: 3px solid var(--orange);}
-.output-section-header.red   { color: var(--red);   border-left: 3px solid var(--red);  }
-
-.output-code {
-  background: var(--code-bg); padding: 16px;
-  font-family: 'JetBrains Mono', monospace; font-size: 12.5px;
-  line-height: 1.8; color: #a8d8a8;
-  white-space: pre-wrap; word-break: break-word;
-}
-.output-text {
-  padding: 16px;
-  font-size: 14px; line-height: 1.8; color: var(--text);
-}
-.output-text h3 { color: var(--cyan); margin-bottom: 8px; font-size: 14px; }
-.output-text p { margin-bottom: 10px; color: #94a3b8; }
-.output-text ul { padding-left: 20px; }
-.output-text li { margin-bottom: 6px; color: #94a3b8; }
-.error-item {
-  background: #1a0a0a; border: 1px solid #ff3b6b30;
-  border-radius: 8px; padding: 12px 14px; margin-bottom: 10px;
-}
-.error-item .err-line {
-  font-family: 'JetBrains Mono', monospace; font-size: 12px;
-  color: var(--red); margin-bottom: 4px; font-weight: 600;
-}
-.error-item .err-desc { font-size: 13px; color: #94a3b8; }
-.fix-item {
-  background: #001a0d; border: 1px solid #00ff8830;
-  border-radius: 8px; padding: 12px 14px; margin-bottom: 10px;
-}
-.fix-item .fix-label {
-  font-size: 12px; color: var(--green); font-weight: 700; margin-bottom: 4px;
-}
-.fix-item .fix-desc { font-size: 13px; color: #94a3b8; }
-
-/* Copy button */
-.copy-btn {
-  margin-left: auto; padding: 4px 10px;
-  background: transparent; border: 1px solid var(--border);
-  border-radius: 6px; color: var(--muted); font-size: 11px;
-  cursor: pointer; transition: all 0.2s;
-  font-family: 'JetBrains Mono', monospace;
-}
-.copy-btn:hover { border-color: var(--green); color: var(--green); }
-
-/* Loading spinner */
-#loading-overlay {
-  display: none; position: absolute;
-  inset: 0; z-index: 50;
-  background: rgba(6,8,16,0.85);
-  align-items: center; justify-content: center;
-  flex-direction: column; gap: 20px;
-  backdrop-filter: blur(4px);
-}
-#loading-overlay.show { display: flex; }
-.spinner {
-  width: 48px; height: 48px;
-  border: 3px solid var(--border);
-  border-top-color: var(--green);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.loading-text {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 13px; color: var(--green);
-  animation: blink 1.2s steps(2) infinite;
-}
-@keyframes blink { 50% { opacity: 0.3; } }
-
-/* Login wall */
-#login-wall {
-  display: none; position: absolute; inset: 0; z-index: 30;
-  background: rgba(6,8,16,0.97);
-  align-items: center; justify-content: center;
-  flex-direction: column; gap: 24px;
-  backdrop-filter: blur(8px);
-}
-#login-wall.show { display: flex; }
-.login-card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 20px; padding: 48px 40px; max-width: 400px; width: 90%;
-  text-align: center;
-  box-shadow: 0 0 80px #00ff8815, 0 0 30px #00d4ff08;
-}
-.login-card h2 {
-  font-family: 'Orbitron', monospace;
-  font-size: 22px; font-weight: 700;
-  color: var(--green); margin-bottom: 8px;
-  text-shadow: var(--glow-g);
-}
-.login-card p { color: var(--muted); font-size: 14px; margin-bottom: 32px; line-height: 1.7; }
-.btn-google {
-  display: flex; align-items: center; justify-content: center; gap: 12px;
-  width: 100%; padding: 14px; border-radius: 12px;
-  background: var(--panel); border: 1px solid var(--border);
-  color: var(--text); font-size: 15px; font-weight: 600;
-  cursor: pointer; transition: all 0.25s;
-}
-.btn-google:hover {
-  border-color: var(--green); background: #001a0d;
-  box-shadow: var(--glow-g); transform: translateY(-2px);
-}
-
-/* Settings */
-#settings-panel {
-  display: none; flex-direction: column;
-  position: absolute; inset: 0; z-index: 20;
-  background: var(--bg); padding: 32px;
-  overflow-y: auto;
-}
-#settings-panel.show { display: flex; }
-.settings-title {
-  font-family: 'Orbitron', monospace;
-  font-size: 18px; color: var(--green); margin-bottom: 8px;
-}
-.settings-subtitle { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
-.setting-group {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 14px; padding: 24px; margin-bottom: 20px;
-  max-width: 600px;
-}
-.setting-label {
-  font-size: 13px; font-weight: 600; color: var(--cyan);
-  letter-spacing: 0.5px; margin-bottom: 6px;
-}
-.setting-hint {
-  font-size: 12px; color: var(--muted); margin-bottom: 12px;
-}
-.setting-input {
-  width: 100%; padding: 10px 14px; border-radius: 8px;
-  background: var(--code-bg); border: 1px solid var(--border);
-  color: var(--text); font-family: 'JetBrains Mono', monospace;
-  font-size: 13px; outline: none; transition: border-color 0.2s;
-}
-.setting-input:focus { border-color: var(--cyan); }
-.setting-input::placeholder { color: #334155; }
-.setting-row { display: flex; gap: 10px; margin-top: 14px; }
-.btn-save {
-  background: var(--green); color: #000;
-  font-weight: 700; padding: 9px 20px; border-radius: 8px;
-  border: none; cursor: pointer; font-size: 13px;
-  transition: all 0.2s;
-}
-.btn-save:hover { background: #00e87a; }
-.saved-badge {
-  display: none; align-items: center; gap: 6px;
-  color: var(--green); font-size: 13px; font-weight: 600;
-}
-.saved-badge.show { display: flex; }
-
-/* Welcome screen */
-#welcome-screen {
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  height: 100%; gap: 12px; padding: 40px;
-  text-align: center;
-}
-.welcome-icon {
-  width: 64px; height: 64px;
-  background: linear-gradient(135deg, #00ff8820, #00d4ff20);
-  border: 1px solid var(--border); border-radius: 16px;
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: 8px;
-}
-.welcome-icon svg { width: 32px; height: 32px; color: var(--green); }
-.welcome-title {
-  font-family: 'Orbitron', monospace;
-  font-size: 16px; color: var(--text);
-}
-.welcome-desc { font-size: 13px; color: var(--muted); max-width: 280px; line-height: 1.7; }
-
-/* Status bar */
-#statusbar {
-  height: 28px; background: var(--surface);
-  border-top: 1px solid var(--border);
-  display: flex; align-items: center; gap: 20px;
-  padding: 0 16px; flex-shrink: 0; z-index: 5; position: relative;
-}
-.status-item {
-  display: flex; align-items: center; gap: 6px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px; color: var(--muted);
-}
-.status-dot { width: 6px; height: 6px; border-radius: 50%; }
-.status-dot.green { background: var(--green); box-shadow: var(--glow-g); }
-.status-dot.orange { background: var(--orange); }
-
-/* Error bar */
-#error-bar {
-  display: none; padding: 10px 16px;
-  background: #1a0608; border-bottom: 1px solid var(--red);
-  font-size: 13px; color: var(--red);
-  align-items: center; gap: 10px;
-}
-#error-bar.show { display: flex; }
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--muted); }
-
-/* Token indicator */
-.token-pill {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px; padding: 2px 8px; border-radius: 10px;
-  background: var(--panel); border: 1px solid var(--border);
-  color: var(--muted);
-}
-
-/* Responsive — hide right panel labels on small screens */
-@media (max-width: 768px) {
-  #left-panel, #right-panel { width: 100%; }
-  #left-panel { display: none; }
+button:hover{transform:scale(1.03)}
+canvas{display:block}
+#leaderboard{
+margin-top:15px;
+padding:10px;
+border-radius:16px;
+background:rgba(255,255,255,0.06)
 }
 </style>
 </head>
 <body>
 
-<canvas id="bg-canvas"></canvas>
+<div id="ui">
+<div class="title">☣️ Kingdom Survival</div>
 
-<!-- TOP BAR -->
-<header id="topbar">
-  <a id="logo" href="#">
-    <svg viewBox="0 0 28 28" fill="none">
-      <rect x="2" y="2" width="10" height="10" rx="2" fill="#00ff88"/>
-      <rect x="16" y="2" width="10" height="10" rx="2" fill="#00d4ff" opacity="0.7"/>
-      <rect x="2" y="16" width="10" height="10" rx="2" fill="#00d4ff" opacity="0.7"/>
-      <rect x="16" y="16" width="10" height="10" rx="2" fill="#00ff88" opacity="0.4"/>
-    </svg>
-    LUA<span class="dot">FORGE</span>&nbsp;AI
-  </a>
-  <span class="badge">BETA</span>
-  <div class="spacer"></div>
-  <div id="auth-area">
-    <div id="user-info">
-      <img id="user-avatar" src="" alt="">
-      <span id="user-name"></span>
-      <button class="btn btn-logout" onclick="signOut()">Đăng xuất</button>
-    </div>
-    <button class="btn btn-login" id="login-btn" onclick="signInGoogle()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-      Đăng nhập Google
-    </button>
-  </div>
-</header>
+<div class="stat">💰 Money: <span id="money">200</span></div>
+<div class="stat">🍖 Food: <span id="food">100</span></div>
+<div class="stat">💧 Water: <span id="water">100</span></div>
+<div class="stat">👥 Citizens: <span id="citizens">5</span></div>
+<div class="stat">🏠 Base HP: <span id="basehp">100</span>/100</div>
+<div class="stat">⏱️ Survival Time: <span id="time">0</span>s</div>
+<div class="stat">👹 Zombies: <span id="kills">0</span></div>
 
-<div id="error-bar">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-  <span id="error-msg"></span>
+<button style="background:#64748b" onclick="setBuild('wall')">🧱 Build Wall</button>
+<button style="background:#ef4444" onclick="setBuild('turret')">🤖 Build Turret</button>
+<button style="background:#6b7280" onclick="setBuild('mine')">⛏️ Build Mine</button>
+<button style="background:#7c3aed" onclick="setBuild('factory')">🏭 Build Factory</button>
+<button style="background:#10b981" onclick="setBuild('market')">🏪 Build Market</button>
+<button style="background:#84cc16" onclick="setBuild('farm')">🌾 Build Farm</button>
+<button style="background:#0ea5e9" onclick="setBuild('water')">💧 Water Pump</button>
+
+<div id="leaderboard">
+<h3>🏆 Leaderboard</h3>
+<div id="scores"></div>
+</div>
 </div>
 
-<!-- LOGIN WALL -->
-<div id="login-wall" class="show">
-  <div class="login-card">
-    <div style="font-family:'Orbitron',monospace;font-size:28px;color:var(--green);text-shadow:var(--glow-g);margin-bottom:4px;">⚡ LUAFORGE</div>
-    <h2>Trợ lý AI cho Game Dev</h2>
-    <p>Tạo, sửa lỗi và chẩn đoán code Lua cho <strong>Vietnam Life Game</strong> của bạn với sức mạnh của Gemini AI</p>
-    <button class="btn-google" onclick="signInGoogle()">
-      <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-      Đăng nhập bằng Google
-    </button>
-    <p style="margin-top:16px;font-size:12px;color:#334155;">Cần thiết lập API Key Gemini trong Settings sau khi đăng nhập</p>
-  </div>
-</div>
+<script type="module">
+import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 
-<!-- MAIN APP -->
-<div id="app">
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x030712);
+scene.fog = new THREE.Fog(0x030712,30,120);
 
-  <!-- SIDEBAR -->
-  <nav id="sidebar">
-    <button class="nav-btn active" id="nav-generate" onclick="setMode('generate')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-      Tạo
-    </button>
-    <button class="nav-btn" id="nav-fix" onclick="setMode('fix')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-      Sửa
-    </button>
-    <button class="nav-btn" id="nav-diagnose" onclick="setMode('diagnose')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-      Chẩn
-    </button>
-    <button class="nav-btn" id="nav-optimize" onclick="setMode('optimize')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      Tối ưu
-    </button>
-    <div class="nav-btn" id="sidebar-bottom">
-      <button class="nav-btn" onclick="openSettings()" style="width:48px;height:48px;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        <span style="font-size:9px;">Settings</span>
-      </button>
-    </div>
-  </nav>
+const camera = new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,1000);
+camera.position.set(18,18,18);
 
-  <!-- WORKSPACE -->
-  <div id="workspace">
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
 
-    <!-- LEFT: INPUT -->
-    <div id="left-panel">
-      <div class="panel-header">
-        <div class="dot-status"></div>
-        <span class="panel-title green" id="mode-label-top">⚡ TẠO CODE LUA</span>
-        <div class="spacer"></div>
-        <span id="model-badge" class="token-pill">gemini-2.0-flash</span>
-      </div>
+const controls = new OrbitControls(camera,renderer.domElement);
+controls.enableDamping = true;
+controls.target.set(0,0,0);
 
-      <!-- MODE TABS -->
-      <div id="mode-tabs">
-        <div class="mode-tab active" id="tab-generate" onclick="setMode('generate')">⚡ Tạo Code</div>
-        <div class="mode-tab" id="tab-fix" onclick="setMode('fix')">🔧 Sửa Lỗi</div>
-        <div class="mode-tab" id="tab-diagnose" onclick="setMode('diagnose')">🔍 Chẩn Đoán</div>
-        <div class="mode-tab" id="tab-optimize" onclick="setMode('optimize')">📈 Tối Ưu</div>
-      </div>
+const ambient = new THREE.AmbientLight(0xffffff,0.4);
+scene.add(ambient);
 
-      <!-- GENERATE MODE -->
-      <div class="editor-wrap" id="panel-generate">
-        <div class="editor-label">-- Mô tả tính năng bạn muốn tạo (tiếng Việt hoặc tiếng Anh)</div>
-        <textarea class="desc-input" id="input-generate"
-          placeholder="Ví dụ: Tạo hệ thống inventory cho game Vietnam Life, lưu items vào DataStore, có thể thêm/xóa/kiểm tra item. Hỗ trợ tối đa 50 slots..."></textarea>
-      </div>
+const moon = new THREE.DirectionalLight(0xaaccff,2);
+moon.position.set(20,30,10);
+moon.castShadow = true;
+scene.add(moon);
 
-      <!-- FIX MODE -->
-      <div class="editor-wrap" id="panel-fix" style="display:none;">
-        <div class="editor-label">-- Dán code Lua bị lỗi vào đây</div>
-        <textarea class="code-editor" id="input-fix"
-          placeholder="-- Dán code Lua bị lỗi của bạn vào đây&#10;-- Thêm comment mô tả lỗi nếu có&#10;&#10;local function myFunction()&#10;  -- ...&#10;end"></textarea>
-        <div style="padding:8px 16px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;">
-          <textarea style="width:100%;height:54px;resize:none;background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text);font-size:12px;outline:none;font-family:'Inter',sans-serif;" id="input-fix-desc" placeholder="Mô tả lỗi bạn gặp phải: game crash, giá trị sai, không chạy... (tùy chọn)"></textarea>
-        </div>
-      </div>
+const ground = new THREE.Mesh(
+new THREE.PlaneGeometry(200,200),
+new THREE.MeshStandardMaterial({color:0x0f172a})
+);
+ground.rotation.x = -Math.PI/2;
+ground.receiveShadow = true;
+scene.add(ground);
 
-      <!-- DIAGNOSE MODE -->
-      <div class="editor-wrap" id="panel-diagnose" style="display:none;">
-        <div class="editor-label">-- Dán code Lua cần chẩn đoán vào đây</div>
-        <textarea class="code-editor" id="input-diagnose"
-          placeholder="-- Dán code Lua cần phân tích vào đây&#10;-- AI sẽ tìm tất cả lỗi tiềm ẩn, vấn đề hiệu suất và đưa ra giải pháp chi tiết"></textarea>
-      </div>
+const grid = new THREE.GridHelper(200,50,0x334155,0x1e293b);
+scene.add(grid);
 
-      <!-- OPTIMIZE MODE -->
-      <div class="editor-wrap" id="panel-optimize" style="display:none;">
-        <div class="editor-label">-- Dán code Lua cần tối ưu hóa vào đây</div>
-        <textarea class="code-editor" id="input-optimize"
-          placeholder="-- Dán code Lua bạn muốn tối ưu vào đây&#10;-- AI sẽ cải thiện hiệu suất, gọn hơn và dễ đọc hơn"></textarea>
-      </div>
+const home = new THREE.Mesh(
+new THREE.BoxGeometry(6,6,6),
+new THREE.MeshStandardMaterial({color:0xfacc15})
+);
+home.position.y = 3;
+home.castShadow = true;
+scene.add(home);
 
-      <!-- ACTION BAR -->
-      <div id="action-bar">
-        <button class="btn btn-primary" id="run-btn" onclick="runAI()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          <span id="run-label">Tạo Code</span>
-        </button>
-        <button class="btn btn-secondary" onclick="clearAll()">Xóa</button>
-        <span id="char-count">0 ký tự</span>
-      </div>
-    </div>
+const player = new THREE.Mesh(
+new THREE.BoxGeometry(1.5,2,1.5),
+new THREE.MeshStandardMaterial({color:0x22c55e})
+);
+player.position.set(0,1,10);
+player.castShadow = true;
+scene.add(player);
 
-    <!-- RIGHT: OUTPUT -->
-    <div id="right-panel">
-      <div class="panel-header">
-        <span class="panel-title cyan">📤 KẾT QUẢ</span>
-        <div class="spacer"></div>
-        <button class="copy-btn" onclick="copyOutput()" id="copy-all-btn" style="display:none;">📋 Copy tất cả</button>
-      </div>
-      <div id="output-wrap">
-        <div id="welcome-screen">
-          <div class="welcome-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          </div>
-          <div class="welcome-title">Sẵn sàng tạo code Lua</div>
-          <div class="welcome-desc">Chọn chế độ, nhập mô tả hoặc dán code, rồi nhấn nút để AI phân tích và tạo code cho game của bạn</div>
-          <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;justify-content:center;">
-            <span style="background:var(--panel);border:1px solid var(--border);padding:6px 12px;border-radius:20px;font-size:12px;color:var(--muted);">⚡ Tạo code nhanh</span>
-            <span style="background:var(--panel);border:1px solid var(--border);padding:6px 12px;border-radius:20px;font-size:12px;color:var(--muted);">🔧 Sửa lỗi thông minh</span>
-            <span style="background:var(--panel);border:1px solid var(--border);padding:6px 12px;border-radius:20px;font-size:12px;color:var(--muted);">🔍 Chẩn đoán chi tiết</span>
-          </div>
-        </div>
-        <div id="output-block" class="output-block" style="display:none;"></div>
-      </div>
-    </div>
-  </div>
+let money = 200;
+let food = 100;
+let water = 100;
+let citizens = 5;
+let baseHP = 100;
+let kills = 0;
+let timeAlive = 0;
+let buildMode = 'wall';
 
-  <!-- LOADING OVERLAY -->
-  <div id="loading-overlay">
-    <div class="spinner"></div>
-    <div class="loading-text" id="loading-text">Đang xử lý...</div>
-  </div>
+const zombies=[];
+const bullets=[];
+const buildings=[];
+const turrets=[];
+const keys={};
 
-  <!-- SETTINGS PANEL -->
-  <div id="settings-panel">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:32px;">
-      <button onclick="closeSettings()" style="background:var(--panel);border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;">← Quay lại</button>
-      <div>
-        <div class="settings-title">⚙️ Cài đặt</div>
-        <div class="settings-subtitle">Cấu hình API keys và tùy chọn</div>
-      </div>
-    </div>
+window.addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);
+window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
 
-    <div class="setting-group">
-      <div class="setting-label">🤖 GEMINI API KEY</div>
-      <div class="setting-hint">Lấy API key tại: <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--cyan);">aistudio.google.com</a> — Key được lưu trên trình duyệt của bạn</div>
-      <input type="password" class="setting-input" id="gemini-key-input" placeholder="AIza...">
-      <div class="setting-row">
-        <button class="btn-save" onclick="saveGeminiKey()">💾 Lưu Key</button>
-        <button onclick="testGeminiKey()" style="background:var(--panel);border:1px solid var(--border);color:var(--cyan);padding:9px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;">🧪 Test Key</button>
-        <div class="saved-badge" id="saved-badge">✅ Đã lưu!</div>
-      </div>
-      <div id="key-status" style="margin-top:10px;font-size:13px;color:var(--muted);font-family:'JetBrains Mono',monospace;"></div>
-    </div>
+window.setBuild = (t)=>buildMode=t;
 
-    <div class="setting-group">
-      <div class="setting-label">🔗 PLUGIN LUA — HƯỚNG DẪN</div>
-      <div class="setting-hint">Để kết nối Roblox Studio với LuaForge AI:</div>
-      <div style="background:var(--code-bg);border-radius:8px;padding:14px;margin-top:8px;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.8;color:#a8d8a8;">
-          1. Tải file <strong style="color:var(--cyan);">LuaAIPlugin.lua</strong><br>
-          2. Mở Roblox Studio → Plugins tab<br>
-          3. Chọn "Plugin Folder" → dán file vào<br>
-          4. Reload Studio → Dùng plugin từ toolbar<br>
-          5. Nhập Gemini API Key trong plugin settings
-        </div>
-      </div>
-    </div>
+function ui(){
+money=Math.max(0,money);
+food=Math.max(0,food);
+water=Math.max(0,water);
 
-    <div class="setting-group">
-      <div class="setting-label">ℹ️ THÔNG TIN</div>
-      <div style="font-size:13px;line-height:1.8;color:var(--muted);">
-        <div>🎮 Game: <span style="color:var(--text);">Vietnam Life Game</span></div>
-        <div>🤖 Model: <span style="color:var(--green);">gemini-2.0-flash</span></div>
-        <div>🔥 Firebase: <span style="color:var(--orange);">vietnam-life-game</span></div>
-        <div>📌 Version: <span style="color:var(--text);">1.0.0 Beta</span></div>
-      </div>
-    </div>
-  </div>
-</div>
+document.getElementById('money').innerText=Math.floor(money);
+document.getElementById('food').innerText=Math.floor(food);
+document.getElementById('water').innerText=Math.floor(water);
+document.getElementById('citizens').innerText=citizens;
+document.getElementById('basehp').innerText=Math.floor(baseHP);
+document.getElementById('kills').innerText=kills;
+document.getElementById('time').innerText=Math.floor(timeAlive);
+}
 
-<!-- STATUS BAR -->
-<footer id="statusbar">
-  <div class="status-item">
-    <div class="status-dot green" id="status-dot"></div>
-    <span id="status-text">Sẵn sàng</span>
-  </div>
-  <div class="status-item">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="color:var(--muted)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-    <span id="status-model">Model: gemini-2.0-flash</span>
-  </div>
-  <div class="status-item" id="status-user-bar" style="display:none;">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="color:var(--green)"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-    <span id="status-user-name">-</span>
-  </div>
-  <div class="spacer"></div>
-  <div class="status-item" style="color:var(--muted);font-size:10px;">
-    🇻🇳 Vietnam Life Game Dev Tools
-  </div>
-</footer>
+function saveGame(){
+localStorage.setItem('kingdom-survival-save',JSON.stringify({
+money,food,water,citizens,baseHP,kills,timeAlive
+}));
+}
 
-<script>
-// ── FIREBASE CONFIG ──────────────────────────────────────────
-const firebaseConfig = {
-  apiKey: "AIzaSyCDQsJ_NrGK5ouRLS7vFr55OBZQ0nKhHSk",
-  authDomain: "vietnam-life-game.firebaseapp.com",
-  databaseURL: "https://vietnam-life-game-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "vietnam-life-game",
-  storageBucket: "vietnam-life-game.firebasestorage.app",
-  messagingSenderId: "134954120781",
-  appId: "1:134954120781:web:d7f762adb80bfce3140e04",
-  measurementId: "G-39VPPE1F9T"
-};
+function loadGame(){
+const save = JSON.parse(localStorage.getItem('kingdom-survival-save')||'null');
+if(!save)return;
+money=save.money;
+food=save.food;
+water=save.water;
+citizens=save.citizens;
+baseHP=save.baseHP;
+kills=save.kills;
+timeAlive=save.timeAlive;
+}
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-try { firebase.analytics(); } catch(e) {}
+loadGame();
 
-// ── GEMINI CONFIG ─────────────────────────────────────────────
-const GEMINI_MODEL = "gemini-2.0-flash";
-const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+function saveScore(){
+const old = JSON.parse(localStorage.getItem('kingdom-scores')||'[]');
+old.push({time:Math.floor(timeAlive),kills});
+old.sort((a,b)=>b.time-a.time);
+localStorage.setItem('kingdom-scores',JSON.stringify(old.slice(0,10)));
+loadScores();
+}
 
-// ── STATE ─────────────────────────────────────────────────────
-let currentMode = 'generate';
-let currentUser = null;
-let lastOutput  = '';
+function loadScores(){
+const scores = JSON.parse(localStorage.getItem('kingdom-scores')||'[]');
+document.getElementById('scores').innerHTML = scores.map((s,i)=>`<div>#${i+1} - ${s.time}s / ${s.kills} kills</div>`).join('');
+}
 
-// ── CANVAS BACKGROUND ─────────────────────────────────────────
-(function initCanvas() {
-  const canvas = document.getElementById('bg-canvas');
-  const ctx = canvas.getContext('2d');
-  let cols, drops = [];
-  const chars = 'ローカルファンクション変数テーブル01{};=()返るNIL';
+loadScores();
 
-  function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    cols = Math.floor(canvas.width / 18);
-    drops = Array(cols).fill(1);
-  }
-  resize();
-  window.addEventListener('resize', resize);
+function buildStructure(type,x,z){
+let cost=0;
+let mesh;
 
-  function draw() {
-    ctx.fillStyle = 'rgba(6,8,16,0.05)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#00ff88';
-    ctx.font = '14px JetBrains Mono';
-    drops.forEach((y, i) => {
-      const ch = chars[Math.floor(Math.random() * chars.length)];
-      ctx.fillText(ch, i * 18, y * 18);
-      if (y * 18 > canvas.height && Math.random() > 0.975) drops[i] = 0;
-      drops[i]++;
-    });
-  }
-  setInterval(draw, 55);
-})();
+if(type==='wall'){
+cost=40;
+mesh=new THREE.Mesh(
+new THREE.BoxGeometry(4,3,1),
+new THREE.MeshStandardMaterial({color:0x64748b})
+);
+}
 
-// ── AUTH ──────────────────────────────────────────────────────
-auth.onAuthStateChanged(user => {
-  currentUser = user;
-  if (user) {
-    document.getElementById('login-wall').classList.remove('show');
-    document.getElementById('user-info').style.display = 'flex';
-    document.getElementById('login-btn').style.display = 'none';
-    document.getElementById('user-avatar').src = user.photoURL || '';
-    document.getElementById('user-name').textContent = user.displayName || user.email;
-    document.getElementById('status-user-bar').style.display = 'flex';
-    document.getElementById('status-user-name').textContent = user.displayName || user.email;
-    setStatus('Đã đăng nhập', 'green');
-  } else {
-    document.getElementById('login-wall').classList.add('show');
-    document.getElementById('user-info').style.display = 'none';
-    document.getElementById('login-btn').style.display = 'flex';
-    document.getElementById('status-user-bar').style.display = 'none';
-  }
+if(type==='turret'){
+cost=160;
+mesh=new THREE.Mesh(
+new THREE.CylinderGeometry(1,1,3,8),
+new THREE.MeshStandardMaterial({color:0xef4444})
+);
+}
+
+if(type==='mine'){
+cost=80;
+mesh=new THREE.Mesh(
+new THREE.BoxGeometry(3,3,3),
+new THREE.MeshStandardMaterial({color:0x6b7280})
+);
+}
+
+if(type==='factory'){
+cost=150;
+mesh=new THREE.Mesh(
+new THREE.BoxGeometry(4,5,4),
+new THREE.MeshStandardMaterial({color:0x7c3aed})
+);
+}
+
+if(type==='market'){
+cost=220;
+mesh=new THREE.Mesh(
+new THREE.BoxGeometry(4,3,4),
+new THREE.MeshStandardMaterial({color:0x10b981})
+);
+}
+
+if(type==='farm'){
+cost=100;
+mesh=new THREE.Mesh(
+new THREE.CylinderGeometry(2,2,1,8),
+new THREE.MeshStandardMaterial({color:0x84cc16})
+);
+}
+
+if(type==='water'){
+cost=100;
+mesh=new THREE.Mesh(
+new THREE.CylinderGeometry(1,1,5,8),
+new THREE.MeshStandardMaterial({color:0x0ea5e9})
+);
+}
+
+if(money<cost)return;
+
+money-=cost;
+
+mesh.position.set(x,2,z);
+mesh.castShadow=true;
+mesh.receiveShadow=true;
+scene.add(mesh);
+
+const data={mesh,type,level:1,hp:100};
+buildings.push(data);
+
+if(type==='turret')turrets.push(data);
+}
+
+renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
+renderer.domElement.addEventListener('mousedown',(e)=>{
+if(e.button!==2)return;
+
+const mouse = new THREE.Vector2(
+(e.clientX/innerWidth)*2-1,
+-(e.clientY/innerHeight)*2+1
+);
+
+const ray = new THREE.Raycaster();
+ray.setFromCamera(mouse,camera);
+const hit = ray.intersectObject(ground);
+
+if(hit.length>0){
+const p = hit[0].point;
+const gx = Math.round(p.x/4)*4;
+const gz = Math.round(p.z/4)*4;
+buildStructure(buildMode,gx,gz);
+}
 });
 
-function signInGoogle() {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).catch(e => showError('Lỗi đăng nhập: ' + e.message));
-}
-function signOut() {
-  auth.signOut();
-}
+function zombie(){
+const z = new THREE.Mesh(
+new THREE.BoxGeometry(1.5,2,1.5),
+new THREE.MeshStandardMaterial({color:0xef4444})
+);
 
-// ── MODE ──────────────────────────────────────────────────────
-const modeConfig = {
-  generate: { label: '⚡ TẠO CODE LUA', tab: 'generate', runLabel: 'Tạo Code',   color: 'green' },
-  fix:      { label: '🔧 SỬA LỖI LUA',  tab: 'fix',      runLabel: 'Sửa Lỗi',    color: 'orange'},
-  diagnose: { label: '🔍 CHẨN ĐOÁN',    tab: 'diagnose', runLabel: 'Chẩn Đoán',  color: 'cyan'  },
-  optimize: { label: '📈 TỐI ƯU CODE',  tab: 'optimize', runLabel: 'Tối Ưu',     color: 'green' },
-};
+const angle = Math.random()*Math.PI*2;
+const dist = 70;
 
-function setMode(mode) {
-  currentMode = mode;
-  const cfg = modeConfig[mode];
+z.position.set(Math.cos(angle)*dist,1,Math.sin(angle)*dist);
+z.castShadow=true;
+scene.add(z);
 
-  // Nav buttons
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  const nb = document.getElementById('nav-' + mode);
-  if (nb) nb.classList.add('active');
-
-  // Tabs
-  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + mode).classList.add('active');
-
-  // Panels
-  ['generate','fix','diagnose','optimize'].forEach(m => {
-    document.getElementById('panel-' + m).style.display = m === mode ? 'flex' : 'none';
-  });
-
-  document.getElementById('mode-label-top').textContent = cfg.label;
-  document.getElementById('run-label').textContent = cfg.runLabel;
-  updateCharCount();
+zombies.push({mesh:z,hp:3});
 }
 
-// ── CHAR COUNT ────────────────────────────────────────────────
-function getActiveInput() {
-  const ids = { generate: 'input-generate', fix: 'input-fix', diagnose: 'input-diagnose', optimize: 'input-optimize' };
-  return document.getElementById(ids[currentMode]);
-}
+setInterval(zombie,2200);
 
-function updateCharCount() {
-  const el = getActiveInput();
-  const n = el ? el.value.length : 0;
-  document.getElementById('char-count').textContent = n.toLocaleString('vi') + ' ký tự';
-}
+window.addEventListener('click',()=>{
+const bullet = new THREE.Mesh(
+new THREE.SphereGeometry(0.2,8,8),
+new THREE.MeshBasicMaterial({color:0xffff00})
+);
 
-['input-generate','input-fix','input-diagnose','input-optimize'].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) el.addEventListener('input', updateCharCount);
+bullet.position.copy(player.position);
+
+const dir = new THREE.Vector3();
+camera.getWorldDirection(dir);
+
+bullets.push({mesh:bullet,vel:dir.multiplyScalar(1.5)});
+scene.add(bullet);
 });
 
-// ── PROMPTS ───────────────────────────────────────────────────
-function buildPrompt(mode) {
-  const game = 'Vietnam Life Game (Roblox)';
-  const base = `Bạn là một chuyên gia lập trình Lua cho game Roblox, đặc biệt là ${game}. 
-Trả lời bằng tiếng Việt nhưng giữ nguyên tên hàm, biến, kỹ thuật bằng tiếng Anh.
-Luôn viết code sạch, có comment rõ ràng, xử lý lỗi đầy đủ.`;
-
-  if (mode === 'generate') {
-    const desc = document.getElementById('input-generate').value.trim();
-    if (!desc) return null;
-    return `${base}
-
-NHIỆM VỤ: Tạo code Lua hoàn chỉnh cho ${game} dựa trên yêu cầu sau:
-"${desc}"
-
-YÊU CẦU OUTPUT:
-1. Code Lua đầy đủ, chạy được ngay
-2. Comment giải thích từng phần quan trọng (tiếng Việt)
-3. Xử lý RemoteEvents/RemoteFunctions nếu cần client-server
-4. Sử dụng DataStore nếu cần lưu dữ liệu
-5. Brief explanation (2-3 dòng) về cách code hoạt động
-
-Trả về dạng: [CODE_START]...[CODE_END] rồi [EXPLAIN_START]...[EXPLAIN_END]`;
-  }
-
-  if (mode === 'fix') {
-    const code = document.getElementById('input-fix').value.trim();
-    const desc = document.getElementById('input-fix-desc').value.trim();
-    if (!code) return null;
-    return `${base}
-
-NHIỆM VỤ: Sửa lỗi trong code Lua sau cho ${game}:
-
-\`\`\`lua
-${code}
-\`\`\`
-
-${desc ? `Mô tả lỗi từ dev: "${desc}"` : ''}
-
-YÊU CẦU OUTPUT:
-1. [ERRORS]: Liệt kê tất cả lỗi tìm được (dòng, loại lỗi, nguyên nhân)
-2. [FIXED_CODE]: Code đã sửa hoàn chỉnh
-3. [CHANGES]: Giải thích những gì đã thay đổi và tại sao
-
-Format: [ERRORS_START]...[ERRORS_END][CODE_START]...[CODE_END][CHANGES_START]...[CHANGES_END]`;
-  }
-
-  if (mode === 'diagnose') {
-    const code = document.getElementById('input-diagnose').value.trim();
-    if (!code) return null;
-    return `${base}
-
-NHIỆM VỤ: Chẩn đoán toàn diện code Lua sau cho ${game}:
-
-\`\`\`lua
-${code}
-\`\`\`
-
-PHÂN TÍCH CHI TIẾT:
-1. [SYNTAX]: Lỗi cú pháp (nếu có)
-2. [LOGIC]: Lỗi logic / bug tiềm ẩn
-3. [PERFORMANCE]: Vấn đề hiệu suất
-4. [SECURITY]: Vấn đề bảo mật (exploit, anti-cheat)
-5. [ROBLOX_API]: Sử dụng API sai / deprecated
-6. [SUGGESTIONS]: Đề xuất cải thiện
-7. [SCORE]: Điểm chất lượng code /100 và giải thích
-
-Format mỗi section: [SECTION_NAME_START]...[SECTION_NAME_END]`;
-  }
-
-  if (mode === 'optimize') {
-    const code = document.getElementById('input-optimize').value.trim();
-    if (!code) return null;
-    return `${base}
-
-NHIỆM VỤ: Tối ưu hóa code Lua sau cho ${game}:
-
-\`\`\`lua
-${code}
-\`\`\`
-
-YÊU CẦU:
-1. [ANALYSIS]: Phân tích điểm yếu hiệu suất
-2. [OPTIMIZED_CODE]: Code đã tối ưu
-3. [IMPROVEMENTS]: Danh sách cải tiến đã thực hiện
-4. [BENCHMARK]: Ước tính cải thiện hiệu suất
-
-Format: [ANALYSIS_START]...[ANALYSIS_END][CODE_START]...[CODE_END][IMPROVEMENTS_START]...[IMPROVEMENTS_END][BENCHMARK_START]...[BENCHMARK_END]`;
-  }
+function over(){
+saveScore();
+localStorage.removeItem('kingdom-survival-save');
+alert('☠️ GAME OVER\nBạn sống được '+Math.floor(timeAlive)+' giây');
+location.reload();
 }
 
-// ── GEMINI CALL ───────────────────────────────────────────────
-async function callGemini(prompt) {
-  const apiKey = localStorage.getItem('gemini_api_key');
-  if (!apiKey) throw new Error('Chưa có API Key! Vào Settings để nhập Gemini API Key.');
+const clock = new THREE.Clock();
 
-  const resp = await fetch(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.3,
-        maxOutputTokens: 4096,
-        topP: 0.8
-      }
-    })
-  });
+function animate(){
+requestAnimationFrame(animate);
 
-  if (!resp.ok) {
-    const err = await resp.json();
-    throw new Error(err.error?.message || `HTTP ${resp.status}`);
-  }
+const dt = clock.getDelta();
+timeAlive += dt;
 
-  const data = await resp.json();
-  if (!data.candidates?.[0]?.content?.parts?.[0]?.text)
-    throw new Error('Gemini không trả về kết quả hợp lệ');
-  return data.candidates[0].content.parts[0].text;
+if(keys['w'])player.position.z-=0.25;
+if(keys['s'])player.position.z+=0.25;
+if(keys['a'])player.position.x-=0.25;
+if(keys['d'])player.position.x+=0.25;
+
+food -= citizens*0.0015;
+water -= citizens*0.0012;
+
+if(food<=0||water<=0){
+baseHP -= 0.01;
 }
 
-// ── PARSE RESPONSE ────────────────────────────────────────────
-function extractBlock(text, tag) {
-  const re = new RegExp(`\\[${tag}_START\\]([\\s\\S]*?)\\[${tag}_END\\]`, 'i');
-  const m = text.match(re);
-  return m ? m[1].trim() : null;
-}
-
-function renderOutput(mode, rawText) {
-  lastOutput = rawText;
-  const out = document.getElementById('output-block');
-  out.innerHTML = '';
-  document.getElementById('welcome-screen').style.display = 'none';
-  out.style.display = 'block';
-  document.getElementById('copy-all-btn').style.display = 'inline-flex';
-
-  if (mode === 'generate') {
-    const code = extractBlock(rawText, 'CODE') || extractCode(rawText);
-    const explain = extractBlock(rawText, 'EXPLAIN') || '';
-    if (code) addSection(out, '✅ CODE ĐÃ TẠO', code, 'code', 'green');
-    if (explain) addSection(out, '📝 GIẢI THÍCH', explain, 'text', 'cyan');
-    if (!code && !explain) addSection(out, '✅ KẾT QUẢ', rawText, 'text', 'green');
-  }
-  else if (mode === 'fix') {
-    const errors = extractBlock(rawText, 'ERRORS');
-    const code   = extractBlock(rawText, 'CODE') || extractCode(rawText);
-    const changes= extractBlock(rawText, 'CHANGES');
-    if (errors) addSection(out, '🐛 LỖI TÌM ĐƯỢC', errors, 'text', 'red');
-    if (code)   addSection(out, '✅ CODE ĐÃ SỬA', code, 'code', 'green');
-    if (changes)addSection(out, '📝 THAY ĐỔI', changes, 'text', 'cyan');
-    if (!errors && !code && !changes) addSection(out, '✅ KẾT QUẢ', rawText, 'text', 'green');
-  }
-  else if (mode === 'diagnose') {
-    const syntax = extractBlock(rawText, 'SYNTAX');
-    const logic  = extractBlock(rawText, 'LOGIC');
-    const perf   = extractBlock(rawText, 'PERFORMANCE');
-    const sec    = extractBlock(rawText, 'SECURITY');
-    const api    = extractBlock(rawText, 'ROBLOX_API');
-    const sug    = extractBlock(rawText, 'SUGGESTIONS');
-    const score  = extractBlock(rawText, 'SCORE');
-    if (score)  addSection(out, '🏆 ĐIỂM CHẤT LƯỢNG', score, 'text', 'cyan');
-    if (syntax) addSection(out, '🔴 LỖI CÚ PHÁP', syntax, 'text', 'red');
-    if (logic)  addSection(out, '🟠 LỖI LOGIC', logic, 'text', 'orange');
-    if (perf)   addSection(out, '⚡ HIỆU SUẤT', perf, 'text', 'cyan');
-    if (sec)    addSection(out, '🔒 BẢO MẬT', sec, 'text', 'orange');
-    if (api)    addSection(out, '🔌 ROBLOX API', api, 'text', 'cyan');
-    if (sug)    addSection(out, '💡 ĐỀ XUẤT', sug, 'text', 'green');
-    if (!syntax && !logic && !perf && !sec && !api && !sug)
-      addSection(out, '🔍 KẾT QUẢ CHẨN ĐOÁN', rawText, 'text', 'cyan');
-  }
-  else if (mode === 'optimize') {
-    const analysis = extractBlock(rawText, 'ANALYSIS');
-    const code     = extractBlock(rawText, 'CODE') || extractCode(rawText);
-    const improve  = extractBlock(rawText, 'IMPROVEMENTS');
-    const bench    = extractBlock(rawText, 'BENCHMARK');
-    if (analysis) addSection(out, '📊 PHÂN TÍCH', analysis, 'text', 'cyan');
-    if (code)     addSection(out, '⚡ CODE TỐI ƯU', code, 'code', 'green');
-    if (improve)  addSection(out, '✅ CẢI TIẾN', improve, 'text', 'green');
-    if (bench)    addSection(out, '📈 HIỆU SUẤT', bench, 'text', 'orange');
-    if (!analysis && !code && !improve) addSection(out, '⚡ KẾT QUẢ', rawText, 'text', 'green');
-  }
-}
-
-function extractCode(text) {
-  const m = text.match(/```(?:lua)?\n?([\s\S]*?)```/);
-  return m ? m[1].trim() : null;
-}
-
-function addSection(container, title, content, type, colorClass) {
-  const section = document.createElement('div');
-  section.className = 'output-section';
-
-  const header = document.createElement('div');
-  header.className = `output-section-header ${colorClass}`;
-  header.innerHTML = `${title}
-    <button class="copy-btn" onclick="copyText(this)" data-text="${encodeURIComponent(content)}">📋 Copy</button>`;
-  section.appendChild(header);
-
-  const body = document.createElement('div');
-  if (type === 'code') {
-    body.className = 'output-code';
-    body.textContent = content;
-  } else {
-    body.className = 'output-text';
-    body.innerHTML = formatText(content);
-  }
-  section.appendChild(body);
-  container.appendChild(section);
-}
-
-function formatText(text) {
-  return text
-    .replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text)">$1</strong>')
-    .replace(/`([^`]+)`/g, '<code style="background:var(--code-bg);padding:2px 6px;border-radius:4px;font-family:JetBrains Mono;font-size:12px;color:#a8d8a8">$1</code>')
-    .replace(/^(\d+\.\s)/gm, '<br><strong style="color:var(--cyan)">$1</strong>')
-    .replace(/^[-•]\s/gm, '<br>• ')
-    .replace(/\n/g, '<br>');
-}
-
-// ── RUN AI ────────────────────────────────────────────────────
-async function runAI() {
-  if (!currentUser) { showError('Vui lòng đăng nhập trước!'); return; }
-
-  const prompt = buildPrompt(currentMode);
-  if (!prompt) { showError('Vui lòng nhập nội dung!'); return; }
-
-  const loadTexts = {
-    generate: '⚡ Đang tạo code Lua...',
-    fix:      '🔧 Đang phân tích và sửa lỗi...',
-    diagnose: '🔍 Đang chẩn đoán toàn diện...',
-    optimize: '📈 Đang tối ưu hóa code...',
-  };
-
-  showLoading(loadTexts[currentMode]);
-  setStatus('Đang xử lý...', 'orange');
-
-  try {
-    const result = await callGemini(prompt);
-    renderOutput(currentMode, result);
-    setStatus('Hoàn thành!', 'green');
-  } catch(e) {
-    showError(e.message);
-    setStatus('Lỗi', 'orange');
-  } finally {
-    hideLoading();
-  }
-}
-
-// ── SETTINGS ──────────────────────────────────────────────────
-function openSettings() {
-  document.getElementById('settings-panel').classList.add('show');
-  const key = localStorage.getItem('gemini_api_key');
-  if (key) document.getElementById('gemini-key-input').value = key;
-}
-function closeSettings() {
-  document.getElementById('settings-panel').classList.remove('show');
-}
-function saveGeminiKey() {
-  const key = document.getElementById('gemini-key-input').value.trim();
-  if (!key) return;
-  localStorage.setItem('gemini_api_key', key);
-  const badge = document.getElementById('saved-badge');
-  badge.classList.add('show');
-  setTimeout(() => badge.classList.remove('show'), 2500);
-}
-async function testGeminiKey() {
-  const key = document.getElementById('gemini-key-input').value.trim();
-  if (!key) { document.getElementById('key-status').textContent = '⚠️ Nhập API key trước!'; return; }
-  localStorage.setItem('gemini_api_key', key);
-  document.getElementById('key-status').textContent = '🔄 Đang test...';
-  try {
-    const resp = await fetch(`${GEMINI_ENDPOINT}?key=${key}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: 'Nói "OK" bằng tiếng Việt.' }] }] })
-    });
-    const data = await resp.json();
-    if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
-      document.getElementById('key-status').textContent = '✅ API Key hợp lệ! Gemini sẵn sàng.';
-      document.getElementById('key-status').style.color = 'var(--green)';
-    } else {
-      document.getElementById('key-status').textContent = '❌ ' + (data.error?.message || 'Key không hợp lệ');
-      document.getElementById('key-status').style.color = 'var(--red)';
-    }
-  } catch(e) {
-    document.getElementById('key-status').textContent = '❌ Lỗi: ' + e.message;
-    document.getElementById('key-status').style.color = 'var(--red)';
-  }
-}
-
-// ── UTILS ─────────────────────────────────────────────────────
-function copyText(btn) {
-  const text = decodeURIComponent(btn.dataset.text);
-  navigator.clipboard.writeText(text).then(() => {
-    btn.textContent = '✅ Đã copy';
-    setTimeout(() => btn.textContent = '📋 Copy', 1500);
-  });
-}
-function copyOutput() {
-  navigator.clipboard.writeText(lastOutput).then(() => {
-    const btn = document.getElementById('copy-all-btn');
-    btn.textContent = '✅ Đã copy!';
-    setTimeout(() => btn.textContent = '📋 Copy tất cả', 1500);
-  });
-}
-function clearAll() {
-  const el = getActiveInput();
-  if (el) el.value = '';
-  document.getElementById('output-block').style.display = 'none';
-  document.getElementById('welcome-screen').style.display = 'flex';
-  document.getElementById('copy-all-btn').style.display = 'none';
-  document.getElementById('input-fix-desc').value = '';
-  updateCharCount();
-}
-function showLoading(msg) {
-  document.getElementById('loading-overlay').classList.add('show');
-  document.getElementById('loading-text').textContent = msg || 'Đang xử lý...';
-  document.getElementById('run-btn').disabled = true;
-}
-function hideLoading() {
-  document.getElementById('loading-overlay').classList.remove('show');
-  document.getElementById('run-btn').disabled = false;
-}
-function showError(msg) {
-  const bar = document.getElementById('error-bar');
-  document.getElementById('error-msg').textContent = msg;
-  bar.classList.add('show');
-  setTimeout(() => bar.classList.remove('show'), 5000);
-}
-function setStatus(text, color) {
-  document.getElementById('status-text').textContent = text;
-  const dot = document.getElementById('status-dot');
-  dot.className = 'status-dot ' + color;
-}
-
-// Keyboard shortcut: Ctrl+Enter to run
-document.addEventListener('keydown', e => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-    e.preventDefault(); runAI();
-  }
+buildings.forEach(b=>{
+if(b.type==='mine')money += 0.015*b.level;
+if(b.type==='factory')money += 0.03*b.level;
+if(b.type==='market')money += 0.05*b.level;
+if(b.type==='farm')food += 0.015*b.level;
+if(b.type==='water')water += 0.015*b.level;
 });
+
+zombies.forEach((z,zi)=>{
+const dir = new THREE.Vector3(
+0-z.mesh.position.x,
+0,
+0-z.mesh.position.z
+).normalize();
+
+z.mesh.position.add(dir.multiplyScalar(0.03));
+
+if(z.mesh.position.distanceTo(home.position)<5){
+baseHP -= 0.03;
+}
+
+bullets.forEach((b,bi)=>{
+b.mesh.position.add(b.vel);
+if(b.mesh.position.distanceTo(z.mesh.position)<1){
+z.hp -= 1;
+scene.remove(b.mesh);
+if(z.hp<=0){
+scene.remove(z.mesh);
+zombies.splice(zi,1);
+money += 25;
+kills++;
+}
+}
+});
+});
+
+turrets.forEach(t=>{
+if(zombies[0]){
+const target = zombies[0];
+const bullet = new THREE.Mesh(
+new THREE.SphereGeometry(0.15,8,8),
+new THREE.MeshBasicMaterial({color:0x00ffff})
+);
+
+bullet.position.copy(t.mesh.position);
+
+const dir = new THREE.Vector3(
+target.mesh.position.x-t.mesh.position.x,
+0,
+target.mesh.position.z-t.mesh.position.z
+).normalize();
+
+bullets.push({mesh:bullet,vel:dir.multiplyScalar(0.5)});
+scene.add(bullet);
+}
+});
+
+if(baseHP<=0)over();
+
+controls.update();
+ui();
+saveGame();
+renderer.render(scene,camera);
+}
+
+animate();
+
+addEventListener('resize',()=>{
+camera.aspect=innerWidth/innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(innerWidth,innerHeight);
+});
+
 </script>
 </body>
 </html>
