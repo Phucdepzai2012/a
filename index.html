@@ -1,429 +1,603 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kingdom Apocalypse 3D</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
-body{overflow:hidden;background:black}
-#ui{
-position:absolute;
-top:15px;
-left:15px;
-z-index:10;
-width:340px;
-background:rgba(0,0,0,0.65);
-backdrop-filter:blur(12px);
-padding:18px;
-border-radius:24px;
-color:white;
-border:1px solid rgba(255,255,255,0.15)
-}
-.title{font-size:32px;font-weight:bold;margin-bottom:10px}
-.stat{margin-top:6px;font-size:15px}
-button{
-width:100%;
-padding:12px;
-border:none;
-margin-top:8px;
-border-radius:14px;
-font-weight:bold;
-cursor:pointer;
-color:white;
-font-size:15px;
-transition:0.2s
-}
-button:hover{transform:scale(1.03)}
-canvas{display:block}
-#leaderboard{
-margin-top:15px;
-padding:10px;
-border-radius:16px;
-background:rgba(255,255,255,0.06)
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>vnEdu Auto Nhận Xét</title>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #21262d;
+      --border: #30363d;
+      --accent: #58a6ff;
+      --accent2: #7c3aed;
+      --accent3: #10b981;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --danger: #f85149;
+      --warning: #d29922;
+      --grad: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Be Vietnam Pro', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── background grid ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(88,166,255,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(88,166,255,.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    .wrap { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }
+
+    /* ── hero ── */
+    .hero {
+      text-align: center;
+      padding: 60px 0 50px;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(88,166,255,.12);
+      border: 1px solid rgba(88,166,255,.3);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-family: 'Baloo 2', cursive;
+      font-size: clamp(32px, 6vw, 56px);
+      font-weight: 800;
+      line-height: 1.1;
+      background: linear-gradient(135deg, #fff 30%, #58a6ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+    }
+    .hero p {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* ── bookmarklet card ── */
+    .bm-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px;
+      margin: 0 0 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    .bm-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: var(--grad);
+    }
+    .bm-card h2 {
+      font-family: 'Baloo 2', cursive;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .bm-card .sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+    }
+
+    /* ── the drag button ── */
+    .bm-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .bm-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--grad);
+      color: #fff;
+      font-family: 'Baloo 2', cursive;
+      font-size: 17px;
+      font-weight: 700;
+      padding: 14px 30px;
+      border-radius: 12px;
+      text-decoration: none;
+      cursor: grab;
+      transition: transform .15s, box-shadow .15s;
+      box-shadow: 0 4px 24px rgba(37,117,252,.35);
+      border: none;
+      user-select: none;
+    }
+    .bm-btn:hover {
+      transform: scale(1.04) translateY(-2px);
+      box-shadow: 0 8px 32px rgba(37,117,252,.5);
+    }
+    .bm-btn:active { cursor: grabbing; transform: scale(0.98); }
+
+    .drag-hint {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .drag-hint .arrow { font-size: 18px; }
+    @keyframes pulse { 0%,100%{opacity:.7} 50%{opacity:1} }
+
+    /* ── steps ── */
+    .steps { display: flex; flex-direction: column; gap: 12px; }
+    .step {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      transition: border-color .2s;
+    }
+    .step:hover { border-color: rgba(88,166,255,.4); }
+    .step-num {
+      width: 28px; height: 28px; min-width: 28px;
+      background: var(--grad);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Baloo 2', cursive;
+      font-size: 13px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .step-body h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .step-body p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+    .step-body code {
+      background: rgba(88,166,255,.12);
+      color: var(--accent);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: 'Courier New', monospace;
+    }
+
+    /* ── level table ── */
+    .level-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+    .level-card h2 {
+      font-family: 'Baloo 2', cursive;
+      font-size: 18px; font-weight: 700;
+      margin-bottom: 18px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .levels { display: flex; gap: 12px; flex-wrap: wrap; }
+    .lv {
+      flex: 1; min-width: 160px;
+      background: var(--surface2);
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid var(--border);
+    }
+    .lv-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .lv-badge {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      font-family: 'Baloo 2', cursive;
+      font-weight: 800; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+    }
+    .lv-badge.t { background: var(--accent3); }
+    .lv-badge.d { background: var(--accent); }
+    .lv-badge.c { background: var(--danger); }
+    .lv-title { font-size: 13px; font-weight: 600; }
+    .lv ul { list-style: none; padding: 0; }
+    .lv ul li {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      padding: 3px 0;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+      line-height: 1.5;
+    }
+    .lv ul li:last-child { border: none; }
+
+    /* ── warning ── */
+    .warn {
+      background: rgba(216,153,34,.08);
+      border: 1px solid rgba(216,153,34,.3);
+      border-radius: 12px;
+      padding: 16px 20px;
+      font-size: 13px;
+      color: #e3b341;
+      line-height: 1.6;
+      margin-bottom: 24px;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    .warn .icon { font-size: 16px; margin-top: 1px; }
+
+    /* ── footer ── */
+    footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      padding-top: 40px;
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    /* ── copy fallback ── */
+    .copy-wrap { width: 100%; margin-top: 6px; }
+    .copy-row {
+      display: flex; gap: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-family: monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      align-items: center;
+      overflow: hidden;
+    }
+    .copy-row span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .copy-btn {
+      background: rgba(88,166,255,.15);
+      border: 1px solid rgba(88,166,255,.3);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .15s;
+      font-family: 'Be Vietnam Pro', sans-serif;
+    }
+    .copy-btn:hover { background: rgba(88,166,255,.28); }
+
+    @media (max-width: 520px) {
+      .bm-card { padding: 24px 18px; }
+      .levels { flex-direction: column; }
+    }
+  </style>
 </head>
 <body>
+<div class="wrap">
 
-<div id="ui">
-<div class="title">☣️ Kingdom Survival</div>
+  <!-- HERO -->
+  <div class="hero">
+    <div class="badge">🇻🇳 Công cụ giáo viên tiểu học</div>
+    <h1>vnEdu Auto<br>Nhận Xét ⚡</h1>
+    <p>Tự động điền đánh giá năng lực &amp; phẩm chất học sinh trên vnEdu.vn — chỉ 1 cú click.</p>
+  </div>
 
-<div class="stat">💰 Money: <span id="money">200</span></div>
-<div class="stat">🍖 Food: <span id="food">100</span></div>
-<div class="stat">💧 Water: <span id="water">100</span></div>
-<div class="stat">👥 Citizens: <span id="citizens">5</span></div>
-<div class="stat">🏠 Base HP: <span id="basehp">100</span>/100</div>
-<div class="stat">⏱️ Survival Time: <span id="time">0</span>s</div>
-<div class="stat">👹 Zombies: <span id="kills">0</span></div>
+  <!-- BOOKMARKLET CARD -->
+  <div class="bm-card">
+    <h2>🔖 Bookmarklet — Kéo vào thanh bookmark</h2>
+    <p class="sub">Kéo nút bên dưới vào thanh bookmark (Bookmarks bar) của trình duyệt. Sau đó khi đang ở trang vnEdu, chỉ cần bấm vào bookmark đó là xong!</p>
 
-<button style="background:#64748b" onclick="setBuild('wall')">🧱 Build Wall</button>
-<button style="background:#ef4444" onclick="setBuild('turret')">🤖 Build Turret</button>
-<button style="background:#6b7280" onclick="setBuild('mine')">⛏️ Build Mine</button>
-<button style="background:#7c3aed" onclick="setBuild('factory')">🏭 Build Factory</button>
-<button style="background:#10b981" onclick="setBuild('market')">🏪 Build Market</button>
-<button style="background:#84cc16" onclick="setBuild('farm')">🌾 Build Farm</button>
-<button style="background:#0ea5e9" onclick="setBuild('water')">💧 Water Pump</button>
+    <div class="bm-wrap">
+      <a class="bm-btn" id="bookmarklet" href="javascript:void(0)">⚡ vnEdu Auto Fill</a>
+      <div class="drag-hint">
+        <span class="arrow">☝️</span>
+        <span>Kéo nút này lên thanh bookmark của trình duyệt</span>
+      </div>
 
-<div id="leaderboard">
-<h3>🏆 Leaderboard</h3>
-<div id="scores"></div>
+      <div class="copy-wrap">
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:6px;text-align:center">Hoặc copy đoạn code dưới → Tạo bookmark mới → Dán vào ô URL:</p>
+        <div class="copy-row">
+          <span id="bmCode">đang tải...</span>
+          <button class="copy-btn" onclick="copyBM()">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEPS -->
+  <div class="bm-card">
+    <h2>📋 Hướng dẫn sử dụng</h2>
+    <p class="sub">Làm theo các bước dưới đây</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h3>Kéo bookmark vào thanh trình duyệt</h3>
+          <p>Kéo nút <strong>⚡ vnEdu Auto Fill</strong> ở trên vào thanh <code>Bookmarks bar</code> (Ctrl+Shift+B để hiện thanh nếu ẩn).</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h3>Đăng nhập vnEdu &amp; mở trang đánh giá</h3>
+          <p>Truy cập <code>vnedu.vn</code>, đăng nhập tài khoản giáo viên và mở trang đánh giá năng lực phẩm chất học sinh.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h3>Bấm bookmark để tự động điền</h3>
+          <p>Bấm vào bookmark <strong>⚡ vnEdu Auto Fill</strong> trên thanh bookmark. Script sẽ tự động điền toàn bộ mức độ và nhận xét.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h3>Kiểm tra &amp; lưu</h3>
+          <p>Đọc lại các nhận xét được điền, chỉnh sửa nếu cần, rồi bấm <strong>Lưu</strong> trên trang vnEdu.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WARNING -->
+  <div class="warn">
+    <span class="icon">⚠️</span>
+    <div>Luôn kiểm tra lại kết quả trước khi lưu. Công cụ điền ngẫu nhiên theo tỉ lệ T &gt; Đ &gt; C, không trùng câu liên tiếp — thầy/cô chỉnh sửa thêm nếu cần để phù hợp từng học sinh.</div>
+  </div>
+
+  <!-- LEVEL TABLE -->
+  <div class="level-card">
+    <h2>📝 Ngân hàng nhận xét</h2>
+    <div class="levels">
+      <div class="lv">
+        <div class="lv-head">
+          <div class="lv-badge t">T</div>
+          <div class="lv-title">Tốt (10 câu)</div>
+        </div>
+        <ul>
+          <li>Chủ động, tự giác trong học tập và rèn luyện.</li>
+          <li>Có ý thức trách nhiệm cao, hoàn thành xuất sắc nhiệm vụ.</li>
+          <li>Mạnh dạn đưa ra những ý kiến cá nhân sáng tạo.</li>
+          <li>Tính toán nhanh, có ý thức học tập rất tốt.</li>
+          <li>Thực hiện thành thạo các kỹ năng thực hành.</li>
+          <li>Tích cực phát biểu xây dựng bài, sáng tạo trong học tập.</li>
+          <li>Luôn hoàn thành bài tập đầy đủ, chính xác.</li>
+          <li>Có tiến bộ rõ rệt, học tập nghiêm túc, đạt kết quả tốt.</li>
+          <li>Ham học hỏi, hiểu bài nhanh và vận dụng tốt kiến thức.</li>
+          <li>Thể hiện tư duy logic tốt trong giải quyết vấn đề.</li>
+        </ul>
+      </div>
+      <div class="lv">
+        <div class="lv-head">
+          <div class="lv-badge d">Đ</div>
+          <div class="lv-title">Đạt (10 câu)</div>
+        </div>
+        <ul>
+          <li>Biết yêu quê hương, đất nước, thật thà.</li>
+          <li>Biết quan tâm và giúp đỡ mọi người xung quanh.</li>
+          <li>Cần chăm học và tích cực phát biểu hơn nữa.</li>
+          <li>Biết nhường nhịn và chia sẻ với bạn bè.</li>
+          <li>Biết nêu các biện pháp bảo vệ sức khỏe cơ bản.</li>
+          <li>Hoàn thành nhiệm vụ học tập ở mức độ đạt yêu cầu.</li>
+          <li>Có ý thức học tập, cần phát huy thêm sự sáng tạo.</li>
+          <li>Thực hiện đúng nội quy, cần tích cực hơn trong giờ học.</li>
+          <li>Nắm được kiến thức cơ bản, cần luyện tập thêm.</li>
+          <li>Có tiến bộ trong học tập, cần duy trì và phát huy.</li>
+        </ul>
+      </div>
+      <div class="lv">
+        <div class="lv-head">
+          <div class="lv-badge c">C</div>
+          <div class="lv-title">Cần cố gắng (8 câu)</div>
+        </div>
+        <ul>
+          <li>Cần cố gắng tự giác hơn trong giờ học.</li>
+          <li>Nên mạnh dạn, tự tin hơn khi giao tiếp.</li>
+          <li>Cần rèn luyện thêm thao tác tính toán cho nhanh.</li>
+          <li>Cần tập trung hơn khi làm việc nhóm.</li>
+          <li>Cần ôn luyện thêm kiến thức đã học để nắm vững hơn.</li>
+          <li>Cần chú ý nghe giảng và hoàn thành bài tập đúng hạn.</li>
+          <li>Cần rèn chữ viết và trình bày bài sạch đẹp hơn.</li>
+          <li>Cần tích cực tham gia các hoạt động học tập trên lớp.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>vnEdu Auto Nhận Xét · v1.0 · Dành cho giáo viên tiểu học 🍎</p>
+    <p style="margin-top:6px">Mã nguồn trên <a href="#">GitHub</a> · Chia sẻ tự do cho đồng nghiệp</p>
+  </footer>
 </div>
-</div>
 
-<script type="module">
-import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
-import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+<script>
+// ── Full bookmarklet code (minified inline) ──────────────────────────────────
+const bookmarkletCode = (function() {
+  const fn = function() {
+    var dataComments = {
+      "T": [
+        "Em chủ động, tự giác trong học tập và rèn luyện.",
+        "Em có ý thức trách nhiệm cao, hoàn thành xuất sắc nhiệm vụ.",
+        "Em mạnh dạn đưa ra những ý kiến cá nhân sáng tạo.",
+        "Em tính toán nhanh, có ý thức học tập rất tốt.",
+        "Em thực hiện thành thạo các kỹ năng thực hành.",
+        "Em tích cực phát biểu xây dựng bài, sáng tạo trong học tập.",
+        "Em luôn hoàn thành bài tập đầy đủ, chính xác.",
+        "Em có tiến bộ rõ rệt, học tập nghiêm túc, đạt kết quả tốt.",
+        "Em ham học hỏi, hiểu bài nhanh và vận dụng tốt kiến thức.",
+        "Em thể hiện tư duy logic tốt trong giải quyết vấn đề."
+      ],
+      "Đ": [
+        "Em biết yêu quê hương, đất nước, thật thà.",
+        "Em biết quan tâm và giúp đỡ mọi người xung quanh.",
+        "Em cần chăm học và tích cực phát biểu hơn nữa.",
+        "Em biết nhường nhịn và chia sẻ với bạn bè.",
+        "Em biết nêu các biện pháp bảo vệ sức khỏe cơ bản.",
+        "Em hoàn thành các nhiệm vụ học tập ở mức độ đạt yêu cầu.",
+        "Em có ý thức học tập, cần phát huy thêm sự sáng tạo.",
+        "Em thực hiện đúng nội quy, cần tích cực hơn trong giờ học.",
+        "Em nắm được kiến thức cơ bản, cần luyện tập thêm.",
+        "Em có tiến bộ trong học tập, cần duy trì và phát huy."
+      ],
+      "C": [
+        "Em cần cố gắng tự giác hơn trong giờ học.",
+        "Em nên mạnh dạn, tự tin hơn khi giao tiếp.",
+        "Em cần rèn luyện thêm thao tác tính toán cho nhanh.",
+        "Em cần tập trung hơn khi làm việc nhóm.",
+        "Em cần ôn luyện thêm kiến thức đã học để nắm vững hơn.",
+        "Em cần chú ý nghe giảng và hoàn thành bài tập đúng hạn.",
+        "Em cần rèn chữ viết và trình bày bài sạch đẹp hơn.",
+        "Em cần tích cực tham gia các hoạt động học tập trên lớp."
+      ]
+    };
+    function genLevels(n) {
+      var r=[], prev=null, streak=0, pool=["T","T","T","Đ","Đ","C"];
+      for(var i=0;i<n;i++){
+        var lv, t=0;
+        do{ lv=pool[Math.floor(Math.random()*pool.length)]; t++; }
+        while(lv===prev && streak>=2 && t<20);
+        if(lv===prev) streak++; else{ prev=lv; streak=1; }
+        r.push(lv);
+      } return r;
+    }
+    function pick(lv, used) {
+      var all=dataComments[lv], avail=all.filter(function(c){return used.indexOf(c)<0;});
+      var pool=avail.length>0?avail:all;
+      return pool[Math.floor(Math.random()*pool.length)];
+    }
+    function trigger(el, val) {
+      if(!el) return;
+      try {
+        var proto = el.tagName==='TEXTAREA'
+          ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
+        var setter = Object.getOwnPropertyDescriptor(proto,'value');
+        if(setter && setter.set) setter.set.call(el,val); else el.value=val;
+      } catch(e){ el.value=val; }
+      ['input','change','blur','keyup'].forEach(function(ev){
+        el.dispatchEvent(new Event(ev,{bubbles:true}));
+      });
+      if(el.id && window.Ext) {
+        try {
+          var cmp=Ext.getCmp(el.id.replace(/-inputEl$/,''));
+          if(cmp && cmp.setValue){ cmp.setValue(val); cmp.fireEvent('change',cmp,val); }
+        } catch(e){}
+      }
+    }
+    function fillExtJS() {
+      if(!window.Ext || !Ext.ComponentQuery) return 0;
+      var filled=0;
+      try {
+        var grids=Ext.ComponentQuery.query('gridpanel:visible');
+        grids.forEach(function(grid){
+          var store=grid.getStore&&grid.getStore();
+          if(!store||store.getCount()===0) return;
+          var n=store.getCount(), levels=genLevels(n), used=[];
+          store.each(function(rec,i){
+            var lv=levels[i], cm=pick(lv,used);
+            used.push(cm); if(used.length>5) used.shift();
+            ['muc_do','mucDo','xep_loai','xepLoai','level','loai','danh_gia','danhGia'].forEach(function(f){
+              try{ if(rec.fields&&rec.fields.get(f)) rec.set(f,lv); }catch(e){}
+            });
+            ['nhan_xet','nhanXet','comment','noi_dung','noiDung','ghiChu','ghi_chu'].forEach(function(f){
+              try{ if(rec.fields&&rec.fields.get(f)) rec.set(f,cm); }catch(e){}
+            });
+            filled++;
+          });
+        });
+      } catch(e){}
+      return filled;
+    }
+    function fillRows() {
+      var sels=['tr.x-grid-row','tr.v-grid-row','tr[data-recordindex]','.x-grid-item','div.x-grid-row'], rows=[];
+      for(var i=0;i<sels.length;i++){ rows=Array.from(document.querySelectorAll(sels[i])); if(rows.length>0) break; }
+      if(rows.length===0) return 0;
+      var levels=genLevels(rows.length), used=[];
+      rows.forEach(function(row,i){
+        var lv=levels[i], cm=pick(lv,used);
+        used.push(cm); if(used.length>5) used.shift();
+        var sel=row.querySelector('select');
+        if(sel) trigger(sel,lv);
+        else { var inp=row.querySelector('.x-form-trigger-wrap input,.x-form-text'); if(inp) trigger(inp,lv); }
+        row.querySelectorAll('textarea').forEach(function(ta){ trigger(ta,cm); });
+        row.querySelectorAll('input.x-form-text:not(.x-form-trigger-wrap input)').forEach(function(inp){
+          if(inp.id&&(inp.id.includes('nhan')||inp.id.includes('comment')||inp.id.includes('ghichu'))) trigger(inp,cm);
+        });
+      });
+      return rows.length;
+    }
+    function fillAll() {
+      var used=[];
+      var selects=Array.from(document.querySelectorAll('select')).filter(function(s){
+        var v=Array.from(s.options).map(function(o){return o.value;});
+        return v.indexOf('T')>-1||v.indexOf('Đ')>-1||v.indexOf('C')>-1;
+      });
+      var tas=Array.from(document.querySelectorAll('textarea'));
+      var total=Math.max(selects.length,tas.length);
+      if(total===0) return 0;
+      var levels=genLevels(total);
+      selects.forEach(function(s,i){ trigger(s,levels[i]||'Đ'); });
+      tas.forEach(function(ta,i){
+        var lv=levels[i]||'Đ', cm=pick(lv,used);
+        used.push(cm); if(used.length>5) used.shift();
+        trigger(ta,cm);
+      });
+      return total;
+    }
+    var n=fillExtJS();
+    if(n===0) n=fillRows();
+    if(n===0) n=fillAll();
+    if(n>0) alert('✅ Đã tự động điền đánh giá cho ' + n + ' học sinh!\nVui lòng kiểm tra lại trước khi lưu.');
+    else alert('⚠️ Không tìm thấy dữ liệu để điền.\nHãy mở trang đánh giá học sinh trước rồi bấm lại.');
+  };
+  return 'javascript:(' + fn.toString() + ')();';
+})();
 
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x030712);
-scene.fog = new THREE.Fog(0x030712,30,120);
+// Gán href cho nút bookmarklet
+document.getElementById('bookmarklet').href = bookmarkletCode;
 
-const camera = new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,1000);
-camera.position.set(18,18,18);
+// Hiện phần code rút gọn trong ô copy
+document.getElementById('bmCode').textContent = bookmarkletCode.substring(0, 80) + '...';
 
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(innerWidth,innerHeight);
-renderer.shadowMap.enabled = true;
-document.body.appendChild(renderer.domElement);
-
-const controls = new OrbitControls(camera,renderer.domElement);
-controls.enableDamping = true;
-controls.target.set(0,0,0);
-
-const ambient = new THREE.AmbientLight(0xffffff,0.4);
-scene.add(ambient);
-
-const moon = new THREE.DirectionalLight(0xaaccff,2);
-moon.position.set(20,30,10);
-moon.castShadow = true;
-scene.add(moon);
-
-const ground = new THREE.Mesh(
-new THREE.PlaneGeometry(200,200),
-new THREE.MeshStandardMaterial({color:0x0f172a})
-);
-ground.rotation.x = -Math.PI/2;
-ground.receiveShadow = true;
-scene.add(ground);
-
-const grid = new THREE.GridHelper(200,50,0x334155,0x1e293b);
-scene.add(grid);
-
-const home = new THREE.Mesh(
-new THREE.BoxGeometry(6,6,6),
-new THREE.MeshStandardMaterial({color:0xfacc15})
-);
-home.position.y = 3;
-home.castShadow = true;
-scene.add(home);
-
-const player = new THREE.Mesh(
-new THREE.BoxGeometry(1.5,2,1.5),
-new THREE.MeshStandardMaterial({color:0x22c55e})
-);
-player.position.set(0,1,10);
-player.castShadow = true;
-scene.add(player);
-
-let money = 200;
-let food = 100;
-let water = 100;
-let citizens = 5;
-let baseHP = 100;
-let kills = 0;
-let timeAlive = 0;
-let buildMode = 'wall';
-
-const zombies=[];
-const bullets=[];
-const buildings=[];
-const turrets=[];
-const keys={};
-
-window.addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);
-window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
-
-window.setBuild = (t)=>buildMode=t;
-
-function ui(){
-money=Math.max(0,money);
-food=Math.max(0,food);
-water=Math.max(0,water);
-
-document.getElementById('money').innerText=Math.floor(money);
-document.getElementById('food').innerText=Math.floor(food);
-document.getElementById('water').innerText=Math.floor(water);
-document.getElementById('citizens').innerText=citizens;
-document.getElementById('basehp').innerText=Math.floor(baseHP);
-document.getElementById('kills').innerText=kills;
-document.getElementById('time').innerText=Math.floor(timeAlive);
+function copyBM() {
+  navigator.clipboard.writeText(bookmarkletCode).then(function() {
+    var btn = document.querySelector('.copy-btn');
+    btn.textContent = '✓ Đã copy!';
+    btn.style.background = 'rgba(16,185,129,.2)';
+    btn.style.borderColor = 'rgba(16,185,129,.4)';
+    btn.style.color = '#10b981';
+    setTimeout(function(){ 
+      btn.textContent = 'Copy'; 
+      btn.style.cssText=''; 
+    }, 2000);
+  }).catch(function() {
+    // fallback
+    var ta = document.createElement('textarea');
+    ta.value = bookmarkletCode;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    alert('Đã copy! Tạo bookmark mới và dán vào ô URL.');
+  });
 }
-
-function saveGame(){
-localStorage.setItem('kingdom-survival-save',JSON.stringify({
-money,food,water,citizens,baseHP,kills,timeAlive
-}));
-}
-
-function loadGame(){
-const save = JSON.parse(localStorage.getItem('kingdom-survival-save')||'null');
-if(!save)return;
-money=save.money;
-food=save.food;
-water=save.water;
-citizens=save.citizens;
-baseHP=save.baseHP;
-kills=save.kills;
-timeAlive=save.timeAlive;
-}
-
-loadGame();
-
-function saveScore(){
-const old = JSON.parse(localStorage.getItem('kingdom-scores')||'[]');
-old.push({time:Math.floor(timeAlive),kills});
-old.sort((a,b)=>b.time-a.time);
-localStorage.setItem('kingdom-scores',JSON.stringify(old.slice(0,10)));
-loadScores();
-}
-
-function loadScores(){
-const scores = JSON.parse(localStorage.getItem('kingdom-scores')||'[]');
-document.getElementById('scores').innerHTML = scores.map((s,i)=>`<div>#${i+1} - ${s.time}s / ${s.kills} kills</div>`).join('');
-}
-
-loadScores();
-
-function buildStructure(type,x,z){
-let cost=0;
-let mesh;
-
-if(type==='wall'){
-cost=40;
-mesh=new THREE.Mesh(
-new THREE.BoxGeometry(4,3,1),
-new THREE.MeshStandardMaterial({color:0x64748b})
-);
-}
-
-if(type==='turret'){
-cost=160;
-mesh=new THREE.Mesh(
-new THREE.CylinderGeometry(1,1,3,8),
-new THREE.MeshStandardMaterial({color:0xef4444})
-);
-}
-
-if(type==='mine'){
-cost=80;
-mesh=new THREE.Mesh(
-new THREE.BoxGeometry(3,3,3),
-new THREE.MeshStandardMaterial({color:0x6b7280})
-);
-}
-
-if(type==='factory'){
-cost=150;
-mesh=new THREE.Mesh(
-new THREE.BoxGeometry(4,5,4),
-new THREE.MeshStandardMaterial({color:0x7c3aed})
-);
-}
-
-if(type==='market'){
-cost=220;
-mesh=new THREE.Mesh(
-new THREE.BoxGeometry(4,3,4),
-new THREE.MeshStandardMaterial({color:0x10b981})
-);
-}
-
-if(type==='farm'){
-cost=100;
-mesh=new THREE.Mesh(
-new THREE.CylinderGeometry(2,2,1,8),
-new THREE.MeshStandardMaterial({color:0x84cc16})
-);
-}
-
-if(type==='water'){
-cost=100;
-mesh=new THREE.Mesh(
-new THREE.CylinderGeometry(1,1,5,8),
-new THREE.MeshStandardMaterial({color:0x0ea5e9})
-);
-}
-
-if(money<cost)return;
-
-money-=cost;
-
-mesh.position.set(x,2,z);
-mesh.castShadow=true;
-mesh.receiveShadow=true;
-scene.add(mesh);
-
-const data={mesh,type,level:1,hp:100};
-buildings.push(data);
-
-if(type==='turret')turrets.push(data);
-}
-
-renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
-renderer.domElement.addEventListener('mousedown',(e)=>{
-if(e.button!==2)return;
-
-const mouse = new THREE.Vector2(
-(e.clientX/innerWidth)*2-1,
--(e.clientY/innerHeight)*2+1
-);
-
-const ray = new THREE.Raycaster();
-ray.setFromCamera(mouse,camera);
-const hit = ray.intersectObject(ground);
-
-if(hit.length>0){
-const p = hit[0].point;
-const gx = Math.round(p.x/4)*4;
-const gz = Math.round(p.z/4)*4;
-buildStructure(buildMode,gx,gz);
-}
-});
-
-function zombie(){
-const z = new THREE.Mesh(
-new THREE.BoxGeometry(1.5,2,1.5),
-new THREE.MeshStandardMaterial({color:0xef4444})
-);
-
-const angle = Math.random()*Math.PI*2;
-const dist = 70;
-
-z.position.set(Math.cos(angle)*dist,1,Math.sin(angle)*dist);
-z.castShadow=true;
-scene.add(z);
-
-zombies.push({mesh:z,hp:3});
-}
-
-setInterval(zombie,2200);
-
-window.addEventListener('click',()=>{
-const bullet = new THREE.Mesh(
-new THREE.SphereGeometry(0.2,8,8),
-new THREE.MeshBasicMaterial({color:0xffff00})
-);
-
-bullet.position.copy(player.position);
-
-const dir = new THREE.Vector3();
-camera.getWorldDirection(dir);
-
-bullets.push({mesh:bullet,vel:dir.multiplyScalar(1.5)});
-scene.add(bullet);
-});
-
-function over(){
-saveScore();
-localStorage.removeItem('kingdom-survival-save');
-alert('☠️ GAME OVER\nBạn sống được '+Math.floor(timeAlive)+' giây');
-location.reload();
-}
-
-const clock = new THREE.Clock();
-
-function animate(){
-requestAnimationFrame(animate);
-
-const dt = clock.getDelta();
-timeAlive += dt;
-
-if(keys['w'])player.position.z-=0.25;
-if(keys['s'])player.position.z+=0.25;
-if(keys['a'])player.position.x-=0.25;
-if(keys['d'])player.position.x+=0.25;
-
-food -= citizens*0.0015;
-water -= citizens*0.0012;
-
-if(food<=0||water<=0){
-baseHP -= 0.01;
-}
-
-buildings.forEach(b=>{
-if(b.type==='mine')money += 0.015*b.level;
-if(b.type==='factory')money += 0.03*b.level;
-if(b.type==='market')money += 0.05*b.level;
-if(b.type==='farm')food += 0.015*b.level;
-if(b.type==='water')water += 0.015*b.level;
-});
-
-zombies.forEach((z,zi)=>{
-const dir = new THREE.Vector3(
-0-z.mesh.position.x,
-0,
-0-z.mesh.position.z
-).normalize();
-
-z.mesh.position.add(dir.multiplyScalar(0.03));
-
-if(z.mesh.position.distanceTo(home.position)<5){
-baseHP -= 0.03;
-}
-
-bullets.forEach((b,bi)=>{
-b.mesh.position.add(b.vel);
-if(b.mesh.position.distanceTo(z.mesh.position)<1){
-z.hp -= 1;
-scene.remove(b.mesh);
-if(z.hp<=0){
-scene.remove(z.mesh);
-zombies.splice(zi,1);
-money += 25;
-kills++;
-}
-}
-});
-});
-
-turrets.forEach(t=>{
-if(zombies[0]){
-const target = zombies[0];
-const bullet = new THREE.Mesh(
-new THREE.SphereGeometry(0.15,8,8),
-new THREE.MeshBasicMaterial({color:0x00ffff})
-);
-
-bullet.position.copy(t.mesh.position);
-
-const dir = new THREE.Vector3(
-target.mesh.position.x-t.mesh.position.x,
-0,
-target.mesh.position.z-t.mesh.position.z
-).normalize();
-
-bullets.push({mesh:bullet,vel:dir.multiplyScalar(0.5)});
-scene.add(bullet);
-}
-});
-
-if(baseHP<=0)over();
-
-controls.update();
-ui();
-saveGame();
-renderer.render(scene,camera);
-}
-
-animate();
-
-addEventListener('resize',()=>{
-camera.aspect=innerWidth/innerHeight;
-camera.updateProjectionMatrix();
-renderer.setSize(innerWidth,innerHeight);
-});
-
 </script>
 </body>
 </html>
