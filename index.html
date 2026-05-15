@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>vnEdu Auto Nhận Xét</title>
+  <title>vnEdu Auto Nhận Xét v2</title>
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -20,9 +20,7 @@
       --warning: #d29922;
       --grad: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       font-family: 'Be Vietnam Pro', sans-serif;
       background: var(--bg);
@@ -30,8 +28,6 @@
       min-height: 100vh;
       overflow-x: hidden;
     }
-
-    /* ── background grid ── */
     body::before {
       content: '';
       position: fixed; inset: 0; z-index: 0;
@@ -41,55 +37,41 @@
       background-size: 40px 40px;
       pointer-events: none;
     }
+    .wrap { position: relative; z-index: 1; max-width: 780px; margin: 0 auto; padding: 40px 20px 80px; }
 
-    .wrap { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }
-
-    /* ── hero ── */
-    .hero {
-      text-align: center;
-      padding: 60px 0 50px;
-    }
+    .hero { text-align: center; padding: 60px 0 50px; }
     .badge {
       display: inline-block;
       background: rgba(88,166,255,.12);
       border: 1px solid rgba(88,166,255,.3);
       color: var(--accent);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      padding: 5px 14px;
-      border-radius: 20px;
-      margin-bottom: 20px;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 2px; text-transform: uppercase;
+      padding: 5px 14px; border-radius: 20px; margin-bottom: 20px;
     }
     .hero h1 {
       font-family: 'Baloo 2', cursive;
       font-size: clamp(32px, 6vw, 56px);
-      font-weight: 800;
-      line-height: 1.1;
+      font-weight: 800; line-height: 1.1;
       background: linear-gradient(135deg, #fff 30%, #58a6ff 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 16px;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; margin-bottom: 16px;
     }
-    .hero p {
-      font-size: 16px;
-      color: var(--text-muted);
-      max-width: 520px;
-      margin: 0 auto;
-      line-height: 1.7;
+    .hero p { font-size: 16px; color: var(--text-muted); max-width: 540px; margin: 0 auto; line-height: 1.7; }
+    .v2-tag {
+      display: inline-block; margin-left: 8px;
+      background: rgba(16,185,129,.18); border: 1px solid rgba(16,185,129,.4);
+      color: #10b981; font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 10px;
+      vertical-align: middle; letter-spacing: 1px;
     }
 
-    /* ── bookmarklet card ── */
     .bm-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 36px;
-      margin: 0 0 32px;
-      position: relative;
-      overflow: hidden;
+      border-radius: 16px; padding: 36px;
+      margin: 0 0 28px;
+      position: relative; overflow: hidden;
     }
     .bm-card::before {
       content: '';
@@ -98,121 +80,94 @@
     }
     .bm-card h2 {
       font-family: 'Baloo 2', cursive;
-      font-size: 20px;
-      font-weight: 700;
+      font-size: 20px; font-weight: 700;
       margin-bottom: 8px;
       display: flex; align-items: center; gap: 10px;
     }
-    .bm-card .sub {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-bottom: 28px;
-    }
+    .bm-card .sub { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; }
 
-    /* ── the drag button ── */
-    .bm-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 14px;
-    }
+    .bm-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; }
     .bm-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--grad);
-      color: #fff;
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--grad); color: #fff;
       font-family: 'Baloo 2', cursive;
-      font-size: 17px;
-      font-weight: 700;
-      padding: 14px 30px;
-      border-radius: 12px;
-      text-decoration: none;
-      cursor: grab;
+      font-size: 18px; font-weight: 700;
+      padding: 16px 36px; border-radius: 12px;
+      text-decoration: none; cursor: grab;
       transition: transform .15s, box-shadow .15s;
       box-shadow: 0 4px 24px rgba(37,117,252,.35);
-      border: none;
-      user-select: none;
+      border: none; user-select: none;
     }
-    .bm-btn:hover {
-      transform: scale(1.04) translateY(-2px);
-      box-shadow: 0 8px 32px rgba(37,117,252,.5);
-    }
+    .bm-btn:hover { transform: scale(1.04) translateY(-2px); box-shadow: 0 8px 32px rgba(37,117,252,.5); }
     .bm-btn:active { cursor: grabbing; transform: scale(0.98); }
 
     .drag-hint {
       display: flex; align-items: center; gap: 8px;
-      font-size: 13px;
-      color: var(--text-muted);
+      font-size: 13px; color: var(--text-muted);
       animation: pulse 2s ease-in-out infinite;
     }
-    .drag-hint .arrow { font-size: 18px; }
     @keyframes pulse { 0%,100%{opacity:.7} 50%{opacity:1} }
 
-    /* ── steps ── */
+    .copy-wrap { width: 100%; margin-top: 6px; }
+    .copy-row {
+      display: flex; gap: 8px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 14px;
+      font-family: monospace; font-size: 11px; color: var(--text-muted);
+      align-items: center; overflow: hidden;
+    }
+    .copy-row span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .copy-btn {
+      background: rgba(88,166,255,.15); border: 1px solid rgba(88,166,255,.3);
+      color: var(--accent); font-size: 11px; font-weight: 600;
+      padding: 4px 10px; border-radius: 6px; cursor: pointer;
+      white-space: nowrap; transition: background .15s;
+      font-family: 'Be Vietnam Pro', sans-serif;
+    }
+    .copy-btn:hover { background: rgba(88,166,255,.28); }
+
     .steps { display: flex; flex-direction: column; gap: 12px; }
     .step {
-      display: flex;
-      gap: 16px;
-      align-items: flex-start;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px 20px;
+      display: flex; gap: 16px; align-items: flex-start;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px 20px;
       transition: border-color .2s;
     }
     .step:hover { border-color: rgba(88,166,255,.4); }
     .step-num {
       width: 28px; height: 28px; min-width: 28px;
-      background: var(--grad);
-      border-radius: 50%;
+      background: var(--grad); border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-family: 'Baloo 2', cursive;
-      font-size: 13px;
-      font-weight: 800;
-      color: #fff;
+      font-family: 'Baloo 2', cursive; font-size: 13px; font-weight: 800; color: #fff;
     }
     .step-body h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
     .step-body p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
     .step-body code {
-      background: rgba(88,166,255,.12);
-      color: var(--accent);
-      padding: 1px 6px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-family: 'Courier New', monospace;
+      background: rgba(88,166,255,.12); color: var(--accent);
+      padding: 1px 6px; border-radius: 4px;
+      font-size: 12px; font-family: 'Courier New', monospace;
     }
+    .step-body em { color: #10b981; font-style: normal; font-weight: 600; }
 
-    /* ── level table ── */
     .level-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 28px;
-      margin-bottom: 24px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px; margin-bottom: 24px;
     }
     .level-card h2 {
-      font-family: 'Baloo 2', cursive;
-      font-size: 18px; font-weight: 700;
-      margin-bottom: 18px;
-      display: flex; align-items: center; gap: 8px;
+      font-family: 'Baloo 2', cursive; font-size: 18px; font-weight: 700;
+      margin-bottom: 18px; display: flex; align-items: center; gap: 8px;
     }
     .levels { display: flex; gap: 12px; flex-wrap: wrap; }
     .lv {
       flex: 1; min-width: 160px;
-      background: var(--surface2);
-      border-radius: 12px;
-      padding: 16px;
-      border: 1px solid var(--border);
+      background: var(--surface2); border-radius: 12px;
+      padding: 16px; border: 1px solid var(--border);
     }
     .lv-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
     .lv-badge {
-      width: 32px; height: 32px;
-      border-radius: 8px;
-      font-family: 'Baloo 2', cursive;
-      font-weight: 800; font-size: 16px;
-      display: flex; align-items: center; justify-content: center;
-      color: #fff;
+      width: 32px; height: 32px; border-radius: 8px;
+      font-family: 'Baloo 2', cursive; font-weight: 800; font-size: 16px;
+      display: flex; align-items: center; justify-content: center; color: #fff;
     }
     .lv-badge.t { background: var(--accent3); }
     .lv-badge.d { background: var(--accent); }
@@ -220,68 +175,31 @@
     .lv-title { font-size: 13px; font-weight: 600; }
     .lv ul { list-style: none; padding: 0; }
     .lv ul li {
-      font-size: 11.5px;
-      color: var(--text-muted);
-      padding: 3px 0;
-      border-bottom: 1px solid rgba(255,255,255,.04);
-      line-height: 1.5;
+      font-size: 11.5px; color: var(--text-muted);
+      padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,.04); line-height: 1.5;
     }
     .lv ul li:last-child { border: none; }
 
-    /* ── warning ── */
     .warn {
-      background: rgba(216,153,34,.08);
-      border: 1px solid rgba(216,153,34,.3);
-      border-radius: 12px;
-      padding: 16px 20px;
-      font-size: 13px;
-      color: #e3b341;
-      line-height: 1.6;
-      margin-bottom: 24px;
-      display: flex; gap: 10px; align-items: flex-start;
+      background: rgba(216,153,34,.08); border: 1px solid rgba(216,153,34,.3);
+      border-radius: 12px; padding: 16px 20px;
+      font-size: 13px; color: #e3b341; line-height: 1.6;
+      margin-bottom: 24px; display: flex; gap: 10px; align-items: flex-start;
     }
-    .warn .icon { font-size: 16px; margin-top: 1px; }
 
-    /* ── footer ── */
+    .fix-note {
+      background: rgba(16,185,129,.07); border: 1px solid rgba(16,185,129,.25);
+      border-radius: 12px; padding: 16px 20px;
+      font-size: 13px; color: #6ee7b7; line-height: 1.7;
+      margin-bottom: 24px;
+    }
+    .fix-note strong { color: #10b981; }
+
     footer {
-      text-align: center;
-      font-size: 12px;
-      color: var(--text-muted);
-      padding-top: 40px;
-      border-top: 1px solid var(--border);
-      margin-top: 40px;
+      text-align: center; font-size: 12px; color: var(--text-muted);
+      padding-top: 40px; border-top: 1px solid var(--border); margin-top: 40px;
     }
     footer a { color: var(--accent); text-decoration: none; }
-
-    /* ── copy fallback ── */
-    .copy-wrap { width: 100%; margin-top: 6px; }
-    .copy-row {
-      display: flex; gap: 8px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-family: monospace;
-      font-size: 11px;
-      color: var(--text-muted);
-      align-items: center;
-      overflow: hidden;
-    }
-    .copy-row span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .copy-btn {
-      background: rgba(88,166,255,.15);
-      border: 1px solid rgba(88,166,255,.3);
-      color: var(--accent);
-      font-size: 11px;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: background .15s;
-      font-family: 'Be Vietnam Pro', sans-serif;
-    }
-    .copy-btn:hover { background: rgba(88,166,255,.28); }
 
     @media (max-width: 520px) {
       .bm-card { padding: 24px 18px; }
@@ -292,27 +210,29 @@
 <body>
 <div class="wrap">
 
-  <!-- HERO -->
   <div class="hero">
     <div class="badge">🇻🇳 Công cụ giáo viên tiểu học</div>
-    <h1>vnEdu Auto<br>Nhận Xét ⚡</h1>
-    <p>Tự động điền đánh giá năng lực &amp; phẩm chất học sinh trên vnEdu.vn — chỉ 1 cú click.</p>
+    <h1>vnEdu Auto Nhận Xét <span class="v2-tag">v2.1</span></h1>
+    <p>Tự động điền đánh giá năng lực &amp; phẩm chất học sinh trên vnEdu.vn — click vào học sinh, bấm bookmark là xong. <strong style="color:#10b981">Mỗi em một nhận xét khác nhau.</strong></p>
+  </div>
+
+  <div class="fix-note">
+    <strong>✅ Đã sửa v2.1:</strong> Hỗ trợ đúng ExtJS ComboBox + TextAreaField của vnEdu — chọn học sinh từ danh sách bên trái → bấm bookmark → tự điền mức độ T/Đ/C <em>ngẫu nhiên</em> và nhận xét <em>không trùng nhau</em> cho từng học sinh.
   </div>
 
   <!-- BOOKMARKLET CARD -->
   <div class="bm-card">
     <h2>🔖 Bookmarklet — Kéo vào thanh bookmark</h2>
-    <p class="sub">Kéo nút bên dưới vào thanh bookmark (Bookmarks bar) của trình duyệt. Sau đó khi đang ở trang vnEdu, chỉ cần bấm vào bookmark đó là xong!</p>
+    <p class="sub">Kéo nút bên dưới vào thanh Bookmarks bar. Khi đang xem form một học sinh trên vnEdu → bấm bookmark → điền xong ngay.</p>
 
     <div class="bm-wrap">
-      <a class="bm-btn" id="bookmarklet" href="javascript:void(0)">⚡ vnEdu Auto Fill</a>
+      <a class="bm-btn" id="bookmarklet" href="javascript:void(0)">⚡ vnEdu Auto Fill v2</a>
       <div class="drag-hint">
-        <span class="arrow">☝️</span>
+        <span>☝️</span>
         <span>Kéo nút này lên thanh bookmark của trình duyệt</span>
       </div>
-
       <div class="copy-wrap">
-        <p style="font-size:12px;color:var(--text-muted);margin-bottom:6px;text-align:center">Hoặc copy đoạn code dưới → Tạo bookmark mới → Dán vào ô URL:</p>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:6px;text-align:center">Hoặc copy → Tạo bookmark mới → Dán vào ô URL:</p>
         <div class="copy-row">
           <span id="bmCode">đang tải...</span>
           <button class="copy-btn" onclick="copyBM()">Copy</button>
@@ -324,54 +244,57 @@
   <!-- STEPS -->
   <div class="bm-card">
     <h2>📋 Hướng dẫn sử dụng</h2>
-    <p class="sub">Làm theo các bước dưới đây</p>
+    <p class="sub">Làm theo đúng thứ tự</p>
     <div class="steps">
       <div class="step">
         <div class="step-num">1</div>
         <div class="step-body">
           <h3>Kéo bookmark vào thanh trình duyệt</h3>
-          <p>Kéo nút <strong>⚡ vnEdu Auto Fill</strong> ở trên vào thanh <code>Bookmarks bar</code> (Ctrl+Shift+B để hiện thanh nếu ẩn).</p>
+          <p>Kéo nút <strong>⚡ vnEdu Auto Fill v2</strong> lên thanh <code>Bookmarks bar</code>. Nhấn <code>Ctrl+Shift+B</code> để hiện thanh nếu ẩn.</p>
         </div>
       </div>
       <div class="step">
         <div class="step-num">2</div>
         <div class="step-body">
-          <h3>Đăng nhập vnEdu &amp; mở trang đánh giá</h3>
-          <p>Truy cập <code>vnedu.vn</code>, đăng nhập tài khoản giáo viên và mở trang đánh giá năng lực phẩm chất học sinh.</p>
+          <h3>Mở trang Phẩm chất – Năng lực ghi học bạ</h3>
+          <p>Vào <code>vnedu.vn</code> → đăng nhập → mở trang <em>Phẩm chất - Năng lực ghi học bạ</em>.</p>
         </div>
       </div>
       <div class="step">
         <div class="step-num">3</div>
         <div class="step-body">
-          <h3>Bấm bookmark để tự động điền</h3>
-          <p>Bấm vào bookmark <strong>⚡ vnEdu Auto Fill</strong> trên thanh bookmark. Script sẽ tự động điền toàn bộ mức độ và nhận xét.</p>
+          <h3>Bấm chọn 1 học sinh từ danh sách bên trái</h3>
+          <p>Click vào tên học sinh để form bên phải hiện ra đầy đủ các ô Năng lực &amp; Phẩm chất.</p>
         </div>
       </div>
       <div class="step">
         <div class="step-num">4</div>
         <div class="step-body">
-          <h3>Kiểm tra &amp; lưu</h3>
-          <p>Đọc lại các nhận xét được điền, chỉnh sửa nếu cần, rồi bấm <strong>Lưu</strong> trên trang vnEdu.</p>
+          <h3>Bấm bookmark ⚡ để tự động điền</h3>
+          <p>Script sẽ điền <em>ngẫu nhiên</em> mức độ T/Đ/C và nhận xét vào tất cả ô. <em>Mỗi lần bấm cho học sinh khác sẽ ra kết quả khác nhau.</em></p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <h3>Kiểm tra &amp; bấm Lưu</h3>
+          <p>Đọc lại nhận xét, chỉnh sửa nếu cần, rồi bấm <strong>Lưu</strong> trên trang vnEdu. Chuyển sang học sinh tiếp theo và lặp lại bước 3–5.</p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- WARNING -->
   <div class="warn">
-    <span class="icon">⚠️</span>
-    <div>Luôn kiểm tra lại kết quả trước khi lưu. Công cụ điền ngẫu nhiên theo tỉ lệ T &gt; Đ &gt; C, không trùng câu liên tiếp — thầy/cô chỉnh sửa thêm nếu cần để phù hợp từng học sinh.</div>
+    <span>⚠️</span>
+    <div>Luôn kiểm tra lại trước khi lưu. Công cụ điền ngẫu nhiên theo tỉ lệ T &gt; Đ &gt; C và tránh trùng câu liên tiếp — thầy/cô chỉnh thêm cho phù hợp từng học sinh.</div>
   </div>
 
   <!-- LEVEL TABLE -->
   <div class="level-card">
-    <h2>📝 Ngân hàng nhận xét</h2>
+    <h2>📝 Ngân hàng nhận xét (28 câu)</h2>
     <div class="levels">
       <div class="lv">
-        <div class="lv-head">
-          <div class="lv-badge t">T</div>
-          <div class="lv-title">Tốt (10 câu)</div>
-        </div>
+        <div class="lv-head"><div class="lv-badge t">T</div><div class="lv-title">Tốt (10 câu)</div></div>
         <ul>
           <li>Chủ động, tự giác trong học tập và rèn luyện.</li>
           <li>Có ý thức trách nhiệm cao, hoàn thành xuất sắc nhiệm vụ.</li>
@@ -386,10 +309,7 @@
         </ul>
       </div>
       <div class="lv">
-        <div class="lv-head">
-          <div class="lv-badge d">Đ</div>
-          <div class="lv-title">Đạt (10 câu)</div>
-        </div>
+        <div class="lv-head"><div class="lv-badge d">Đ</div><div class="lv-title">Đạt (10 câu)</div></div>
         <ul>
           <li>Biết yêu quê hương, đất nước, thật thà.</li>
           <li>Biết quan tâm và giúp đỡ mọi người xung quanh.</li>
@@ -404,10 +324,7 @@
         </ul>
       </div>
       <div class="lv">
-        <div class="lv-head">
-          <div class="lv-badge c">C</div>
-          <div class="lv-title">Cần cố gắng (8 câu)</div>
-        </div>
+        <div class="lv-head"><div class="lv-badge c">C</div><div class="lv-title">Cần cố gắng (8 câu)</div></div>
         <ul>
           <li>Cần cố gắng tự giác hơn trong giờ học.</li>
           <li>Nên mạnh dạn, tự tin hơn khi giao tiếp.</li>
@@ -423,16 +340,20 @@
   </div>
 
   <footer>
-    <p>vnEdu Auto Nhận Xét · v1.0 · Dành cho giáo viên tiểu học 🍎</p>
-    <p style="margin-top:6px">Mã nguồn trên <a href="#">GitHub</a> · Chia sẻ tự do cho đồng nghiệp</p>
+    <p>vnEdu Auto Nhận Xét · v2.1 · Dành cho giáo viên tiểu học 🍎</p>
+    <p style="margin-top:6px">Chia sẻ tự do cho đồng nghiệp</p>
   </footer>
 </div>
 
 <script>
-// ── Full bookmarklet code (minified inline) ──────────────────────────────────
+// ════════════════════════════════════════════════════════
+//  BOOKMARKLET v2.1 — Fixed ExtJS + per-student random
+// ════════════════════════════════════════════════════════
 const bookmarkletCode = (function() {
   const fn = function() {
-    var dataComments = {
+
+    // ── Ngân hàng nhận xét ──────────────────────────────
+    var DB = {
       "T": [
         "Em chủ động, tự giác trong học tập và rèn luyện.",
         "Em có ý thức trách nhiệm cao, hoàn thành xuất sắc nhiệm vụ.",
@@ -468,135 +389,222 @@ const bookmarkletCode = (function() {
         "Em cần tích cực tham gia các hoạt động học tập trên lớp."
       ]
     };
-    function genLevels(n) {
-      var r=[], prev=null, streak=0, pool=["T","T","T","Đ","Đ","C"];
-      for(var i=0;i<n;i++){
-        var lv, t=0;
-        do{ lv=pool[Math.floor(Math.random()*pool.length)]; t++; }
-        while(lv===prev && streak>=2 && t<20);
-        if(lv===prev) streak++; else{ prev=lv; streak=1; }
-        r.push(lv);
-      } return r;
+
+    // ── Tạo mức độ ngẫu nhiên (T nhiều hơn, không trùng liên tiếp) ──
+    function randLevel(prev) {
+      var pool = ["T","T","T","T","Đ","Đ","C"];
+      var filtered = prev ? pool.filter(function(x){return x!==prev;}) : pool;
+      return filtered[Math.floor(Math.random() * filtered.length)];
     }
-    function pick(lv, used) {
-      var all=dataComments[lv], avail=all.filter(function(c){return used.indexOf(c)<0;});
-      var pool=avail.length>0?avail:all;
-      return pool[Math.floor(Math.random()*pool.length)];
+
+    // ── Chọn câu nhận xét ngẫu nhiên, tránh trùng ──
+    var usedComments = [];
+    function pickComment(lv) {
+      var all = DB[lv];
+      var avail = all.filter(function(c){ return usedComments.indexOf(c) < 0; });
+      if (avail.length === 0) { usedComments = []; avail = all; }
+      var c = avail[Math.floor(Math.random() * avail.length)];
+      usedComments.push(c);
+      if (usedComments.length > 5) usedComments.shift();
+      return c;
     }
-    function trigger(el, val) {
-      if(!el) return;
+
+    // ── Trigger event cho DOM input/textarea/select ──
+    function triggerDOM(el, val) {
+      if (!el) return;
       try {
-        var proto = el.tagName==='TEXTAREA'
-          ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
-        var setter = Object.getOwnPropertyDescriptor(proto,'value');
-        if(setter && setter.set) setter.set.call(el,val); else el.value=val;
-      } catch(e){ el.value=val; }
-      ['input','change','blur','keyup'].forEach(function(ev){
-        el.dispatchEvent(new Event(ev,{bubbles:true}));
+        var proto = (el.tagName === 'TEXTAREA')
+          ? window.HTMLTextAreaElement.prototype
+          : (el.tagName === 'SELECT')
+            ? window.HTMLSelectElement.prototype
+            : window.HTMLInputElement.prototype;
+        var desc = Object.getOwnPropertyDescriptor(proto, 'value');
+        if (desc && desc.set) { desc.set.call(el, val); }
+        else { el.value = val; }
+      } catch(e) { el.value = val; }
+      var evts = ['input', 'change', 'blur', 'keyup', 'keydown'];
+      evts.forEach(function(ev) {
+        try { el.dispatchEvent(new Event(ev, {bubbles:true, cancelable:true})); } catch(e){}
       });
-      if(el.id && window.Ext) {
+    }
+
+    // ── Đặt giá trị cho ExtJS component ──
+    function setExtVal(cmp, val) {
+      try {
+        if (cmp.setValue) cmp.setValue(val);
+        else if (cmp.setRawValue) cmp.setRawValue(val);
+        if (cmp.fireEvent) {
+          cmp.fireEvent('change', cmp, val, null);
+          cmp.fireEvent('select', cmp, val);
+        }
+        // Cũng trigger trên DOM input nếu có
+        var inputEl = cmp.inputEl && cmp.inputEl.dom;
+        if (inputEl) triggerDOM(inputEl, val);
+      } catch(e){}
+    }
+
+    var filled = 0;
+    var prevLevel = null;
+
+    // ══════════════════════════════════════════════════
+    //  CHIẾN LƯỢC 1: ExtJS Component API (chính xác nhất)
+    // ══════════════════════════════════════════════════
+    if (window.Ext && Ext.ComponentQuery) {
+      try {
+        // Lấy tất cả combobox hiện visible trên màn hình
+        var combos = Ext.ComponentQuery.query('combobox:visible, combo:visible');
+        // Lấy tất cả textarea / textfield hiện visible
+        var textfields = Ext.ComponentQuery.query('textarea:visible, textareafield:visible, textfield[grow]:visible');
+        // Fallback: lấy tất cả textfield visible nếu không tìm được textarea
+        if (textfields.length === 0) {
+          textfields = Ext.ComponentQuery.query('textfield:visible');
+        }
+
+        // Lọc combo có store chứa T/Đ/C
+        var levelCombos = combos.filter(function(cb) {
+          try {
+            var store = cb.getStore && cb.getStore();
+            if (!store) return false;
+            var vals = [];
+            store.each(function(r) { vals.push(r.get('field1') || r.get('value') || r.get('ma') || r.get('id') || ''); });
+            var joined = vals.join('|');
+            return joined.indexOf('T') > -1 || joined.indexOf('Đ') > -1 || joined.indexOf('C') > -1;
+          } catch(e) { return false; }
+        });
+
+        // Nếu không tìm được qua store, lấy toàn bộ combo visible
+        if (levelCombos.length === 0) levelCombos = combos;
+
+        levelCombos.forEach(function(cb) {
+          prevLevel = randLevel(prevLevel);
+          setExtVal(cb, prevLevel);
+          filled++;
+        });
+
+        // Gán nhận xét cho textfield/textarea — dùng level từ combo cùng hàng nếu được
+        var commentFields = textfields.filter(function(tf) {
+          // loại bỏ field tìm kiếm / họ tên
+          var name = (tf.name || tf.fieldLabel || tf.itemId || '').toLowerCase();
+          return !(name.indexOf('ten') > -1 || name.indexOf('search') > -1 || name.indexOf('tim') > -1);
+        });
+
+        if (commentFields.length === 0) commentFields = textfields;
+
+        commentFields.forEach(function(tf) {
+          var lv = prevLevel || randLevel(null);
+          var cm = pickComment(lv);
+          setExtVal(tf, cm);
+          filled++;
+        });
+
+        // Thêm: force dirty & validate toàn bộ form
         try {
-          var cmp=Ext.getCmp(el.id.replace(/-inputEl$/,''));
-          if(cmp && cmp.setValue){ cmp.setValue(val); cmp.fireEvent('change',cmp,val); }
-        } catch(e){}
+          var forms = Ext.ComponentQuery.query('form:visible, basicform:visible');
+          forms.forEach(function(f) {
+            if (f.isValid) f.isValid();
+          });
+        } catch(e) {}
+
+      } catch(e) {
+        filled = 0;
       }
     }
-    function fillExtJS() {
-      if(!window.Ext || !Ext.ComponentQuery) return 0;
-      var filled=0;
-      try {
-        var grids=Ext.ComponentQuery.query('gridpanel:visible');
-        grids.forEach(function(grid){
-          var store=grid.getStore&&grid.getStore();
-          if(!store||store.getCount()===0) return;
-          var n=store.getCount(), levels=genLevels(n), used=[];
-          store.each(function(rec,i){
-            var lv=levels[i], cm=pick(lv,used);
-            used.push(cm); if(used.length>5) used.shift();
-            ['muc_do','mucDo','xep_loai','xepLoai','level','loai','danh_gia','danhGia'].forEach(function(f){
-              try{ if(rec.fields&&rec.fields.get(f)) rec.set(f,lv); }catch(e){}
-            });
-            ['nhan_xet','nhanXet','comment','noi_dung','noiDung','ghiChu','ghi_chu'].forEach(function(f){
-              try{ if(rec.fields&&rec.fields.get(f)) rec.set(f,cm); }catch(e){}
-            });
+
+    // ══════════════════════════════════════════════════
+    //  CHIẾN LƯỢC 2: DOM thuần — select + textarea theo hàng
+    // ══════════════════════════════════════════════════
+    if (filled === 0) {
+      // Tìm các select có option T/Đ/C
+      var selects = Array.from(document.querySelectorAll('select')).filter(function(s) {
+        var opts = Array.from(s.options).map(function(o){ return o.value.trim(); });
+        return opts.indexOf('T') > -1 || opts.indexOf('Đ') > -1 || opts.indexOf('C') > -1;
+      });
+
+      var areas = Array.from(document.querySelectorAll('textarea, input[type="text"]')).filter(function(el) {
+        // bỏ qua input ẩn hoặc read-only
+        return !el.readOnly && el.offsetParent !== null;
+      });
+
+      var total = Math.max(selects.length, areas.length, 1);
+      prevLevel = null;
+
+      selects.forEach(function(sel) {
+        prevLevel = randLevel(prevLevel);
+        triggerDOM(sel, prevLevel);
+        filled++;
+      });
+
+      areas.forEach(function(ta) {
+        var lv = prevLevel || randLevel(null);
+        var cm = pickComment(lv);
+        triggerDOM(ta, cm);
+        filled++;
+      });
+    }
+
+    // ══════════════════════════════════════════════════
+    //  CHIẾN LƯỢC 3: Tìm theo class ExtJS phổ biến
+    // ══════════════════════════════════════════════════
+    if (filled === 0) {
+      var extInputs = document.querySelectorAll('.x-form-text, .x-form-textarea, .x-form-field');
+      extInputs.forEach(function(inp) {
+        var tag = inp.tagName.toLowerCase();
+        if (tag === 'textarea' || (inp.className && inp.className.indexOf('textarea') > -1)) {
+          var lv = randLevel(prevLevel);
+          prevLevel = lv;
+          triggerDOM(inp, pickComment(lv));
+          filled++;
+        } else if (tag === 'input') {
+          var v = inp.value;
+          if (v === 'T' || v === 'Đ' || v === 'C' || v === '') {
+            var lv2 = randLevel(prevLevel);
+            prevLevel = lv2;
+            triggerDOM(inp, lv2);
             filled++;
-          });
-        });
-      } catch(e){}
-      return filled;
-    }
-    function fillRows() {
-      var sels=['tr.x-grid-row','tr.v-grid-row','tr[data-recordindex]','.x-grid-item','div.x-grid-row'], rows=[];
-      for(var i=0;i<sels.length;i++){ rows=Array.from(document.querySelectorAll(sels[i])); if(rows.length>0) break; }
-      if(rows.length===0) return 0;
-      var levels=genLevels(rows.length), used=[];
-      rows.forEach(function(row,i){
-        var lv=levels[i], cm=pick(lv,used);
-        used.push(cm); if(used.length>5) used.shift();
-        var sel=row.querySelector('select');
-        if(sel) trigger(sel,lv);
-        else { var inp=row.querySelector('.x-form-trigger-wrap input,.x-form-text'); if(inp) trigger(inp,lv); }
-        row.querySelectorAll('textarea').forEach(function(ta){ trigger(ta,cm); });
-        row.querySelectorAll('input.x-form-text:not(.x-form-trigger-wrap input)').forEach(function(inp){
-          if(inp.id&&(inp.id.includes('nhan')||inp.id.includes('comment')||inp.id.includes('ghichu'))) trigger(inp,cm);
-        });
+          }
+        }
       });
-      return rows.length;
     }
-    function fillAll() {
-      var used=[];
-      var selects=Array.from(document.querySelectorAll('select')).filter(function(s){
-        var v=Array.from(s.options).map(function(o){return o.value;});
-        return v.indexOf('T')>-1||v.indexOf('Đ')>-1||v.indexOf('C')>-1;
-      });
-      var tas=Array.from(document.querySelectorAll('textarea'));
-      var total=Math.max(selects.length,tas.length);
-      if(total===0) return 0;
-      var levels=genLevels(total);
-      selects.forEach(function(s,i){ trigger(s,levels[i]||'Đ'); });
-      tas.forEach(function(ta,i){
-        var lv=levels[i]||'Đ', cm=pick(lv,used);
-        used.push(cm); if(used.length>5) used.shift();
-        trigger(ta,cm);
-      });
-      return total;
+
+    // ── Kết quả ──────────────────────────────────────
+    if (filled > 0) {
+      alert('✅ Đã điền cho học sinh này!\n(' + filled + ' trường)\n\nVui lòng kiểm tra lại rồi bấm Lưu.');
+    } else {
+      alert('⚠️ Không tìm thấy ô để điền.\n\nHãy:\n1. Bấm chọn tên học sinh ở danh sách bên trái\n2. Đợi form hiện ra đầy đủ\n3. Bấm bookmark này lần nữa.');
     }
-    var n=fillExtJS();
-    if(n===0) n=fillRows();
-    if(n===0) n=fillAll();
-    if(n>0) alert('✅ Đã tự động điền đánh giá cho ' + n + ' học sinh!\nVui lòng kiểm tra lại trước khi lưu.');
-    else alert('⚠️ Không tìm thấy dữ liệu để điền.\nHãy mở trang đánh giá học sinh trước rồi bấm lại.');
   };
-  return 'javascript:(' + fn.toString() + ')();';
+
+  return 'javascript:(' + fn.toString().replace(/\s+/g, ' ') + ')();';
 })();
 
-// Gán href cho nút bookmarklet
+// Gán vào nút
 document.getElementById('bookmarklet').href = bookmarkletCode;
 
-// Hiện phần code rút gọn trong ô copy
-document.getElementById('bmCode').textContent = bookmarkletCode.substring(0, 80) + '...';
+// Hiện snippet trong ô copy
+document.getElementById('bmCode').textContent = bookmarkletCode.substring(0, 90) + '...';
 
 function copyBM() {
-  navigator.clipboard.writeText(bookmarkletCode).then(function() {
-    var btn = document.querySelector('.copy-btn');
+  var btn = document.querySelector('.copy-btn');
+  var done = function() {
     btn.textContent = '✓ Đã copy!';
-    btn.style.background = 'rgba(16,185,129,.2)';
-    btn.style.borderColor = 'rgba(16,185,129,.4)';
-    btn.style.color = '#10b981';
-    setTimeout(function(){ 
-      btn.textContent = 'Copy'; 
-      btn.style.cssText=''; 
-    }, 2000);
-  }).catch(function() {
-    // fallback
+    btn.style.cssText = 'background:rgba(16,185,129,.2);border-color:rgba(16,185,129,.4);color:#10b981';
+    setTimeout(function(){ btn.textContent = 'Copy'; btn.style.cssText = ''; }, 2000);
+  };
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(bookmarkletCode).then(done).catch(function(){
+      fallbackCopy();
+    });
+  } else { fallbackCopy(); }
+  function fallbackCopy() {
     var ta = document.createElement('textarea');
     ta.value = bookmarkletCode;
+    ta.style.cssText = 'position:fixed;opacity:0';
     document.body.appendChild(ta);
     ta.select();
     document.execCommand('copy');
     document.body.removeChild(ta);
-    alert('Đã copy! Tạo bookmark mới và dán vào ô URL.');
-  });
+    done();
+  }
 }
 </script>
 </body>
