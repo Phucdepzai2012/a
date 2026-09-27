@@ -1,19 +1,23 @@
+```html
 <!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>My Video Player</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Video Viewer</title>
 
 <style>
-*{box-sizing:border-box}
+*{
+    box-sizing:border-box;
+}
 
 body{
     margin:0;
     min-height:100vh;
-    background:#0b0d12;
-    color:white;
     font-family:Arial,sans-serif;
+    background:
+        radial-gradient(circle at top,#202633 0,#0b0e13 45%,#07090d 100%);
+    color:#fff;
 }
 
 .container{
@@ -21,53 +25,68 @@ body{
     margin:40px auto;
 }
 
-.box{
-    background:#151922;
-    border:1px solid #292f3a;
-    border-radius:22px;
+.card{
+    background:rgba(20,24,32,.95);
+    border:1px solid #2d3440;
+    border-radius:24px;
     padding:25px;
+    box-shadow:0 25px 70px #0008;
 }
 
 h1{
     text-align:center;
-    margin:0 0 8px;
+    margin:0;
+    font-size:32px;
 }
 
-.desc{
+.subtitle{
     text-align:center;
-    color:#9da5b2;
-    margin-bottom:25px;
+    color:#9ea7b5;
+    margin:10px 0 25px;
 }
 
-.form{
+.row{
     display:flex;
     gap:10px;
 }
 
 input{
     flex:1;
-    padding:16px;
-    border-radius:12px;
-    border:1px solid #343b48;
-    background:#0b0e13;
-    color:white;
-    font-size:16px;
+    min-width:0;
+    height:52px;
+    padding:0 16px;
+    border-radius:14px;
+    border:1px solid #39414e;
+    background:#0b0f15;
+    color:#fff;
     outline:none;
+    font-size:16px;
+}
+
+input:focus{
+    border-color:#ff1744;
 }
 
 button{
-    padding:0 25px;
+    height:52px;
+    padding:0 22px;
     border:0;
-    border-radius:12px;
-    background:#ff0033;
-    color:white;
-    font-weight:bold;
+    border-radius:14px;
+    background:#ff1744;
+    color:#fff;
+    font-weight:700;
     cursor:pointer;
 }
 
-.player{
-    margin-top:25px;
-    position:relative;
+button:hover{
+    filter:brightness(1.08);
+}
+
+#player{
+    margin-top:20px;
+}
+
+.player-box{
     width:100%;
     aspect-ratio:16/9;
     background:#000;
@@ -75,29 +94,64 @@ button{
     overflow:hidden;
 }
 
-.player iframe{
+.player-box iframe,
+.player-box video{
     width:100%;
     height:100%;
+    display:block;
     border:0;
 }
 
-.message{
-    display:none;
-    margin-top:18px;
-    padding:15px;
-    background:#0d1016;
-    border-radius:12px;
-    color:#b9c1cc;
-    line-height:1.5;
+.actions{
+    display:flex;
+    gap:10px;
+    margin-top:12px;
 }
 
-@media(max-width:650px){
-    .form{
+.action{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:48px;
+    padding:12px;
+    border-radius:12px;
+    text-decoration:none;
+    color:#fff;
+    background:#171d26;
+    border:1px solid #2d3540;
+    cursor:pointer;
+    font-weight:700;
+}
+
+.green{
+    background:#159447;
+    border-color:#159447;
+}
+
+.info{
+    margin-top:15px;
+    padding:15px;
+    border-radius:14px;
+    background:#0d1117;
+    border:1px solid #252c36;
+    color:#aeb7c3;
+    line-height:1.55;
+    word-break:break-word;
+}
+
+.hidden{
+    display:none;
+}
+
+@media(max-width:700px){
+    .row,
+    .actions{
         flex-direction:column;
     }
 
     button{
-        padding:15px;
+        width:100%;
     }
 }
 </style>
@@ -107,31 +161,32 @@ button{
 
 <div class="container">
 
-<div class="box">
+<div class="card">
 
-<h1>🎬 My Video Player</h1>
+<h1>🎬 Video Viewer</h1>
 
-<div class="desc">
-Dán link YouTube để phát video ngay trên trang
+<div class="subtitle">
+Xem video ngay trên trang • tải file video trực tiếp
 </div>
 
-<div class="form">
+<div class="row">
 
 <input
     id="url"
     type="text"
-    placeholder="https://www.youtube.com/watch?v=..."
+    autocomplete="off"
+    placeholder="Dán link YouTube hoặc link .mp4/.webm..."
 >
 
-<button onclick="playVideo()">
-    PHÁT
+<button onclick="openVideo()">
+    MỞ VIDEO
 </button>
 
 </div>
 
-<div class="player" id="player"></div>
+<div id="player"></div>
 
-<div class="message" id="message"></div>
+<div id="info" class="info hidden"></div>
 
 </div>
 
@@ -140,13 +195,30 @@ Dán link YouTube để phát video ngay trên trang
 
 <script>
 
-function getYouTubeID(url){
+const urlInput = document.getElementById("url");
+const player = document.getElementById("player");
+const info = document.getElementById("info");
+
+
+function showInfo(text){
+    info.classList.remove("hidden");
+    info.innerHTML = text;
+}
+
+
+function hideInfo(){
+    info.classList.add("hidden");
+    info.innerHTML = "";
+}
+
+
+function getYouTubeId(url){
 
     try{
 
         const u = new URL(url);
 
-        // youtube.com/watch?v=
+        // youtube.com/watch?v=ID
         if(
             u.hostname === "youtube.com" ||
             u.hostname === "www.youtube.com"
@@ -156,21 +228,21 @@ function getYouTubeID(url){
 
             if(v) return v;
 
-            // /shorts/VIDEO_ID
+            // youtube.com/shorts/ID
             if(u.pathname.startsWith("/shorts/")){
                 return u.pathname
                     .split("/shorts/")[1]
                     .split("/")[0];
             }
 
-            // /live/VIDEO_ID
+            // youtube.com/live/ID
             if(u.pathname.startsWith("/live/")){
                 return u.pathname
                     .split("/live/")[1]
                     .split("/")[0];
             }
 
-            // /embed/VIDEO_ID
+            // youtube.com/embed/ID
             if(u.pathname.startsWith("/embed/")){
                 return u.pathname
                     .split("/embed/")[1]
@@ -178,14 +250,12 @@ function getYouTubeID(url){
             }
         }
 
-        // youtu.be/VIDEO_ID
+        // youtu.be/ID
         if(
             u.hostname === "youtu.be" ||
             u.hostname === "www.youtu.be"
         ){
-            return u.pathname
-                .substring(1)
-                .split("/")[0];
+            return u.pathname.substring(1).split("/")[0];
         }
 
     }catch(e){}
@@ -194,76 +264,168 @@ function getYouTubeID(url){
 }
 
 
-function playVideo(){
+function isDirectVideo(url){
 
-    const url =
-        document.getElementById("url").value.trim();
+    return /\.(mp4|webm|ogg|m4v|mov)(\?.*)?$/i.test(url);
 
-    const player =
-        document.getElementById("player");
-
-    const message =
-        document.getElementById("message");
-
-    message.style.display = "none";
-    message.innerHTML = "";
-
-    if(!url){
-
-        message.style.display = "block";
-        message.innerHTML =
-            "Hãy dán link YouTube.";
-
-        return;
-    }
-
-    const id = getYouTubeID(url);
-
-    if(!id){
-
-        message.style.display = "block";
-        message.innerHTML =
-            "Link này không phải URL YouTube hợp lệ.";
-
-        return;
-    }
-
-    /*
-      Video chạy ngay trong trang.
-      Không chuyển tab.
-    */
-
-    player.innerHTML = `
-        <iframe
-            src="https://www.youtube.com/embed/${encodeURIComponent(id)}?rel=0"
-            title="YouTube video player"
-            allow="
-                accelerometer;
-                autoplay;
-                clipboard-write;
-                encrypted-media;
-                gyroscope;
-                picture-in-picture;
-                web-share
-            "
-            referrerpolicy="strict-origin-when-cross-origin"
-            allowfullscreen>
-        </iframe>
-    `;
 }
 
 
-document
-    .getElementById("url")
-    .addEventListener("keydown", function(e){
+function safe(text){
 
-        if(e.key === "Enter"){
-            playVideo();
-        }
+    return text
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
 
-    });
+}
+
+
+function openVideo(){
+
+    const url = urlInput.value.trim();
+
+    player.innerHTML = "";
+    hideInfo();
+
+    if(!url){
+
+        showInfo("Hãy dán link video.");
+        return;
+    }
+
+
+    /*
+    ===========================
+    YOUTUBE
+    ===========================
+    */
+
+    const youtubeId = getYouTubeId(url);
+
+    if(youtubeId){
+
+        player.innerHTML = `
+            <div class="player-box">
+                <iframe
+                    src="https://www.youtube.com/embed/${encodeURIComponent(youtubeId)}"
+                    title="YouTube video"
+                    allow="
+                        accelerometer;
+                        autoplay;
+                        clipboard-write;
+                        encrypted-media;
+                        gyroscope;
+                        picture-in-picture;
+                        web-share
+                    "
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    allowfullscreen>
+                </iframe>
+            </div>
+        `;
+
+        showInfo(
+            "Video YouTube đang được phát trong trang. " +
+            "Việc phát phụ thuộc vào quyền xem và việc chủ video cho phép nhúng."
+        );
+
+        return;
+    }
+
+
+    /*
+    ===========================
+    VIDEO FILE TRỰC TIẾP
+    ===========================
+    */
+
+    if(isDirectVideo(url)){
+
+        const encodedUrl =
+            encodeURI(url);
+
+        player.innerHTML = `
+            <div class="player-box">
+                <video
+                    controls
+                    autoplay
+                    playsinline
+                    preload="metadata">
+                    <source src="${safe(encodedUrl)}">
+                    Trình duyệt không hỗ trợ video này.
+                </video>
+            </div>
+
+            <div class="actions">
+
+                <a
+                    class="action green"
+                    href="${safe(encodedUrl)}"
+                    download>
+                    ⬇ TẢI VIDEO
+                </a>
+
+                <button
+                    class="action"
+                    onclick="openDirect()">
+                    ↗ MỞ LINK
+                </button>
+
+            </div>
+        `;
+
+        showInfo(
+            "Đây là URL file video trực tiếp. " +
+            "Nút TẢI VIDEO sử dụng chính URL do máy chủ cung cấp."
+        );
+
+        window.currentDirectUrl = url;
+
+        return;
+    }
+
+
+    /*
+    ===========================
+    URL KHÁC
+    ===========================
+    */
+
+    showInfo(
+        "Không nhận diện được URL. " +
+        "Hãy dùng link YouTube hoặc URL file video trực tiếp " +
+        "như .mp4, .webm, .ogg, .m4v."
+    );
+
+}
+
+
+function openDirect(){
+
+    if(window.currentDirectUrl){
+        window.open(
+            window.currentDirectUrl,
+            "_blank",
+            "noopener"
+        );
+    }
+
+}
+
+
+urlInput.addEventListener("keydown",function(e){
+
+    if(e.key === "Enter"){
+        openVideo();
+    }
+
+});
 
 </script>
 
 </body>
 </html>
+```
