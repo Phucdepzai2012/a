@@ -1,1234 +1,269 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Ascension: Path of the Cultivator</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Video Player</title>
+
 <style>
-  :root{
-    --jade-dark:#0c2620;
-    --jade:#123c30;
-    --jade-light:#1f6b52;
-    --gold:#e0b64a;
-    --gold-dim:#8a6f2c;
-    --crimson:#a8283f;
-    --mist:#dce9e4;
-    --ink:#0a0f0d;
-  }
-  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-  html,body{
-    height:100%;background:var(--ink);color:var(--mist);
-    font-family:Georgia,'Songti SC','STSong',serif;
-    display:flex;align-items:center;justify-content:center;
-    overflow:hidden;overscroll-behavior:none;touch-action:none;
-  }
-  #wrap{
-    position:relative;width:min(96vw,1024px);aspect-ratio:16/9;
-    box-shadow:0 0 0 2px var(--gold-dim),0 0 40px rgba(0,0,0,.8);
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    min-height:100vh;
+    background:#0b0d12;
+    color:white;
+    font-family:Arial,sans-serif;
+}
+
+.container{
+    width:min(1000px,94%);
+    margin:40px auto;
+}
+
+.box{
+    background:#151922;
+    border:1px solid #292f3a;
+    border-radius:22px;
+    padding:25px;
+}
+
+h1{
+    text-align:center;
+    margin:0 0 8px;
+}
+
+.desc{
+    text-align:center;
+    color:#9da5b2;
+    margin-bottom:25px;
+}
+
+.form{
+    display:flex;
+    gap:10px;
+}
+
+input{
+    flex:1;
+    padding:16px;
+    border-radius:12px;
+    border:1px solid #343b48;
+    background:#0b0e13;
+    color:white;
+    font-size:16px;
+    outline:none;
+}
+
+button{
+    padding:0 25px;
+    border:0;
+    border-radius:12px;
+    background:#ff0033;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.player{
+    margin-top:25px;
+    position:relative;
+    width:100%;
+    aspect-ratio:16/9;
     background:#000;
-    max-height:100vh;max-height:100dvh;
-  }
-  @media (max-width:820px) and (orientation:landscape){
-    #wrap{ width:100vw; height:100vh; height:100dvh; max-width:none; aspect-ratio:auto; }
-  }
-  @media (orientation:portrait){
-    #wrap{ width:96vw; }
-  }
-  canvas{
-    position:absolute;top:0;left:0;width:100%;height:100%;
-    image-rendering:pixelated;image-rendering:crisp-edges;
-    display:block;touch-action:none;
-  }
-  .overlay{
-    position:absolute;inset:0;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;text-align:center;
-    background:radial-gradient(ellipse at center,rgba(12,38,32,.92),rgba(4,10,8,.97));
-    padding:4%;z-index:10;
-  }
-  .hidden{display:none !important;}
-  h1{
-    font-size:clamp(22px,4.2vw,42px);color:var(--gold);letter-spacing:3px;
-    text-shadow:0 0 18px rgba(224,182,74,.5);margin-bottom:10px;
-  }
-  h2{font-size:clamp(16px,2.6vw,26px);color:var(--mist);margin-bottom:14px;letter-spacing:1px;}
-  .realm-tag{
-    color:var(--jade-light);font-size:clamp(11px,1.6vw,15px);letter-spacing:4px;
-    text-transform:uppercase;margin-bottom:6px;
-  }
-  p.lore{max-width:640px;font-size:clamp(11px,1.5vw,15px);line-height:1.7;color:#b9c9c2;margin-bottom:18px;}
-  .controls-list{
-    display:flex;gap:24px;flex-wrap:wrap;justify-content:center;margin-bottom:22px;
-    font-size:clamp(10px,1.4vw,13px);color:#b9c9c2;
-  }
-  .controls-list kbd{
-    background:var(--jade);border:1px solid var(--gold-dim);border-radius:4px;
-    padding:2px 7px;color:var(--gold);font-family:inherit;margin-right:4px;
-  }
-  button.cult-btn{
-    font-family:inherit;background:linear-gradient(180deg,var(--jade-light),var(--jade));
-    color:var(--gold);border:1px solid var(--gold-dim);padding:12px 30px;
-    font-size:clamp(13px,1.8vw,16px);letter-spacing:2px;cursor:pointer;
-    border-radius:2px;margin:6px;transition:transform .12s, box-shadow .12s;
-  }
-  button.cult-btn:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(224,182,74,.35);}
-  button.cult-btn.secondary{
-    background:transparent;color:#b9c9c2;border-color:#3a4c46;
-  }
-  .stat-line{font-size:clamp(11px,1.5vw,14px);color:var(--gold);margin:3px 0;}
-  .stat-up{color:#7fd6a5;}
+    border-radius:18px;
+    overflow:hidden;
+}
 
-  /* HUD */
-  #hud{
-    position:absolute;top:0;left:0;right:0;padding:10px 14px;z-index:5;
-    display:flex;justify-content:space-between;align-items:flex-start;
-    pointer-events:none;font-size:11px;
-  }
-  #hud .left-panel{display:flex;flex-direction:column;gap:4px;min-width:180px;}
-  .realm-name{color:var(--gold);letter-spacing:2px;font-size:clamp(10px,1.4vw,13px);text-shadow:0 1px 3px #000;}
-  .level-name{color:#9fb8ae;font-size:clamp(9px,1.1vw,11px);text-shadow:0 1px 3px #000;}
-  .bar-row{display:flex;align-items:center;gap:5px;}
-  .bar-label{width:16px;font-size:10px;text-align:center;color:#dce9e4;text-shadow:0 1px 2px #000;}
-  .bar-bg{
-    width:150px;height:9px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.15);
-    border-radius:2px;overflow:hidden;
-  }
-  .bar-fill{height:100%;transition:width .15s ease;}
-  .bar-hp{background:linear-gradient(90deg,#7a1c2c,var(--crimson));}
-  .bar-qi{background:linear-gradient(90deg,#2b6f9e,#5cc7e8);}
-  #score{color:var(--gold);font-size:clamp(11px,1.6vw,15px);text-shadow:0 1px 3px #000;text-align:right;}
-  #hint{
-    position:absolute;bottom:8px;left:0;right:0;text-align:center;
-    font-size:10px;color:#9fb8ae;text-shadow:0 1px 3px #000;z-index:5;pointer-events:none;
-  }
-  #pauseOverlay{background:rgba(4,10,8,.75);}
+.player iframe{
+    width:100%;
+    height:100%;
+    border:0;
+}
 
-  /* Touch controls */
-  #touchControls{
-    position:absolute;inset:0;z-index:6;pointer-events:none;display:none;
-  }
-  body.is-touch #touchControls{ display:block; }
-  body.is-touch #hint{ display:none; }
-  body.is-touch #kbControls{ display:none; }
-  body.is-touch #touchControlsNote{ display:flex !important; }
-  .tbtn{
-    position:absolute;pointer-events:auto;display:flex;align-items:center;justify-content:center;
-    border-radius:50%;background:rgba(18,60,48,.55);border:2px solid rgba(224,182,74,.55);
-    color:var(--gold);font-family:inherit;font-size:18px;user-select:none;
-    -webkit-user-select:none;touch-action:none;
-  }
-  .tbtn:active,.tbtn.pressed{background:rgba(31,107,82,.85);border-color:var(--gold);}
-  #btnLeft{ left:4%; bottom:14%; width:15vmin;height:15vmin;max-width:64px;max-height:64px; }
-  #btnRight{ left:calc(4% + 17vmin); bottom:14%; width:15vmin;height:15vmin;max-width:64px;max-height:64px; }
-  #btnJump{ right:4%; bottom:30%; width:17vmin;height:17vmin;max-width:72px;max-height:72px;font-size:14px; }
-  #btnAttack{ right:calc(4% + 19vmin); bottom:14%; width:15vmin;height:15vmin;max-width:62px;max-height:62px; }
-  #btnQi{ right:calc(4% + 19vmin); bottom:calc(14% + 17vmin); width:15vmin;height:15vmin;max-width:62px;max-height:62px; }
-  #btnPause{
-    position:absolute;top:8px;right:8px;z-index:8;pointer-events:auto;
-    width:30px;height:30px;border-radius:6px;background:rgba(18,60,48,.6);
-    border:1px solid var(--gold-dim);color:var(--gold);font-size:14px;display:none;
-    align-items:center;justify-content:center;
-  }
-  body.is-touch #btnPause{ display:flex; }
+.message{
+    display:none;
+    margin-top:18px;
+    padding:15px;
+    background:#0d1016;
+    border-radius:12px;
+    color:#b9c1cc;
+    line-height:1.5;
+}
 
-  #rotateHint{
-    position:absolute;inset:0;z-index:20;background:rgba(4,10,8,.96);
-    display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;
-  }
-  body.is-touch.portrait-warn #rotateHint{ display:flex; }
-  #rotateHint .icon{ font-size:34px;animation:spinHint 1.6s ease-in-out infinite; }
-  @keyframes spinHint{ 0%,100%{transform:rotate(0deg);} 50%{transform:rotate(90deg);} }
+@media(max-width:650px){
+    .form{
+        flex-direction:column;
+    }
+
+    button{
+        padding:15px;
+    }
+}
 </style>
 </head>
+
 <body>
-<div id="wrap">
-  <canvas id="game" width="480" height="270"></canvas>
 
-  <div id="hud" class="hidden">
-    <div class="left-panel">
-      <div class="realm-name" id="realmName">Qi Condensation</div>
-      <div class="level-name" id="levelName">The Bamboo Whisper Forest</div>
-      <div class="bar-row"><div class="bar-label">気</div><div class="bar-bg"><div class="bar-fill bar-hp" id="hpBar" style="width:100%"></div></div></div>
-      <div class="bar-row"><div class="bar-label">霊</div><div class="bar-bg"><div class="bar-fill bar-qi" id="qiBar" style="width:0%"></div></div></div>
-    </div>
-    <div id="score">灵石 0</div>
-  </div>
-  <div id="hint" class="hidden">← → move · ↑ / Space jump · X strike · Z qi blast · P pause</div>
+<div class="container">
 
-  <button id="btnPause" aria-label="Pause">⏸</button>
+<div class="box">
 
-  <div id="touchControls">
-    <div class="tbtn" id="btnLeft">◀</div>
-    <div class="tbtn" id="btnRight">▶</div>
-    <div class="tbtn" id="btnQi">霊</div>
-    <div class="tbtn" id="btnAttack">剑</div>
-    <div class="tbtn" id="btnJump">跳</div>
-  </div>
+<h1>🎬 My Video Player</h1>
 
-  <div id="rotateHint">
-    <div class="icon">📱</div>
-    <h2 style="margin-bottom:0;">Rotate your device</h2>
-    <p class="lore" style="margin-bottom:0;">For the best cultivation experience, turn your phone to landscape.</p>
-  </div>
-
-  <!-- Title -->
-  <div class="overlay" id="titleScreen">
-    <div class="realm-tag">A Pixel Cultivation Journey</div>
-    <h1>ASCENSION</h1>
-    <h2>Path of the Cultivator</h2>
-    <p class="lore">
-      You are a lowly disciple who has just begun to sense the flow of Qi through heaven and earth.
-      Wander through five realms of trial — forest, cliff, swamp, and frozen peak — gathering spirit
-      energy, defeating spirit beasts, and breaking through the bottlenecks that bind your cultivation.
-      At the final gate, a Demon Lord awaits. Only through his defeat may you ascend.
-    </p>
-    <div class="controls-list" id="kbControls">
-      <div><kbd>←</kbd><kbd>→</kbd> Move</div>
-      <div><kbd>↑</kbd> / <kbd>Space</kbd> Jump</div>
-      <div><kbd>X</kbd> Sword Strike</div>
-      <div><kbd>Z</kbd> Qi Blast (costs spirit energy)</div>
-      <div><kbd>P</kbd> Pause</div>
-    </div>
-    <div class="controls-list" id="touchControlsNote" style="display:none;">
-      <div>◀ ▶ on-screen — Move</div>
-      <div>跳 — Jump</div>
-      <div>剑 — Sword Strike</div>
-      <div>霊 — Qi Blast</div>
-      <div>⏸ top-right — Pause</div>
-    </div>
-    <button class="cult-btn" id="beginBtn">Begin Cultivation</button>
-  </div>
-
-  <!-- Level intro -->
-  <div class="overlay hidden" id="levelIntro">
-    <div class="realm-tag" id="introRealmTag">Realm I — Qi Condensation</div>
-    <h1 id="introLevelTitle">The Bamboo Whisper Forest</h1>
-    <p class="lore" id="introLevelDesc"></p>
-    <button class="cult-btn" id="introContinueBtn">Enter Realm</button>
-  </div>
-
-  <!-- Breakthrough -->
-  <div class="overlay hidden" id="breakthroughScreen">
-    <div class="realm-tag">Bottleneck Shattered</div>
-    <h1>BREAKTHROUGH!</h1>
-    <h2 id="breakthroughText">Qi Condensation → Foundation Establishment</h2>
-    <div id="breakthroughStats"></div>
-    <button class="cult-btn" id="breakthroughContinueBtn">Continue Cultivation</button>
-  </div>
-
-  <!-- Game Over -->
-  <div class="overlay hidden" id="gameOverScreen">
-    <div class="realm-tag">Deviation in Cultivation</div>
-    <h1 style="color:var(--crimson);text-shadow:0 0 18px rgba(168,40,63,.6);">YOU HAVE PERISHED</h1>
-    <p class="lore">Your meridians ruptured under the strain. But death is merely another lesson on the path.</p>
-    <div class="stat-line" id="goScore"></div>
-    <div>
-      <button class="cult-btn" id="retryBtn">Retry This Realm</button>
-      <button class="cult-btn secondary" id="restartBtn">Restart Journey</button>
-    </div>
-  </div>
-
-  <!-- Victory -->
-  <div class="overlay hidden" id="victoryScreen">
-    <div class="realm-tag">The Demon Lord Falls</div>
-    <h1>YOU HAVE ASCENDED</h1>
-    <p class="lore">The heavens split open in golden light. Your name is written into the annals of the immortals.</p>
-    <div class="stat-line" id="victoryScore"></div>
-    <button class="cult-btn" id="victoryRestartBtn">Begin Anew</button>
-  </div>
-
-  <!-- Pause -->
-  <div class="overlay hidden" id="pauseOverlay">
-    <h1 style="font-size:28px;">MEDITATING</h1>
-    <p class="lore">The world holds still while you steady your breath.</p>
-    <button class="cult-btn" id="resumeBtn">Resume</button>
-  </div>
+<div class="desc">
+Dán link YouTube để phát video ngay trên trang
 </div>
 
+<div class="form">
+
+<input
+    id="url"
+    type="text"
+    placeholder="https://www.youtube.com/watch?v=..."
+>
+
+<button onclick="playVideo()">
+    PHÁT
+</button>
+
+</div>
+
+<div class="player" id="player"></div>
+
+<div class="message" id="message"></div>
+
+</div>
+
+</div>
+
+
 <script>
-/* =========================================================
-   ASCENSION: PATH OF THE CULTIVATOR
-   Pixel 2D cultivation-themed platformer, 5 realms + boss
-   ========================================================= */
 
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-ctx.imageSmoothingEnabled = false;
-const VIEW_W = 480, VIEW_H = 270;
-const GROUND_Y = 226;
+function getYouTubeID(url){
 
-/* ---------------- Pixel sprite system ---------------- */
-function drawSprite(grid, palette, x, y, px, flip){
-  const rows = grid.length;
-  const cols = grid[0].length;
-  for(let r=0;r<rows;r++){
-    const row = grid[r];
-    for(let c=0;c<cols;c++){
-      const ch = row[c];
-      if(ch === '.') continue;
-      const color = palette[ch];
-      if(!color) continue;
-      const cx = flip ? (cols - 1 - c) : c;
-      ctx.fillStyle = color;
-      ctx.fillRect(Math.round(x + cx*px), Math.round(y + r*px), px, px);
-    }
-  }
-}
+    try{
 
-const PLAYER_PAL = {H:'#1a1410',S:'#e8b98a',E:'#fdf6e3',R:'#164a38',r:'#1f6b52',G:'#e0b64a',B:'#0d2620',W:'#dce9e4'};
-const PLAYER_STAND = [
-"...HHH...",
-"..HSSSH..",
-"..SESES..",
-"..SSSSS..",
-"...WWW...",
-"..RrrrR..",
-".RrGGGrR.",
-".RrGGGrR.",
-".RrrrrrR.",
-"..R...R..",
-"..R...R..",
-"..B...B..",
-".BB...BB.",
-];
-const PLAYER_WALK1 = [
-"...HHH...",
-"..HSSSH..",
-"..SESES..",
-"..SSSSS..",
-"...WWW...",
-"..RrrrR..",
-".RrGGGrR.",
-".RrGGGrR.",
-".RrrrrrR.",
-".BR...R..",
-"BB.R...R.",
-".....R...",
-"..B...BB.",
-];
-const PLAYER_WALK2 = [
-"...HHH...",
-"..HSSSH..",
-"..SESES..",
-"..SSSSS..",
-"...WWW...",
-"..RrrrR..",
-".RrGGGrR.",
-".RrGGGrR.",
-".RrrrrrR.",
-"..R...RB.",
-".R...R.BB",
-"...R.....",
-".BB...B..",
-];
-const PLAYER_JUMP = [
-"...HHH...",
-"..HSSSH..",
-"..SESES..",
-"..SSSSS..",
-"...WWW...",
-".RRrrrRR.",
-"RrGGGGGrR",
-".RrGGGrR.",
-"..RrrrR..",
-".R.....R.",
-"R.......R",
-"..       ",
-"..       ",
-];
-const PLAYER_ATTACK = [
-"...HHH..G",
-"..HSSSH G",
-"..SESES.G",
-"..SSSSSG.",
-"...WWWG..",
-"..RrrGG..",
-".RrGGGrR.",
-".RrGGGrR.",
-".RrrrrrR.",
-"..R...R..",
-"..R...R..",
-"..B...B..",
-".BB...BB.",
-];
+        const u = new URL(url);
 
-const WISP_PAL = {C:'#bff0e8',c:'#6fd6c4',W:'#ffffff'};
-const WISP_SPRITE = [
-"..CCC..",
-".CcWcC.",
-"CcWWWcC",
-"CcccccC",
-".CcccC.",
-"..ccc..",
-"...c...",
-];
+        // youtube.com/watch?v=
+        if(
+            u.hostname === "youtube.com" ||
+            u.hostname === "www.youtube.com"
+        ){
 
-const GOLEM_PAL = {D:'#5b4a3f',d:'#7a6656',M:'#9c8770',E:'#e0b64a'};
-const GOLEM_SPRITE = [
-"..DDDDDD..",
-".DdEDDEdD.",
-".DdddddD.",
-"DDdMMMMdDD",
-"DDdMMMMdDD",
-".DdddddD.",
-"..D....D.",
-"..D....D.",
-"..D....D.",
-"..DD..DD.",
-];
+            const v = u.searchParams.get("v");
 
-const FOX_PAL = {P:'#4a1f3a',p:'#6b3a5c',E:'#e0b64a',B:'#1a0f16'};
-const FOX_SPRITE = [
-".P....P.",
-"PP.PP.PP",
-"BpppppB.",
-"pEppppE.",
-"ppppppp.",
-"pp.pp.pp",
-"........",
-];
+            if(v) return v;
 
-const SERPENT_PAL = {I:'#8fd3e8',i:'#4a94ab',E:'#0d2620'};
-const SERPENT_SPRITE = [
-"........III.",
-".......IiiiI",
-"IIIIIIiiiiiI",
-"IiEiIiiiiiI.",
-"IIIIIIiiI...",
-".....III....",
-];
+            // /shorts/VIDEO_ID
+            if(u.pathname.startsWith("/shorts/")){
+                return u.pathname
+                    .split("/shorts/")[1]
+                    .split("/")[0];
+            }
 
-const BOSS_PAL = {K:'#1a0a0f',R:'#7a1420',r:'#a8283f',G:'#e0b64a',E:'#ffdd66',B:'#3a0a12'};
-const BOSS_SPRITE = [
-"....KK..KK....",
-"...KRRKKRRK...",
-"..KRrRKKRrRK..",
-".KRrrRKKRrrRK.",
-"..RrEGGGGErR..",
-"..RrGGGGGGrR..",
-".KRrGGGGGGrRK.",
-".KRrrRRRRrRK..",
-"..BRrrrrrRB...",
-"..BRRRRRRRB...",
-".BBR.RRR.RBB.",
-".BR..RRR..RB.",
-".B...RRR...B.",
-"KK...RRR...KK",
-"K....RRR....K",
-"....K...K....",
-];
+            // /live/VIDEO_ID
+            if(u.pathname.startsWith("/live/")){
+                return u.pathname
+                    .split("/live/")[1]
+                    .split("/")[0];
+            }
 
-const ORB_PAL = {G:'#e0b64a',Y:'#fff2c0',W:'#ffffff'};
-const ORB_SPRITE = [
-".GG.",
-"GYWG",
-"GWWG",
-".GG.",
-];
-
-/* ---------------- Input ---------------- */
-const keys = {};
-window.addEventListener('keydown', e=>{
-  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)) e.preventDefault();
-  keys[e.code] = true;
-  if(e.code === 'KeyP') togglePause();
-});
-window.addEventListener('keyup', e=>{ keys[e.code] = false; });
-
-/* ---------------- Level definitions ---------------- */
-function ground(width){ return {x:0,y:GROUND_Y,w:width,h:VIEW_H-GROUND_Y}; }
-
-const LEVEL_TEMPLATES = [
-  { // Level 0 - Qi Condensation
-    realmIndex:0,
-    realmName:'Qi Condensation',
-    name:'The Bamboo Whisper Forest',
-    desc:'A quiet grove where wind spirits drift between the bamboo stalks. Gather scattered Qi to steady your foundation.',
-    theme:'forest',
-    width:1700,
-    platforms:[ground(1700),
-      {x:260,y:180,w:70,h:10},{x:440,y:150,w:60,h:10},{x:620,y:190,w:80,h:10},
-      {x:820,y:150,w:70,h:10},{x:980,y:190,w:90,h:10},{x:1180,y:150,w:70,h:10},
-      {x:1360,y:185,w:90,h:10}],
-    orbs:[[180,190],[330,150],[460,110],[650,150],[720,150],[850,110],[1000,150],[1080,150],
-      [1200,110],[1400,150],[1500,190],[1600,190]],
-    enemies:[
-      {type:'wisp',x:400,y:120,minX:340,maxX:520},
-      {type:'wisp',x:700,y:110,minX:650,maxX:820},
-      {type:'wisp',x:1050,y:110,minX:990,maxX:1160},
-      {type:'wisp',x:1450,y:150,minX:1380,maxX:1560},
-    ],
-    gateX:1650,
-  },
-  { // Level 1 - Foundation Establishment
-    realmIndex:1,
-    realmName:'Foundation Establishment',
-    name:'The Shattered Stone Cliffs',
-    desc:'Ancient golems guard the crumbling cliffs. Their footsteps once shook mountains — now they merely block your path.',
-    theme:'cliff',
-    width:2000,
-    platforms:[ground(2000),
-      {x:220,y:190,w:70,h:10},{x:400,y:150,w:60,h:10},{x:560,y:190,w:60,h:10},
-      {x:760,y:150,w:80,h:10},{x:960,y:190,w:70,h:10},{x:1120,y:150,w:60,h:10},
-      {x:1300,y:190,w:90,h:10},{x:1500,y:150,w:70,h:10},{x:1700,y:190,w:100,h:10}],
-    orbs:[[150,190],[300,150],[450,110],[600,150],[800,110],[900,150],[1000,150],
-      [1150,110],[1350,150],[1450,150],[1550,110],[1750,150],[1850,190]],
-    enemies:[
-      {type:'golem',x:500,y:GROUND_Y,minX:420,maxX:700},
-      {type:'wisp',x:850,y:100,minX:780,maxX:960},
-      {type:'golem',x:1200,y:GROUND_Y,minX:1120,maxX:1400},
-      {type:'golem',x:1650,y:GROUND_Y,minX:1550,maxX:1850},
-      {type:'wisp',x:1400,y:110,minX:1330,maxX:1500},
-    ],
-    gateX:1950,
-  },
-  { // Level 2 - Core Formation
-    realmIndex:2,
-    realmName:'Core Formation',
-    name:'The Misty Serpent Swamp',
-    desc:'Shadow foxes stalk between the reeds of this fog-choked marsh. One misstep sends you into the murk below.',
-    theme:'swamp',
-    width:2200,
-    platforms:[
-      {x:0,y:GROUND_Y,w:400,h:VIEW_H-GROUND_Y},
-      {x:480,y:GROUND_Y,w:260,h:VIEW_H-GROUND_Y},
-      {x:820,y:GROUND_Y,w:300,h:VIEW_H-GROUND_Y},
-      {x:1200,y:GROUND_Y,w:260,h:VIEW_H-GROUND_Y},
-      {x:1540,y:GROUND_Y,w:260,h:VIEW_H-GROUND_Y},
-      {x:1880,y:GROUND_Y,w:320,h:VIEW_H-GROUND_Y},
-      {x:300,y:170,w:60,h:10},{x:600,y:150,w:60,h:10},{x:900,y:170,w:70,h:10},
-      {x:1250,y:150,w:60,h:10},{x:1600,y:170,w:70,h:10},{x:1950,y:150,w:70,h:10}],
-    orbs:[[150,190],[330,140],[560,150],[630,110],[850,190],[930,140],[1150,190],
-      [1280,110],[1450,190],[1630,140],[1800,190],[1980,110],[2100,190]],
-    enemies:[
-      {type:'fox',x:560,y:GROUND_Y,minX:490,maxX:720},
-      {type:'wisp',x:650,y:110,minX:600,maxX:750},
-      {type:'fox',x:900,y:GROUND_Y,minX:830,maxX:1100},
-      {type:'golem',x:1300,y:GROUND_Y,minX:1210,maxX:1440},
-      {type:'fox',x:1650,y:GROUND_Y,minX:1550,maxX:1780},
-      {type:'fox',x:1950,y:GROUND_Y,minX:1890,maxX:2180},
-    ],
-    gateX:2150,
-  },
-  { // Level 3 - Nascent Soul
-    realmIndex:3,
-    realmName:'Nascent Soul',
-    name:'The Frozen Peak',
-    desc:'Frost serpents coil in the ice caves, hurling shards of frozen Qi. The air itself grows thin with spiritual pressure.',
-    theme:'ice',
-    width:2400,
-    platforms:[
-      {x:0,y:GROUND_Y,w:360,h:VIEW_H-GROUND_Y},
-      {x:440,y:GROUND_Y,w:220,h:VIEW_H-GROUND_Y},
-      {x:740,y:GROUND_Y,w:260,h:VIEW_H-GROUND_Y},
-      {x:1080,y:GROUND_Y,w:220,h:VIEW_H-GROUND_Y},
-      {x:1380,y:GROUND_Y,w:260,h:VIEW_H-GROUND_Y},
-      {x:1720,y:GROUND_Y,w:220,h:VIEW_H-GROUND_Y},
-      {x:2020,y:GROUND_Y,w:380,h:VIEW_H-GROUND_Y},
-      {x:260,y:170,w:60,h:10},{x:520,y:140,w:60,h:10},{x:800,y:170,w:70,h:10},
-      {x:1120,y:140,w:60,h:10},{x:1420,y:170,w:70,h:10},{x:1750,y:140,w:60,h:10},
-      {x:2080,y:170,w:70,h:10},{x:2250,y:130,w:70,h:10}],
-    orbs:[[150,190],[290,140],[550,110],[770,190],[860,140],[1150,110],[1400,190],
-      [1500,140],[1780,110],[2000,190],[2110,140],[2280,100],[2350,190]],
-    enemies:[
-      {type:'serpent',x:600,y:GROUND_Y+2,minX:520,maxX:640},
-      {type:'fox',x:850,y:GROUND_Y,minX:760,maxX:980},
-      {type:'serpent',x:1150,y:GROUND_Y+2,minX:1100,maxX:1280},
-      {type:'golem',x:1500,y:GROUND_Y,minX:1400,maxX:1620},
-      {type:'serpent',x:1800,y:GROUND_Y+2,minX:1740,maxX:1920},
-      {type:'fox',x:2100,y:GROUND_Y,minX:2040,maxX:2280},
-      {type:'wisp',x:2200,y:100,minX:2100,maxX:2350},
-    ],
-    gateX:2350,
-  },
-  { // Level 4 - Boss: Deity Ascension trial
-    realmIndex:4,
-    realmName:'Deity Ascension',
-    name:"The Demon Lord's Lair",
-    desc:'At the summit, a fallen cultivator turned demon awaits. Defeat him to complete your ascension.',
-    theme:'lair',
-    width:1100,
-    platforms:[ground(1100),
-      {x:200,y:170,w:70,h:10},{x:820,y:170,w:70,h:10}],
-    orbs:[[150,190],[950,190],[220,140],[840,140]],
-    enemies:[
-      {type:'boss',x:550,y:GROUND_Y,minX:120,maxX:970},
-    ],
-    gateX:1050,
-    isBoss:true,
-  },
-];
-
-/* ---------------- Game state ---------------- */
-let state = 'title'; // title | intro | playing | breakthrough | gameover | victory | paused
-let levelIndex = 0;
-let score = 0;
-let camX = 0;
-let lastTime = 0;
-let level = null; // active level runtime object
-let bossDefeated = false;
-
-const player = {
-  x:60,y:0,w:18,h:26,vx:0,vy:0,onGround:false,facing:1,
-  hp:100,maxHp:100,qi:0,maxQi:100,attackDmg:2,
-  attackTimer:0,attackActive:0,qiCooldown:0,invuln:0,
-  walkT:0, lastGroundX:60, lastGroundY:GROUND_Y-26,
-};
-let projectiles = []; // {x,y,vx,vy,w,h,dmg,owner,life}
-let particles = []; // ambient / effect particles {x,y,vx,vy,life,maxLife,color,size}
-
-function deepClone(o){ return JSON.parse(JSON.stringify(o)); }
-
-function loadLevel(idx){
-  const tmpl = LEVEL_TEMPLATES[idx];
-  const clone = deepClone(tmpl);
-  clone.orbs = clone.orbs.map(o=>({x:o[0],y:o[1],taken:false,bob:Math.random()*Math.PI*2}));
-  clone.enemies = clone.enemies.map(e=>makeEnemy(e));
-  level = clone;
-  bossDefeated = false;
-  projectiles = [];
-  particles = [];
-  player.x = 40; player.y = GROUND_Y - player.h;
-  player.vx=0; player.vy=0; player.onGround=false;
-  player.hp = player.maxHp; player.qi = 0;
-  player.invuln = 60; player.attackActive=0;
-  player.lastGroundX = 40; player.lastGroundY = GROUND_Y - player.h;
-  camX = 0;
-  document.getElementById('realmName').textContent = level.realmName.toUpperCase();
-  document.getElementById('levelName').textContent = level.name;
-}
-
-function makeEnemy(e){
-  const base = {alive:true, hp:0, maxHp:0, vx:0, vy:0, dir:1, hitFlash:0, shootTimer:90, sineT:Math.random()*Math.PI*2, dashT:0, phase:'patrol', contactDamage:8, score:50};
-  switch(e.type){
-    case 'wisp': return Object.assign(base,e,{w:14,h:14,hp:2,maxHp:2,contactDamage:6,score:30,vx:0.6});
-    case 'golem': return Object.assign(base,e,{w:20,h:24,hp:4,maxHp:4,contactDamage:12,score:60,vx:0.5});
-    case 'fox': return Object.assign(base,e,{w:16,h:16,hp:3,maxHp:3,contactDamage:9,score:50,vx:1.4});
-    case 'serpent': return Object.assign(base,e,{w:24,h:16,hp:3,maxHp:3,contactDamage:8,score:55,vx:0.3,shootTimer:70});
-    case 'boss': return Object.assign(base,e,{w:42,h:54,hp:26,maxHp:26,contactDamage:16,score:1000,vx:0.9,shootTimer:100});
-    default: return Object.assign(base,e,{w:14,h:14,hp:2,maxHp:2});
-  }
-}
-
-/* ---------------- Physics helpers ---------------- */
-function rectsOverlap(a,b){
-  return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
-}
-
-function resolvePlatforms(entity){
-  entity.onGround = false;
-  for(const p of level.platforms){
-    if(rectsOverlap(entity,p)){
-      const prevBottom = entity.y + entity.h - entity.vy;
-      if(prevBottom <= p.y + 1 && entity.vy >= 0){
-        entity.y = p.y - entity.h;
-        entity.vy = 0;
-        entity.onGround = true;
-      } else {
-        // side collision, push out horizontally
-        if(entity.x + entity.w/2 < p.x + p.w/2){
-          entity.x = p.x - entity.w;
-        } else {
-          entity.x = p.x + p.w;
+            // /embed/VIDEO_ID
+            if(u.pathname.startsWith("/embed/")){
+                return u.pathname
+                    .split("/embed/")[1]
+                    .split("/")[0];
+            }
         }
-        entity.vx = 0;
-      }
+
+        // youtu.be/VIDEO_ID
+        if(
+            u.hostname === "youtu.be" ||
+            u.hostname === "www.youtu.be"
+        ){
+            return u.pathname
+                .substring(1)
+                .split("/")[0];
+        }
+
+    }catch(e){}
+
+    return null;
+}
+
+
+function playVideo(){
+
+    const url =
+        document.getElementById("url").value.trim();
+
+    const player =
+        document.getElementById("player");
+
+    const message =
+        document.getElementById("message");
+
+    message.style.display = "none";
+    message.innerHTML = "";
+
+    if(!url){
+
+        message.style.display = "block";
+        message.innerHTML =
+            "Hãy dán link YouTube.";
+
+        return;
     }
-  }
-}
 
-/* ---------------- Update ---------------- */
-function update(dt){
-  const t = dt/16.6667;
-  updatePlayer(t);
-  updateEnemies(t);
-  updateProjectiles(t);
-  updateParticles(t);
-  camX = Math.max(0, Math.min(level.width - VIEW_W, player.x + player.w/2 - VIEW_W/2));
-  updateHUD();
-}
+    const id = getYouTubeID(url);
 
-function updatePlayer(t){
-  if(player.invuln>0) player.invuln -= t;
-  if(player.attackTimer>0) player.attackTimer -= t;
-  if(player.attackActive>0) player.attackActive -= t;
-  if(player.qiCooldown>0) player.qiCooldown -= t;
+    if(!id){
 
-  const speed = 1.7;
-  let moving = false;
-  if(keys['ArrowLeft']||keys['KeyA']){ player.vx = -speed; player.facing=-1; moving=true; }
-  else if(keys['ArrowRight']||keys['KeyD']){ player.vx = speed; player.facing=1; moving=true; }
-  else { player.vx = 0; }
+        message.style.display = "block";
+        message.innerHTML =
+            "Link này không phải URL YouTube hợp lệ.";
 
-  if((keys['ArrowUp']||keys['KeyW']||keys['Space']) && player.onGround){
-    player.vy = -7.4;
-    player.onGround = false;
-  }
-
-  if(keys['KeyX'] && player.attackTimer<=0){
-    player.attackTimer = 24;
-    player.attackActive = 10;
-    spawnParticles(player.x + player.w/2 + player.facing*10, player.y+10, 3, '#e0b64a', 1.5);
-  }
-
-  if(keys['KeyZ'] && player.qiCooldown<=0 && player.qi>=15){
-    player.qi -= 15;
-    player.qiCooldown = 40;
-    projectiles.push({x:player.x+player.w/2, y:player.y+10, vx: player.facing*4.2, vy:0, w:8,h:6, dmg:3, owner:'player', life:90});
-  }
-
-  // gravity
-  player.vy += 0.36*t;
-  if(player.vy > 8.5) player.vy = 8.5;
-
-  player.x += player.vx*t;
-  player.x = Math.max(0, Math.min(level.width - player.w, player.x));
-  resolvePlatforms(player);
-  player.y += player.vy*t;
-  resolvePlatforms(player);
-
-  if(player.onGround){ player.lastGroundX = player.x; player.lastGroundY = player.y; }
-
-  // fell into pit
-  if(player.y > VIEW_H + 40){
-    damagePlayer(20);
-    player.x = player.lastGroundX; player.y = player.lastGroundY - 2;
-    player.vy = 0;
-  }
-
-  // walk animation timer
-  if(moving && player.onGround) player.walkT += t*0.25; else player.walkT = 0;
-
-  // melee hit detection
-  if(player.attackActive>0 && player.attackActive > 9 - 0.001 && player._swung !== player.attackTimer){
-    // only run once per swing (use attackTimer as swing id marker)
-  }
-  if(player.attackActive === 10){ /* first frame handled below via flag */ }
-  if(player._swinging === undefined) player._swinging = false;
-  if(player.attackActive>0 && !player._swinging){
-    player._swinging = true;
-    const hb = {x: player.facing>0? player.x+player.w : player.x-16, y:player.y+2, w:16, h:20};
-    for(const en of level.enemies){
-      if(!en.alive) continue;
-      if(rectsOverlap(hb, en)){
-        hitEnemy(en, player.attackDmg);
-      }
+        return;
     }
-  }
-  if(player.attackActive<=0) player._swinging = false;
 
-  // orb collection
-  for(const orb of level.orbs){
-    if(orb.taken) continue;
-    const ob = {x:orb.x-6,y:orb.y-6,w:12,h:12};
-    if(rectsOverlap(player, ob)){
-      orb.taken = true;
-      player.qi = Math.min(player.maxQi, player.qi+8);
-      player.hp = Math.min(player.maxHp, player.hp+2);
-      score += 10;
-      spawnParticles(orb.x, orb.y, 6, '#e0b64a', 2);
-    }
-  }
+    /*
+      Video chạy ngay trong trang.
+      Không chuyển tab.
+    */
 
-  // enemy contact damage
-  if(player.invuln<=0){
-    for(const en of level.enemies){
-      if(!en.alive) continue;
-      if(rectsOverlap(player, en)){
-        damagePlayer(en.contactDamage);
-        player.vx = (player.x < en.x ? -1:1)*2.5;
-        player.vy = -3;
-      }
-    }
-  }
-
-  // enemy projectile collision
-  for(const pr of projectiles){
-    if(pr.owner==='enemy' && player.invuln<=0 && rectsOverlap(player, pr)){
-      damagePlayer(pr.dmg);
-      pr.life = 0;
-    }
-  }
-
-  // gate check
-  const gateReached = player.x + player.w >= level.gateX;
-  if(gateReached){
-    if(level.isBoss){
-      if(bossDefeated) completeLevel();
-    } else {
-      completeLevel();
-    }
-  }
-
-  if(player.hp<=0){
-    triggerGameOver();
-  }
+    player.innerHTML = `
+        <iframe
+            src="https://www.youtube.com/embed/${encodeURIComponent(id)}?rel=0"
+            title="YouTube video player"
+            allow="
+                accelerometer;
+                autoplay;
+                clipboard-write;
+                encrypted-media;
+                gyroscope;
+                picture-in-picture;
+                web-share
+            "
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen>
+        </iframe>
+    `;
 }
 
-function damagePlayer(dmg){
-  if(player.invuln>0) return;
-  player.hp -= dmg;
-  player.invuln = 55;
-  spawnParticles(player.x+player.w/2, player.y+player.h/2, 8, '#a8283f', 2.2);
-}
 
-function hitEnemy(en, dmg){
-  en.hp -= dmg;
-  en.hitFlash = 8;
-  spawnParticles(en.x+en.w/2, en.y+en.h/2, 5, '#ffffff', 1.8);
-  if(en.hp<=0 && en.alive){
-    en.alive = false;
-    score += en.score;
-    spawnParticles(en.x+en.w/2, en.y+en.h/2, 14, '#8fd3e8', 2.6);
-    if(en.type==='boss') bossDefeated = true;
-  }
-}
+document
+    .getElementById("url")
+    .addEventListener("keydown", function(e){
 
-function updateEnemies(t){
-  for(const en of level.enemies){
-    if(!en.alive) continue;
-    if(en.hitFlash>0) en.hitFlash -= t;
-    switch(en.type){
-      case 'wisp': updateWisp(en,t); break;
-      case 'golem': updateGolem(en,t); break;
-      case 'fox': updateFox(en,t); break;
-      case 'serpent': updateSerpent(en,t); break;
-      case 'boss': updateBoss(en,t); break;
-    }
-  }
-}
+        if(e.key === "Enter"){
+            playVideo();
+        }
 
-function updateWisp(en,t){
-  en.sineT += 0.04*t;
-  en.x += en.dir*en.vx*t;
-  en.y += Math.sin(en.sineT)*0.4;
-  if(en.x < en.minX){ en.x=en.minX; en.dir=1; }
-  if(en.x > en.maxX){ en.x=en.maxX; en.dir=-1; }
-}
+    });
 
-function updateGolem(en,t){
-  en.vy = (en.vy||0) + 0.36*t;
-  en.x += en.dir*en.vx*t;
-  en.y += en.vy*t;
-  resolvePlatforms(en);
-  if(en.x < en.minX){ en.x=en.minX; en.dir=1; }
-  if(en.x > en.maxX){ en.x=en.maxX; en.dir=-1; }
-}
-
-function updateFox(en,t){
-  en.vy = (en.vy||0) + 0.36*t;
-  en.x += en.dir*en.vx*t;
-  en.y += en.vy*t;
-  resolvePlatforms(en);
-  if(en.x < en.minX){ en.x=en.minX; en.dir=1; }
-  if(en.x > en.maxX){ en.x=en.maxX; en.dir=-1; }
-  en.jumpT = (en.jumpT||0) - t;
-  if(en.onGround && en.jumpT<=0 && Math.random()<0.01){
-    en.vy = -5.5; en.jumpT = 60;
-  }
-}
-
-function updateSerpent(en,t){
-  en.x += en.dir*en.vx*t;
-  if(en.x < en.minX){ en.x=en.minX; en.dir=1; }
-  if(en.x > en.maxX){ en.x=en.maxX; en.dir=-1; }
-  en.shootTimer -= t;
-  const dist = Math.abs((player.x) - en.x);
-  if(en.shootTimer<=0 && dist < 240){
-    en.shootTimer = 90;
-    const dir = player.x < en.x ? -1: 1;
-    projectiles.push({x:en.x+en.w/2,y:en.y+en.h/2,vx:dir*2.4,vy:0,w:8,h:6,dmg:8,owner:'enemy',life:140});
-  }
-}
-
-function updateBoss(en,t){
-  en.vy = (en.vy||0) + 0.36*t;
-  en.shootTimer -= t;
-  en.dashT -= t;
-  const dist = player.x - en.x;
-  if(en.phase==='patrol'){
-    en.x += en.dir*en.vx*t;
-    if(en.x < en.minX){ en.x=en.minX; en.dir=1; }
-    if(en.x > en.maxX){ en.x=en.maxX; en.dir=-1; }
-    if(en.shootTimer<=0){
-      en.shootTimer = 130;
-      for(let i=-1;i<=1;i++){
-        projectiles.push({x:en.x+en.w/2,y:en.y+en.h/2,vx:Math.sign(dist||1)*3+i*0.6,vy:i*0.4,w:9,h:9,dmg:10,owner:'enemy',life:150});
-      }
-    }
-    if(en.dashT<=0 && Math.abs(dist)<160 && Math.random()<0.02){
-      en.phase='dash'; en.dashT=45; en.dir = dist<0?-1:1;
-    }
-  } else if(en.phase==='dash'){
-    en.x += en.dir*3.6*t;
-    if(en.dashT<=0){ en.phase='patrol'; en.dashT=110; }
-  }
-  en.y += en.vy*t;
-  resolvePlatforms(en);
-}
-
-function updateProjectiles(t){
-  for(const pr of projectiles){
-    pr.x += pr.vx*t; pr.y += pr.vy*t; pr.life -= t;
-    if(pr.owner==='player'){
-      for(const en of level.enemies){
-        if(!en.alive) continue;
-        if(rectsOverlap(pr,en)){ hitEnemy(en, pr.dmg); pr.life=0; }
-      }
-    }
-  }
-  projectiles = projectiles.filter(p=>p.life>0 && p.x>camX-40 && p.x<camX+VIEW_W+40);
-}
-
-function spawnParticles(x,y,n,color,speed){
-  for(let i=0;i<n;i++){
-    const ang = Math.random()*Math.PI*2;
-    particles.push({x,y,vx:Math.cos(ang)*speed*Math.random(),vy:Math.sin(ang)*speed*Math.random()-0.5,life:26+Math.random()*10,maxLife:36,color,size:1+Math.random()*1.5});
-  }
-}
-function updateParticles(t){
-  for(const p of particles){ p.x+=p.vx*t; p.y+=p.vy*t; p.vy+=0.03*t; p.life-=t; }
-  particles = particles.filter(p=>p.life>0);
-}
-
-function updateHUD(){
-  document.getElementById('hpBar').style.width = Math.max(0,(player.hp/player.maxHp*100))+'%';
-  document.getElementById('qiBar').style.width = (player.qi/player.maxQi*100)+'%';
-  document.getElementById('score').textContent = '灵石 ' + score;
-}
-
-/* ---------------- Rendering ---------------- */
-const THEME_COLORS = {
-  forest:{sky:['#123c30','#dce9e4'],ground:'#0c2620',groundTop:'#1f6b52',accent:'#2f8a63'},
-  cliff:{sky:['#3a2e1f','#d9b98a'],ground:'#3a2e1f',groundTop:'#7a6656',accent:'#9c8770'},
-  swamp:{sky:['#22262a','#5f6b5a'],ground:'#1c1f1a',groundTop:'#3a4a30',accent:'#4a1f3a'},
-  ice:{sky:['#1a2e3a','#bfe6f0'],ground:'#1a2e3a',groundTop:'#8fd3e8',accent:'#dce9e4'},
-  lair:{sky:['#1a0a0f','#3a0a12'],ground:'#0a0508',groundTop:'#3a0a12',accent:'#a8283f'},
-};
-
-function drawBackground(){
-  const th = THEME_COLORS[level.theme];
-  const grad = ctx.createLinearGradient(0,0,0,VIEW_H);
-  grad.addColorStop(0, th.sky[0]);
-  grad.addColorStop(1, th.sky[1]);
-  ctx.fillStyle = grad;
-  ctx.fillRect(0,0,VIEW_W,VIEW_H);
-
-  // parallax silhouettes
-  ctx.fillStyle = th.accent;
-  ctx.globalAlpha = 0.35;
-  const parX = -(camX*0.3) % 240;
-  for(let i=-1;i<4;i++){
-    const bx = parX + i*240;
-    if(level.theme==='forest' || level.theme==='swamp'){
-      ctx.fillRect(bx+30,120,6,106);
-      ctx.fillRect(bx+70,100,6,126);
-      ctx.fillRect(bx+140,130,6,96);
-      ctx.fillRect(bx+190,110,6,116);
-    } else if(level.theme==='lair'){
-      ctx.beginPath();
-      ctx.moveTo(bx,VIEW_H); ctx.lineTo(bx+60,90); ctx.lineTo(bx+120,VIEW_H); ctx.fill();
-    } else {
-      ctx.beginPath();
-      ctx.moveTo(bx,VIEW_H); ctx.lineTo(bx+80,60); ctx.lineTo(bx+160,VIEW_H); ctx.fill();
-    }
-  }
-  ctx.globalAlpha = 1;
-
-  // ambient particles (fixed screen-space)
-  if(level.theme==='ice'){
-    for(let i=0;i<25;i++){
-      const sx = (i*53 + (performance.now()*0.02))%VIEW_W;
-      const sy = (i*37 + performance.now()*0.03)%VIEW_H;
-      ctx.fillStyle = 'rgba(255,255,255,0.5)';
-      ctx.fillRect(sx,sy,1,1);
-    }
-  } else if(level.theme==='lair'){
-    for(let i=0;i<18;i++){
-      const sx = (i*61 + Math.sin(performance.now()*0.001+i)*10)%VIEW_W;
-      const sy = VIEW_H - ((i*29 + performance.now()*0.04)%VIEW_H);
-      ctx.fillStyle = 'rgba(224,120,60,0.5)';
-      ctx.fillRect(sx,sy,1,2);
-    }
-  } else if(level.theme==='swamp'){
-    ctx.fillStyle = 'rgba(150,170,150,0.08)';
-    for(let i=0;i<4;i++){
-      const fx = (i*160 - (camX*0.5)%160);
-      ctx.fillRect(fx,150,120,60);
-    }
-  }
-}
-
-function drawPlatforms(){
-  const th = THEME_COLORS[level.theme];
-  for(const p of level.platforms){
-    const sx = p.x - camX;
-    if(sx+p.w<0 || sx>VIEW_W) continue;
-    ctx.fillStyle = th.ground;
-    ctx.fillRect(sx, p.y, p.w, p.h+ (p.y===GROUND_Y? (VIEW_H-p.y):0));
-    ctx.fillStyle = th.groundTop;
-    ctx.fillRect(sx, p.y, p.w, 4);
-  }
-}
-
-function drawOrbs(){
-  const t = performance.now()*0.004;
-  for(const o of level.orbs){
-    if(o.taken) continue;
-    const sx = o.x - camX - 8;
-    const sy = o.y + Math.sin(t+o.bob)*3 - 8;
-    if(sx<-20||sx>VIEW_W) continue;
-    drawSprite(ORB_SPRITE, ORB_PAL, sx, sy, 4, false);
-  }
-}
-
-function drawGate(){
-  const sx = level.gateX - camX;
-  if(sx<-40||sx>VIEW_W+40) return;
-  const locked = level.isBoss && !bossDefeated;
-  const t = performance.now()*0.003;
-  ctx.save();
-  ctx.translate(sx,0);
-  const grad = ctx.createRadialGradient(0,GROUND_Y-40,4,0,GROUND_Y-40,40);
-  grad.addColorStop(0, locked? 'rgba(120,30,30,0.7)':'rgba(224,182,74,0.8)');
-  grad.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = grad;
-  ctx.beginPath(); ctx.ellipse(0,GROUND_Y-40,26,50,0,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle = locked? '#7a1420' : '#e0b64a';
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.arc(0, GROUND_Y-10, 30, Math.PI, 0);
-  ctx.lineTo(30, GROUND_Y);
-  ctx.lineTo(-30, GROUND_Y);
-  ctx.closePath();
-  ctx.stroke();
-  for(let i=0;i<6;i++){
-    const a = t*2 + i*(Math.PI/3);
-    const rr = 14+Math.sin(t*3+i)*4;
-    ctx.fillStyle = locked? '#a8283f' : '#fff2c0';
-    ctx.fillRect(Math.cos(a)*rr-1, GROUND_Y-30+Math.sin(a)*rr-1, 2,2);
-  }
-  ctx.restore();
-}
-
-function drawPlayer(){
-  const sx = player.x - camX;
-  const sy = player.y;
-  let sprite = PLAYER_STAND;
-  if(player.attackActive>0) sprite = PLAYER_ATTACK;
-  else if(!player.onGround) sprite = PLAYER_JUMP;
-  else if(Math.abs(player.vx)>0.1){
-    sprite = (Math.floor(player.walkT*4)%2===0) ? PLAYER_WALK1 : PLAYER_WALK2;
-  }
-  ctx.save();
-  if(player.invuln>0 && Math.floor(player.invuln/4)%2===0){ ctx.globalAlpha = 0.4; }
-  drawSprite(sprite, PLAYER_PAL, sx-2, sy, 2, player.facing<0);
-  ctx.restore();
-}
-
-function drawEnemies(){
-  for(const en of level.enemies){
-    if(!en.alive) continue;
-    const sx = en.x - camX;
-    if(sx < -60 || sx > VIEW_W+60) continue;
-    ctx.save();
-    if(en.hitFlash>0){ ctx.filter = 'brightness(2)'; }
-    switch(en.type){
-      case 'wisp': drawSprite(WISP_SPRITE, WISP_PAL, sx, en.y, 2, en.dir<0); break;
-      case 'golem': drawSprite(GOLEM_SPRITE, GOLEM_PAL, sx, en.y, 2, en.dir<0); break;
-      case 'fox': drawSprite(FOX_SPRITE, FOX_PAL, sx, en.y, 2, en.dir<0); break;
-      case 'serpent': drawSprite(SERPENT_SPRITE, SERPENT_PAL, sx, en.y, 2, en.dir<0); break;
-      case 'boss': drawSprite(BOSS_SPRITE, BOSS_PAL, sx, en.y, 3, en.dir<0); break;
-    }
-    ctx.restore();
-    // enemy hp bar
-    if(en.hp < en.maxHp){
-      ctx.fillStyle='rgba(0,0,0,0.6)';
-      ctx.fillRect(sx, en.y-6, en.w, 3);
-      ctx.fillStyle='#a8283f';
-      ctx.fillRect(sx, en.y-6, en.w*(en.hp/en.maxHp), 3);
-    }
-  }
-}
-
-function drawProjectiles(){
-  for(const pr of projectiles){
-    const sx = pr.x - camX;
-    ctx.fillStyle = pr.owner==='player' ? '#fff2c0' : '#8fd3e8';
-    ctx.fillRect(sx-pr.w/2, pr.y-pr.h/2, pr.w, pr.h);
-  }
-}
-
-function drawParticles(){
-  for(const p of particles){
-    const sx = p.x - camX;
-    ctx.globalAlpha = Math.max(0, p.life/p.maxLife);
-    ctx.fillStyle = p.color;
-    ctx.fillRect(sx, p.y, p.size, p.size);
-  }
-  ctx.globalAlpha = 1;
-}
-
-function render(){
-  ctx.clearRect(0,0,VIEW_W,VIEW_H);
-  if(state!=='playing' && state!=='paused') return;
-  drawBackground();
-  drawPlatforms();
-  drawGate();
-  drawOrbs();
-  drawEnemies();
-  drawPlayer();
-  drawProjectiles();
-  drawParticles();
-  if(state==='paused'){
-    ctx.fillStyle='rgba(0,0,0,0.4)';
-    ctx.fillRect(0,0,VIEW_W,VIEW_H);
-  }
-}
-
-/* ---------------- Game loop ---------------- */
-function loop(ts){
-  const dt = Math.min(40, ts-lastTime || 16.6667);
-  lastTime = ts;
-  if(state==='playing') update(dt);
-  render();
-  requestAnimationFrame(loop);
-}
-requestAnimationFrame(loop);
-
-/* ---------------- Screen flow ---------------- */
-const $ = id=>document.getElementById(id);
-
-function showOnly(id){
-  ['titleScreen','levelIntro','breakthroughScreen','gameOverScreen','victoryScreen','pauseOverlay'].forEach(s=>{
-    $(s).classList.toggle('hidden', s!==id);
-  });
-}
-
-function startGame(){
-  levelIndex = 0; score = 0;
-  player.maxHp = 100; player.maxQi = 100; player.attackDmg = 2;
-  enterLevelIntro();
-}
-
-function enterLevelIntro(){
-  state = 'intro';
-  const tmpl = LEVEL_TEMPLATES[levelIndex];
-  $('introRealmTag').textContent = `Realm ${levelIndex+1} — ${tmpl.realmName}`;
-  $('introLevelTitle').textContent = tmpl.name;
-  $('introLevelDesc').textContent = tmpl.desc;
-  showOnly('levelIntro');
-  $('hud').classList.add('hidden');
-  $('hint').classList.add('hidden');
-}
-
-function enterPlaying(){
-  loadLevel(levelIndex);
-  state = 'playing';
-  showOnly(null);
-  document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));
-  $('hud').classList.remove('hidden');
-  $('hint').classList.remove('hidden');
-}
-
-function completeLevel(){
-  if(state!=='playing') return;
-  const isLast = levelIndex === LEVEL_TEMPLATES.length-1;
-  score += 200*(levelIndex+1);
-  if(isLast){
-    state = 'victory';
-    $('victoryScore').textContent = 'Final Spirit Stones: ' + score;
-    document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));
-    showOnly('victoryScreen');
-    $('hud').classList.add('hidden'); $('hint').classList.add('hidden');
-    return;
-  }
-  const oldRealm = LEVEL_TEMPLATES[levelIndex].realmName;
-  levelIndex += 1;
-  const newRealm = LEVEL_TEMPLATES[levelIndex].realmName;
-  const hpGain = 15, qiGain = 15, dmgGain = 1;
-  player.maxHp += hpGain; player.maxQi += qiGain; player.attackDmg += dmgGain;
-  state = 'breakthrough';
-  $('breakthroughText').textContent = `${oldRealm} → ${newRealm}`;
-  $('breakthroughStats').innerHTML =
-    `<div class="stat-line stat-up">Max Vitality +${hpGain}</div>` +
-    `<div class="stat-line stat-up">Max Spirit Energy +${qiGain}</div>` +
-    `<div class="stat-line stat-up">Strike Power +${dmgGain}</div>`;
-  document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));
-  showOnly('breakthroughScreen');
-}
-
-function triggerGameOver(){
-  if(state!=='playing') return;
-  state = 'gameover';
-  $('goScore').textContent = 'Spirit Stones Collected: ' + score;
-  document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));
-  showOnly('gameOverScreen');
-}
-
-let wasPaused=false;
-function togglePause(){
-  if(state==='playing'){ wasPaused=true; state='paused'; showOnly('pauseOverlay'); }
-  else if(state==='paused'){ state='playing'; document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden')); }
-}
-
-$('beginBtn').addEventListener('click', startGame);
-$('introContinueBtn').addEventListener('click', enterPlaying);
-$('breakthroughContinueBtn').addEventListener('click', enterLevelIntro);
-$('retryBtn').addEventListener('click', enterPlaying);
-$('restartBtn').addEventListener('click', startGame);
-$('victoryRestartBtn').addEventListener('click', startGame);
-$('resumeBtn').addEventListener('click', togglePause);
-
-showOnly('titleScreen');
-
-/* ---------------- Mobile / touch support ---------------- */
-const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0 || matchMedia('(pointer:coarse)').matches;
-if(isTouchDevice) document.body.classList.add('is-touch');
-
-function checkOrientation(){
-  const portrait = window.innerHeight > window.innerWidth;
-  document.body.classList.toggle('portrait-warn', isTouchDevice && portrait && (state==='playing'||state==='paused'));
-}
-window.addEventListener('resize', checkOrientation);
-window.addEventListener('orientationchange', ()=>setTimeout(checkOrientation,150));
-
-function bindHoldButton(el, keyCode){
-  const setKey = v=>{ keys[keyCode]=v; el.classList.toggle('pressed',v); };
-  el.addEventListener('pointerdown', e=>{ e.preventDefault(); el.setPointerCapture(e.pointerId); setKey(true); }, {passive:false});
-  ['pointerup','pointercancel','pointerleave','pointerout'].forEach(ev=>{
-    el.addEventListener(ev, e=>{ setKey(false); });
-  });
-}
-function bindTapButton(el, keyCode){
-  const setKey = v=>{ keys[keyCode]=v; el.classList.toggle('pressed',v); };
-  el.addEventListener('pointerdown', e=>{ e.preventDefault(); el.setPointerCapture(e.pointerId); setKey(true); }, {passive:false});
-  ['pointerup','pointercancel','pointerleave','pointerout'].forEach(ev=>{
-    el.addEventListener(ev, e=>{ setKey(false); });
-  });
-}
-
-bindHoldButton($('btnLeft'), 'ArrowLeft');
-bindHoldButton($('btnRight'), 'ArrowRight');
-bindHoldButton($('btnJump'), 'Space');
-bindTapButton($('btnAttack'), 'KeyX');
-bindTapButton($('btnQi'), 'KeyZ');
-
-$('btnPause').addEventListener('click', ()=>{
-  if(state==='playing' || state==='paused') togglePause();
-});
-
-// re-check orientation whenever the game state changes screens
-const _origShowOnly = showOnly;
-showOnly = function(id){ _origShowOnly(id); checkOrientation(); };
-const _origEnterPlaying = enterPlaying;
-enterPlaying = function(){ _origEnterPlaying(); checkOrientation(); };
-
-checkOrientation();
-
-// prevent iOS Safari rubber-band scrolling / pinch zoom during play
-document.addEventListener('touchmove', e=>{ e.preventDefault(); }, {passive:false});
-document.addEventListener('gesturestart', e=>{ e.preventDefault(); });
 </script>
+
 </body>
 </html>
-
