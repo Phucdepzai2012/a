@@ -7,7 +7,7 @@
   3. Realtime Database → Rules → dán:
      {
        "rules": {
-         "players": {".read": "auth != null", ".indexOn": ["elo"], "$uid": {".write": "auth.uid === $uid"}},
+         "players": {".read": "auth != null", ".indexOn": ["elo"], "$uid": {"name": {".write": "auth.uid === $uid && !data.exists()"}, "elo": {".write": "auth.uid === $uid"}, "w": {".write": "auth.uid === $uid"}, "l": {".write": "auth.uid === $uid"}, "d": {".write": "auth.uid === $uid"}}},
          "lobby":   {".read": "auth != null", ".write": "auth != null"},
          "invite":  {"$uid": {".read": "auth.uid === $uid", ".write": "auth != null"}},
          "games":   {".read": "auth != null", "$g": {".write": "auth != null"}}
@@ -29,7 +29,7 @@ body{margin:0;padding:16px;background:var(--desk);color:var(--ink);font:15px/1.4
 main{display:grid;grid-template-columns:minmax(0,640px) 280px;gap:24px;width:100%;max-width:960px;align-items:start}
 @media(max-width:860px){main{grid-template-columns:1fr}}
 .paper{background:var(--paper);padding:10px;border-radius:3px;box-shadow:0 1px 0 #fff inset,0 10px 30px -12px rgba(27,36,48,.45)}
-canvas{display:block;width:100%;aspect-ratio:1;cursor:pointer;touch-action:manipulation}
+canvas{display:block;width:100%;aspect-ratio:1;cursor:crosshair;touch-action:none}
 h1{margin:0;font:700 44px/1 Caveat,cursive;color:var(--blue)}h1 b{color:var(--red)}
 h2{margin:22px 0 6px;font-size:13px;font-weight:600;color:var(--mut)}
 section{border-bottom:1px solid var(--ln);padding-bottom:14px}
@@ -43,19 +43,23 @@ ol{margin:0;padding:0;list-style:none;counter-reset:r}
 li{display:flex;gap:8px;padding:5px 0;border-bottom:1px dashed var(--ln);counter-increment:r}
 li:before{content:counter(r);color:var(--mut);width:16px}
 li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{font-style:normal;color:var(--mut);font-size:12px;align-self:center}
+#ov{position:fixed;inset:0;background:rgba(228,233,236,.94);display:flex;align-items:center;justify-content:center;z-index:9;padding:16px}#ov[hidden]{display:none}
+#ov>div{background:var(--paper);padding:24px;border-radius:3px;max-width:340px;width:100%;box-shadow:0 10px 30px -12px rgba(27,36,48,.45)}
+#ov p{margin:8px 0 0;color:var(--mut);font-size:13px}#nmEr{color:var(--red);font-size:13px;min-height:1.4em;margin-top:6px}#me{font-weight:600;color:var(--ink)}
 </style>
 </head>
 <body>
+<div id="ov" hidden><div><h1>Caro <b>5</b></h1><p>Đặt tên người chơi. Tên chỉ đặt một lần và không thể đổi về sau.</p><input id="nm" maxlength="14" placeholder="Tên của bạn" autocomplete="off"><div id="nmEr"></div><button id="nmOk" class="pri">Vào chơi</button></div></div>
 <main>
-  <div class="paper"><canvas id="bd" aria-label="Bàn cờ Caro 15x15"></canvas></div>
+  <div class="paper"><canvas id="bd" aria-label="Bàn cờ Caro vô hạn"></canvas></div>
   <aside>
     <section>
       <h1>Caro <b>5</b></h1>
-      <input id="nm" maxlength="14" placeholder="Tên của bạn" autocomplete="off">
       <div id="me"></div>
       <button id="bFind" class="pri" disabled>Đấu xếp hạng</button>
       <button id="bBot">Luyện với máy (không tính điểm)</button>
       <button id="bRes" hidden>Đầu hàng</button>
+      <button id="bCen">Về nước vừa đánh</button>
     </section>
     <section>
       <h2>Ván hiện tại</h2>
@@ -80,30 +84,32 @@ let db,off=0,G=null,finding=0,wt=null,ir=null;
 let me={uid:null,name:localStorage.caroName||'',elo:1000,w:0,l:0,d:0};
 const now=()=>Date.now()+off;
 const cv=$('bd'),cx=cv.getContext('2d');
-$('nm').value=me.name;
 
-/* ---------- luật & vẽ ---------- */
-function win(b,x,y){const p=b[y*N+x];for(const[dx,dy]of D){const L=[[x,y]];for(const s of[1,-1]){let i=x+dx*s,j=y+dy*s;while(i>=0&&j>=0&&i<N&&j<N&&b[j*N+i]===p){L.push([i,j]);i+=dx*s;j+=dy*s}}if(L.length>=5)return L}return null}
+/* ---------- luật & vẽ (bàn vô hạn: kéo để di chuyển, cuộn/chụm để zoom) ---------- */
+function win(b,x,y){const p=b.get(x+','+y);for(const[dx,dy]of D){const L=[[x,y]];for(const s of[1,-1]){let i=x+dx*s,j=y+dy*s;while(b.get(i+','+j)===p){L.push([i,j]);i+=dx*s;j+=dy*s}}if(L.length>=5)return L}return null}
 const h=(x,y,k)=>{const s=Math.sin(x*12.9898+y*78.233+k*37.7)*43758.5453;return s-Math.floor(s)-.5};
+const cam={x:.5,y:.5,s:36};
 function draw(){
-  const css=cv.clientWidth,d=devicePixelRatio||1;cv.width=cv.height=Math.round(css*d);cx.setTransform(d,0,0,d,0,0);
-  const c=css/N,P=i=>(i+.5)*c;
+  const W=cv.clientWidth,H=cv.clientHeight,d=devicePixelRatio||1;cv.width=Math.round(W*d);cv.height=Math.round(H*d);cx.setTransform(d,0,0,d,0,0);
+  const c=cam.s,ox=W/2-cam.x*c,oy=H/2-cam.y*c,i0=Math.floor(cam.x-W/2/c),i1=Math.ceil(cam.x+W/2/c),j0=Math.floor(cam.y-H/2/c),j1=Math.ceil(cam.y+H/2/c);
   cx.strokeStyle='#9fc3dc';cx.lineWidth=1;cx.beginPath();
-  for(let i=0;i<N;i++){cx.moveTo(P(i),0);cx.lineTo(P(i),css);cx.moveTo(0,P(i));cx.lineTo(css,P(i))}cx.stroke();
+  for(let i=i0;i<=i1;i++){const X=Math.round(ox+i*c)+.5;cx.moveTo(X,0);cx.lineTo(X,H)}
+  for(let j=j0;j<=j1;j++){const Y=Math.round(oy+j*c)+.5;cx.moveTo(0,Y);cx.lineTo(W,Y)}cx.stroke();
   if(!G)return;
-  if(G.last){cx.fillStyle='rgba(255,214,10,.45)';cx.fillRect(G.last[0]*c,G.last[1]*c,c,c)}
-  if(G.line){cx.fillStyle='rgba(216,50,43,.16)';G.line.forEach(([x,y])=>cx.fillRect(x*c,y*c,c,c))}
-  cx.lineCap='round';cx.lineWidth=Math.max(2,c*.11);
-  for(let y=0;y<N;y++)for(let x=0;x<N;x++){const v=G.board[y*N+x];if(v<0)continue;const px=P(x),py=P(y),r=c*.27,j=c*.09;
-    cx.beginPath();
+  const cell=(x,y,f)=>{cx.fillStyle=f;cx.fillRect(ox+x*c+1,oy+y*c+1,c-1,c-1)};
+  if(G.last)cell(G.last[0],G.last[1],'rgba(255,214,10,.45)');
+  if(G.line)G.line.forEach(([x,y])=>cell(x,y,'rgba(216,50,43,.16)'));
+  cx.lineCap='round';cx.lineWidth=Math.max(2,c*.1);
+  G.board.forEach((v,k)=>{const[x,y]=k.split(',').map(Number);if(x<i0||x>i1||y<j0||y>j1)return;
+    const px=ox+(x+.5)*c,py=oy+(y+.5)*c,r=c*.3,q=c*.07;cx.beginPath();
     if(v===0){cx.strokeStyle='#1c3fb7';
-      cx.moveTo(px-r+h(x,y,1)*j,py-r+h(x,y,2)*j);cx.quadraticCurveTo(px+h(x,y,3)*j,py+h(x,y,4)*j,px+r+h(x,y,5)*j,py+r+h(x,y,6)*j);
-      cx.moveTo(px+r+h(x,y,7)*j,py-r+h(x,y,8)*j);cx.quadraticCurveTo(px+h(x,y,9)*j,py+h(x,y,1)*j,px-r+h(x,y,2)*j,py+r+h(x,y,3)*j)}
-    else{cx.strokeStyle='#d8322b';cx.ellipse(px,py,r*(1.05+h(x,y,4)*.15),r*(1.05+h(x,y,5)*.15),h(x,y,6)*1.2,0,7)}
-    cx.stroke()}
+      cx.moveTo(px-r+h(x,y,1)*q,py-r+h(x,y,2)*q);cx.quadraticCurveTo(px+h(x,y,3)*q,py+h(x,y,4)*q,px+r+h(x,y,5)*q,py+r+h(x,y,6)*q);
+      cx.moveTo(px+r+h(x,y,7)*q,py-r+h(x,y,8)*q);cx.quadraticCurveTo(px+h(x,y,9)*q,py+h(x,y,1)*q,px-r+h(x,y,2)*q,py+r+h(x,y,3)*q)}
+    else{cx.strokeStyle='#d8322b';cx.ellipse(px,py,r*(1+h(x,y,4)*.12),r*(1+h(x,y,5)*.12),h(x,y,6)*1.2,0,7)}
+    cx.stroke()});
 }
 function ui(){
-  $('me').textContent=me.uid||!online?`${tier(me.elo)} · ${me.elo} ELO · ${me.w}T ${me.l}B ${me.d}H`:'Đang đăng nhập…';
+  $('me').textContent=me.uid||!online?`${me.name} · ${tier(me.elo)} · ${me.elo} ELO · ${me.w}T ${me.l}B ${me.d}H`:'Đang đăng nhập…';
   $('vs').innerHTML=G?`<span class="x">X</span> ${esc(G.names[0])} <small>vs</small> <span class="o">O</span> ${esc(G.names[1])}`:'—';
 }
 function stat(){
@@ -113,36 +119,53 @@ function stat(){
 function setBusy(b){$('bFind').disabled=b||!me.uid;$('bBot').disabled=b;$('bRes').hidden=!b}
 
 /* ---------- chơi với máy ---------- */
-function ev(b,x,y,q){let t=0;for(const[dx,dy]of D){let n=1,o=0;for(const s of[1,-1]){let i=x+dx*s,j=y+dy*s;while(i>=0&&j>=0&&i<N&&j<N&&b[j*N+i]===q){n++;i+=dx*s;j+=dy*s}if(i>=0&&j>=0&&i<N&&j<N&&b[j*N+i]===-1)o++}
+function ev(b,x,y,q){let t=0;for(const[dx,dy]of D){let n=1,o=0;for(const s of[1,-1]){let i=x+dx*s,j=y+dy*s;while(b.get(i+','+j)===q){n++;i+=dx*s;j+=dy*s}if(!b.has(i+','+j))o++}
   t+=n>=5?1e5:n===4?(o===2?1e4:o?1e3:0):n===3?(o===2?500:o?60:0):n===2?(o===2?40:o?5:0):1}return t}
-function near(b,x,y){for(let j=-2;j<=2;j++)for(let i=-2;i<=2;i++){const u=x+i,v=y+j;if(u>=0&&v>=0&&u<N&&v<N&&b[v*N+u]>=0)return 1}return 0}
-function botMove(b){if(!b.some(v=>v>=0))return[7,7];let best=-1,c=[];
-  for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(b[y*N+x]>=0||!near(b,x,y))continue;const s=ev(b,x,y,1)+ev(b,x,y,0)*.95+Math.random()*3;if(s>best){best=s;c=[x,y]}}return c}
-function place(x,y,p){G.board[y*N+x]=p;G.last=[x,y];G.n++;const l=win(G.board,x,y);
-  if(l){G.over=1;G.line=l;G.msg=p===0?'Bạn thắng!':'Máy thắng';setBusy(false)}else if(G.n>=N*N){G.over=1;G.msg='Hòa';setBusy(false)}
-  draw();stat()}
+function botMove(b){if(!b.size)return[0,0];const c=new Set();
+  b.forEach((v,k)=>{const[x,y]=k.split(',').map(Number);for(let j=-2;j<=2;j++)for(let i=-2;i<=2;i++){const q=(x+i)+','+(y+j);if(!b.has(q))c.add(q)}});
+  let best=-1,r=[0,0];c.forEach(k=>{const[x,y]=k.split(',').map(Number),s=ev(b,x,y,1)+ev(b,x,y,0)*.95+Math.random()*3;if(s>best){best=s;r=[x,y]}});return r}
+function place(x,y,p){G.board.set(x+','+y,p);G.last=[x,y];G.n++;const l=win(G.board,x,y);
+  if(l){G.over=1;G.line=l;G.msg=p===0?'Bạn thắng!':'Máy thắng';setBusy(false)}draw();stat()}
 function bot(){if(!G||G.mode!=='bot'||G.over)return;const[x,y]=botMove(G.board);place(x,y,1);G.turn=0;stat()}
-$('bBot').onclick=()=>{if(G&&G.ref)G.ref.off();G={mode:'bot',mine:0,board:Array(N*N).fill(-1),turn:0,n:0,over:0,names:['Bạn','Máy']};setBusy(true);ui();draw();stat();$('tm').textContent=''};
+$('bBot').onclick=()=>{if(G&&G.ref)G.ref.off();G={mode:'bot',mine:0,board:new Map(),turn:0,n:0,over:0,names:['Bạn','Máy']};cam.x=cam.y=.5;setBusy(true);ui();draw();stat();$('tm').textContent=''};
 
 /* ---------- đấu online ---------- */
 function play(x,y){
   if(G.mode==='bot'){place(x,y,0);if(!G.over){G.turn=1;stat();setTimeout(bot,350)}return}
-  const b=G.board.slice();b[y*N+x]=G.mine;const up={};up['moves/'+G.n]={x,y};
-  if(win(b,x,y)){up.status='over';up.winner=G.mine}else if(G.n+1>=N*N){up.status='over';up.winner=-1}else{up.turn=1-G.mine;up.dl=now()+TURN}
+  const b=new Map(G.board);b.set(x+','+y,G.mine);const up={};up['moves/'+G.n]={x,y};
+  if(win(b,x,y)){up.status='over';up.winner=G.mine}else{up.turn=1-G.mine;up.dl=now()+TURN}
   G.turn=-1;G.ref.update(up);
 }
-cv.onclick=e=>{if(!G||G.over||G.turn!==G.mine)return;const r=cv.getBoundingClientRect(),x=Math.floor((e.clientX-r.left)/r.width*N),y=Math.floor((e.clientY-r.top)/r.height*N);
-  if(x<0||y<0||x>=N||y>=N||G.board[y*N+x]!==-1)return;play(x,y)};
+const ptr=new Map();let moved=0,pinch=0;
+const dist=()=>{const[a,b]=[...ptr.values()];return Math.hypot(a[0]-b[0],a[1]-b[1])};
+function zoomAt(px,py,f){const r=cv.getBoundingClientRect(),W=r.width,H=r.height,c=cam.s,wx=cam.x+(px-W/2)/c,wy=cam.y+(py-H/2)/c;
+  cam.s=Math.min(90,Math.max(12,c*f));cam.x=wx-(px-W/2)/cam.s;cam.y=wy-(py-H/2)/cam.s;draw()}
+cv.onpointerdown=e=>{cv.setPointerCapture(e.pointerId);ptr.set(e.pointerId,[e.clientX,e.clientY]);moved=0;if(ptr.size===2)pinch=dist()};
+cv.onpointermove=e=>{if(!ptr.has(e.pointerId))return;const p=ptr.get(e.pointerId),dx=e.clientX-p[0],dy=e.clientY-p[1];ptr.set(e.pointerId,[e.clientX,e.clientY]);
+  if(ptr.size===2){const d=dist(),r=cv.getBoundingClientRect(),[a,b]=[...ptr.values()];zoomAt((a[0]+b[0])/2-r.left,(a[1]+b[1])/2-r.top,d/pinch);pinch=d;moved=99;return}
+  moved+=Math.abs(dx)+Math.abs(dy);if(moved>8){cam.x-=dx/cam.s;cam.y-=dy/cam.s;draw()}};
+cv.onpointerup=e=>{const one=ptr.size===1;ptr.delete(e.pointerId);if(!one||moved>8||!G||G.over||G.turn!==G.mine)return;
+  const r=cv.getBoundingClientRect(),x=Math.floor(cam.x+(e.clientX-r.left-r.width/2)/cam.s),y=Math.floor(cam.y+(e.clientY-r.top-r.height/2)/cam.s);
+  if(!G.board.has(x+','+y))play(x,y)};
+cv.onpointercancel=e=>ptr.delete(e.pointerId);
+cv.addEventListener('wheel',e=>{e.preventDefault();const r=cv.getBoundingClientRect();zoomAt(e.clientX-r.left,e.clientY-r.top,e.deltaY<0?1.12:.89)},{passive:false});
+$('bCen').onclick=()=>{const l=G&&G.last;cam.x=l?l[0]+.5:.5;cam.y=l?l[1]+.5:.5;draw()};
+const ov=$('ov'),showOv=()=>{ov.hidden=false;$('nm').focus()},hideOv=()=>{ov.hidden=true};
+$('nmOk').onclick=async()=>{const n=$('nm').value.trim().replace(/\s+/g,' ');
+  if(n.length<2){$('nmEr').textContent='Tên cần từ 2 đến 14 ký tự.';return}
+  if(!online){localStorage.caroName=n;me.name=n;hideOv();ui();return}
+  try{await db.ref('players/'+me.uid).update({name:n,elo:1000,w:0,l:0,d:0})}catch(e){$('nmEr').textContent='Không lưu được tên: '+e.message}};
+$('nm').onkeydown=e=>{if(e.key==='Enter')$('nmOk').click()};
 function openGame(gid){
   if(G&&G.ref)G.ref.off();
   const ref=db.ref('games/'+gid);
   ref.once('value').then(s=>{const v=s.val(),m=v.p[0].uid===me.uid?0:1;
-    G={mode:'online',gid,ref,mine:m,board:Array(N*N).fill(-1),turn:0,n:0,over:0,dl:v.dl,names:v.p.map(q=>`${q.name} (${q.elo})`),myElo:v.p[m].elo,opp:v.p[1-m].elo};
-    finding=0;$('bFind').textContent='Đấu xếp hạng';setBusy(true);ui();draw();stat();ref.on('value',onGame)});
+    G={mode:'online',gid,ref,mine:m,board:new Map(),turn:0,n:0,over:0,dl:v.dl,names:v.p.map(q=>`${q.name} (${q.elo})`),myElo:v.p[m].elo,opp:v.p[1-m].elo};
+    finding=0;$('bFind').textContent='Đấu xếp hạng';setBusy(true);ui();draw();stat();cam.x=cam.y=.5;ref.on('value',onGame)});
 }
 function onGame(s){
   const v=s.val();if(!v||!G||G.gid!==s.key)return;
-  const mv=Object.values(v.moves||{}),b=Array(N*N).fill(-1);mv.forEach((m,i)=>b[m.y*N+m.x]=i%2);
+  const mv=Object.values(v.moves||{}),b=new Map();mv.forEach((m,i)=>b.set(m.x+','+m.y,i%2));
   const lm=mv[mv.length-1];
   Object.assign(G,{board:b,n:mv.length,turn:v.turn,dl:v.dl,last:lm?[lm.x,lm.y]:null,claim:0});
   if(v.status==='over'&&!G.over){G.over=1;G.winner=v.winner;G.line=lm&&v.winner>=0?win(b,lm.x,lm.y):null;finish(v.why)}
@@ -153,7 +176,7 @@ function finish(why){
   const ne=Math.max(0,Math.round(G.myElo+32*(sc-1/(1+10**((G.opp-G.myElo)/400))))),dl=ne-G.myElo;
   G.msg=(sc===.5?'Hòa':sc?'Bạn thắng!':'Bạn thua')+(why==='timeout'?' (hết giờ)':why==='resign'?' (đầu hàng)':'')+` · ${dl>=0?'+':''}${dl} ELO`;
   setBusy(false);$('tm').textContent='';
-  db.ref('players/'+me.uid).transaction(c=>c?{...c,elo:ne,w:(c.w||0)+(sc===1?1:0),l:(c.l||0)+(sc===0?1:0),d:(c.d||0)+(sc===.5?1:0)}:c);
+  db.ref('players/'+me.uid).update({elo:ne,w:me.w+(sc===1?1:0),l:me.l+(sc===0?1:0),d:me.d+(sc===.5?1:0)});
 }
 $('bRes').onclick=()=>{if(!G||G.over)return;if(G.mode==='bot'){G.over=1;G.msg='Bạn đã đầu hàng';setBusy(false);stat()}else G.ref.update({status:'over',winner:1-G.mine,why:'resign'})};
 setInterval(()=>{ // đồng hồ + xử thua khi hết giờ
@@ -172,9 +195,7 @@ async function cancelFind(){
 }
 $('bFind').onclick=async()=>{
   if(finding)return cancelFind();
-  const nm=$('nm').value.trim();if(!nm){$('st').textContent='Nhập tên trước khi vào trận.';$('nm').focus();return}
-  me.name=nm;localStorage.caroName=nm;finding=1;$('bFind').textContent='Huỷ tìm trận';$('bBot').disabled=true;$('st').textContent='Đang tìm đối thủ…';
-  await db.ref('players/'+me.uid).transaction(c=>c?{...c,name:nm}:{name:nm,elo:1000,w:0,l:0,d:0});
+  finding=1;$('bFind').textContent='Huỷ tìm trận';$('bBot').disabled=true;$('st').textContent='Đang tìm đối thủ…';
   await db.ref('invite/'+me.uid).remove();
   let opp=null;const lobby=db.ref('lobby');
   await lobby.transaction(c=>{opp=null;if(c&&c.uid!==me.uid&&now()-c.t<50000){opp=c;return null}return{uid:me.uid,name:me.name,elo:me.elo,t:now()}});
@@ -197,12 +218,12 @@ if(online){
   db.ref('.info/serverTimeOffset').on('value',s=>off=s.val()||0);
   firebase.auth().signInAnonymously().then(u=>{
     me.uid=u.user.uid;$('bFind').disabled=!!G;
-    db.ref('players/'+me.uid).on('value',s=>{if(s.val()){const{name,...r}=s.val();Object.assign(me,r)}ui()});
+    db.ref('players/'+me.uid).on('value',s=>{if(s.val()){Object.assign(me,s.val());hideOv()}else showOv();ui()});
     db.ref('players').orderByChild('elo').limitToLast(10).on('value',s=>{const a=[];s.forEach(c=>{a.push(c.val())});
       $('lb').innerHTML=a.reverse().map(p=>`<li><span>${esc(p.name)}</span><i>${tier(p.elo)}</i><b>${p.elo}</b></li>`).join('')});
   }).catch(e=>$('st').textContent='Không đăng nhập được: '+e.message);
 }else $('st').textContent='Chưa cấu hình Firebase — hiện chỉ chơi được với máy.';
-addEventListener('resize',draw);ui();draw();
+if(!online&&!me.name)showOv();addEventListener('resize',draw);ui();draw();
 </script>
 </body>
 </html>
