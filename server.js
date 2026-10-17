@@ -25,6 +25,8 @@ const sessions = new Map();
 const bannedUids = new Map();
 const loginFailures = new Map();
 const chatRateLimits = new Map();
+const drawOfferCooldowns = new Map();
+const DRAW_OFFER_COOLDOWN_MS = 45 * 1000;
 const friendRequestRateLimits = new Map();
 const roomCreateEvents = new Map();
 const adminAudit = [];
@@ -45,6 +47,7 @@ function persistentSnapshot() {
     sessions: [...sessions.entries()],
     bans: [...bannedUids.entries()],
     roomCreateEvents: [...roomCreateEvents.entries()],
+    drawOfferCooldowns: [...drawOfferCooldowns.entries()].filter(([, at]) => Number.isFinite(at) && Date.now() >= at && Date.now() - at < DRAW_OFFER_COOLDOWN_MS),
     adminAudit: adminAudit.slice(-1000),
     version
   };
@@ -86,6 +89,13 @@ function restorePersistentSnapshot(raw) {
   roomCreateEvents.clear();
   for (const item of Array.isArray(saved.roomCreateEvents) ? saved.roomCreateEvents : []) {
     if (Array.isArray(item) && typeof item[0] === 'string' && Array.isArray(item[1])) roomCreateEvents.set(item[0], item[1].filter(Number.isFinite));
+  }
+  drawOfferCooldowns.clear();
+  const cooldownRestoreNow = Date.now();
+  for (const item of Array.isArray(saved.drawOfferCooldowns) ? saved.drawOfferCooldowns : []) {
+    if (!Array.isArray(item) || typeof item[0] !== 'string' || !accountsByUid.has(item[0])) continue;
+    const at = Number(item[1]);
+    if (Number.isFinite(at) && at <= cooldownRestoreNow && cooldownRestoreNow - at < DRAW_OFFER_COOLDOWN_MS) drawOfferCooldowns.set(item[0], at);
   }
   adminAudit.splice(0, adminAudit.length, ...(Array.isArray(saved.adminAudit) ? saved.adminAudit.slice(-1000) : []));
   version = Math.max(0, Number(saved.version) || 0);
@@ -796,18 +806,32 @@ io.on('connection', socket => {
       if (game.drawOffer) {
         throw new Error(game.drawOffer.uid === uid ? 'Bạn đã gửi lời hòa, đang chờ đối thủ trả lời.' : 'Đối thủ đã gửi lời hòa. Hãy chọn chấp nhận hoặc từ chối.');
       }
+      const now = Date.now();
+      const lastOfferAt = Number(drawOfferCooldowns.get(uid)) || 0;
+      const remainingMs = DRAW_OFFER_COOLDOWN_MS - (now - lastOfferAt);
+      if (lastOfferAt > 0 && remainingMs > 0) {
+        const error = new Error('Bạn cần chờ ' + Math.ceil(remainingMs / 1000) + ' giây nữa mới có thể xin hòa lần tiếp theo.');
+        error.retryAfterMs = remainingMs;
+        throw error;
+      }
+      for (const [cooldownUid, at] of drawOfferCooldowns) {
+        if (now - at >= DRAW_OFFER_COOLDOWN_MS) drawOfferCooldowns.delete(cooldownUid);
+      }
+      drawOfferCooldowns.set(uid, now);
       game.drawOffer = {
         uid,
         name: String(player.name || (accountsByUid.get(uid) && accountsByUid.get(uid).name) || 'Đối thủ'),
-        at: Date.now()
+        at: now
       };
       game.drawResponse = null;
       version++;
       notifySubscribers();
       await persistState();
-      reply(ack, { ok: true, gid, drawOffer: game.drawOffer });
+      reply(ack, { ok: true, gid, drawOffer: game.drawOffer, cooldownUntil: now + DRAW_OFFER_COOLDOWN_MS });
     } catch (error) {
-      reply(ack, { ok: false, error: error.message || 'Không thể gửi lời xin hòa.' });
+      const result = { ok: false, error: error.message || 'Không thể gửi lời xin hòa.' };
+            if (Number.isFinite(error.retryAfterMs)) result.retryAfterMs = error.retryAfterMs;
+            reply(ack, result);
     }
   });
 
