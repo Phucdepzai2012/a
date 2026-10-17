@@ -48,6 +48,9 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 .bot-elo-row{display:grid;grid-template-columns:20px minmax(65px,1fr) auto;align-items:center;gap:8px;font-size:12px;color:var(--mut)}
 .bot-elo-row input{width:100%;margin:0;padding:6px 8px;font-size:14px}
 .bot-settings .note{margin-top:6px}
+.room-join-row{display:grid;grid-template-columns:minmax(0,1fr) 104px;gap:8px;margin-top:8px}
+.room-join-row input,.room-join-row button{margin:0;min-width:0}
+@media(max-width:520px){.room-join-row{grid-template-columns:minmax(0,1fr) 92px}}
 @media(max-width:520px){body{padding:8px}main{gap:12px}.paper{padding:6px}.review-row{gap:4px}.tag{font-size:9px;padding:3px 4px}}
 </style>
 </head>
@@ -60,6 +63,8 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
       <h1>Caro <b>5</b></h1>
       <div id="me"></div>
       <button id="bFind" class="pri">Ghép trận xếp hạng</button>
+      <button id="bCreateRoom">Tạo phòng riêng (mã 4 số)</button>
+      <div class="room-join-row"><input id="roomCodeInput" type="text" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="Mã phòng 4 số" aria-label="Nhập mã phòng gồm 4 chữ số"><button id="bJoinRoom">Vào phòng</button></div>
       <button id="bBot">Luyện với máy (không tính điểm)</button>
       <div id="botSettings" class="bot-settings">
         <label for="botEloRange"><span>Sức mạnh của máy</span><strong id="botEloLabel">1500 ELO</strong></label>
@@ -256,6 +261,7 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
     }
   };
   window.caroRenderSocket = socket;
+  window.caroRenderRooms = { create: payload => rpc('room:create', payload), join: payload => rpc('room:join', payload) };
 })();
 </script>
 <script>
@@ -291,16 +297,20 @@ const TIERS=[[1700,'Cao Thủ'],[1550,'Kim Cương'],[1400,'Bạch Kim'],[1250,'
 const tier=e=>TIERS.find(t=>e>=t[0])[1];
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-let profile={};try{profile=JSON.parse(localStorage.getItem('caroProfile')||'{}')}catch{}
+let profile={};try{profile=JSON.parse(localStorage.getItem('caroProfileSeason2')||'{}')}catch{}
 let me={uid:null,name:localStorage.getItem('caroName')||'',elo:Number(profile.elo)||1000,w:Number(profile.w)||0,l:Number(profile.l)||0,d:Number(profile.d)||0};
 let G=null,finding=false,findTimer=null,inviteRef=null,db=null,activeBackend=null,activeBackendIndex=-1,backendCandidates=[],serverOffset=0,switchingBackend=false,onlineLeaderboard=[],profileRef=null,leaderboardRef=null,serverOffsetRef=null,duplicateBackupConfig=false;
 const now=()=>Date.now()+serverOffset;
 const cv=$('bd'),cx=cv.getContext('2d');
-function saveProfile(){localStorage.setItem('caroName',me.name);localStorage.setItem('caroProfile',JSON.stringify({elo:me.elo,w:me.w,l:me.l,d:me.d}))}
+function resetCamera(){cam.x=cam.y=N/2;cam.s=Math.min(36,Math.max(12,(cv.clientWidth-16)/N));}
+function saveProfile(){localStorage.setItem('caroName',me.name);localStorage.setItem('caroProfileSeason2',JSON.stringify({elo:me.elo,w:me.w,l:me.l,d:me.d}))}
 function ui(){
   $('me').textContent=me.name?`${me.name} · ${tier(me.elo)} · ${me.elo} ELO · ${me.w}T ${me.l}B ${me.d}H`:'Hãy đặt tên để lưu thành tích';
-  $('vs').innerHTML=G?`<span class="x">X</span> ${esc(G.names[0])} <small>vs</small> <span class="o">O</span> ${esc(G.names[1])}`:'—';
+  $('vs').innerHTML=G?(G.mode==='online'&&G.roomStatus==='waiting'?`Phòng ${esc(G.gid)} · Đang chờ người chơi`:`<span class="x">X</span> ${esc(G.names[0])} <small>vs</small> <span class="o">O</span> ${esc(G.names[1])}`):'—';
   $('bFind').disabled=!me.name||!!(G&&!G.over)||(!db&&!finding);
+  $('bCreateRoom').disabled=!me.name||!!(G&&!G.over)||finding||!db;
+  $('bJoinRoom').disabled=!me.name||!!(G&&!G.over)||finding||!db;
+  $('roomCodeInput').disabled=!!(G&&!G.over)||finding||!db;
   $('bBot').disabled=!me.name||!!(G&&!G.over)||finding;
   $('botEloRange').disabled=!!(G&&!G.over)||finding;
   $('botEloInput').disabled=!!(G&&!G.over)||finding;
@@ -309,7 +319,9 @@ function ui(){
 }
 function stat(){
   if(!G){if(!$('st').textContent||$('st').textContent==='Chọn chế độ để bắt đầu.')$('st').textContent='Chọn chế độ để bắt đầu.';return}
-  $('st').textContent=G.over?G.msg:G.turn===G.mine?`Đến lượt bạn (${G.mine===0?'X':'O'})`:'Đối thủ đang nghĩ…';
+  if(G.over){$('st').textContent=G.msg;return}
+  if(G.mode==='online'&&G.roomStatus==='waiting'){$('st').textContent=`Phòng ${G.gid} đã tạo. Gửi mã 4 số này cho bạn bè để họ tham gia.`;return}
+  $('st').textContent=G.turn===G.mine?`Đến lượt bạn (${G.mine===0?'X':'O'})`:'Đối thủ đang nghĩ…';
 }
 function renderLeaderboard(){
   const rows=onlineLeaderboard.length?onlineLeaderboard:(me.name?[{name:me.name,elo:me.elo}]:[]);
@@ -317,6 +329,9 @@ function renderLeaderboard(){
 }
 function setActive(active){
   $('bFind').disabled=!me.name||active||(!db&&!finding);
+  $('bCreateRoom').disabled=!me.name||active||finding||!db;
+  $('bJoinRoom').disabled=!me.name||active||finding||!db;
+  $('roomCodeInput').disabled=active||finding||!db;
   $('bBot').disabled=!me.name||active||finding;
   $('botEloRange').disabled=active||finding;
   $('botEloInput').disabled=active||finding;
@@ -384,28 +399,36 @@ async function handleBackendFailure(error,where='kết nối') {
 function win(b,x,y){const p=b.get(x+','+y);for(const[dx,dy]of D){const L=[[x,y]];for(const s of[1,-1]){let i=x+dx*s,j=y+dy*s;while(b.get(i+','+j)===p){L.push([i,j]);i+=dx*s;j+=dy*s}}if(L.length>=5)return L}return null}
 function wouldWin(b,x,y,p){for(const[dx,dy]of D){let n=1;for(const s of[1,-1]){let i=x+dx*s,j=y+dy*s;while(b.get(i+','+j)===p){n++;i+=dx*s;j+=dy*s}}if(n>=5)return true}return false}
 const h=(x,y,k)=>{const s=Math.sin(x*12.9898+y*78.233+k*37.7)*43758.5453;return s-Math.floor(s)-.5};
-const cam={x:.5,y:.5,s:36};
+const cam={x:N/2,y:N/2,s:36};
 function draw(){
-  const W=cv.clientWidth,H=cv.clientHeight,d=window.devicePixelRatio||1;cv.width=Math.round(W*d);cv.height=Math.round(H*d);cx.setTransform(d,0,0,d,0,0);
-  const c=cam.s,ox=W/2-cam.x*c,oy=H/2-cam.y*c,i0=Math.floor(cam.x-W/2/c),i1=Math.ceil(cam.x+W/2/c),j0=Math.floor(cam.y-H/2/c),j1=Math.ceil(cam.y+H/2/c);
+  const W=cv.clientWidth,H=cv.clientHeight,d=window.devicePixelRatio||1;
+  cv.width=Math.round(W*d);cv.height=Math.round(H*d);cx.setTransform(d,0,0,d,0,0);
+  const c=cam.s,ox=W/2-cam.x*c,oy=H/2-cam.y*c;
   cx.strokeStyle='#9fc3dc';cx.lineWidth=1;cx.beginPath();
-  for(let i=i0;i<=i1;i++){const X=Math.round(ox+i*c)+.5;cx.moveTo(X,0);cx.lineTo(X,H)}
-  for(let j=j0;j<=j1;j++){const Y=Math.round(oy+j*c)+.5;cx.moveTo(0,Y);cx.lineTo(W,Y)}cx.stroke();
+  for(let i=0;i<=N;i++){const X=Math.round(ox+i*c)+.5;cx.moveTo(X,oy);cx.lineTo(X,oy+N*c)}
+  for(let j=0;j<=N;j++){const Y=Math.round(oy+j*c)+.5;cx.moveTo(ox,Y);cx.lineTo(ox+N*c,Y)}
+  cx.stroke();cx.strokeStyle='#789bb3';cx.lineWidth=1.5;cx.strokeRect(ox,oy,N*c,N*c);
   if(!G)return;
-  const cell=(x,y,f)=>{cx.fillStyle=f;cx.fillRect(ox+x*c+1,oy+y*c+1,c-1,c-1)};
+  const cell=(x,y,f)=>{if(x<0||x>=N||y<0||y>=N)return;cx.fillStyle=f;cx.fillRect(ox+x*c+1,oy+y*c+1,c-1,c-1)};
   if(G.last)cell(G.last[0],G.last[1],'rgba(255,214,10,.45)');
   const winningPiece=G.line&&G.line.length?G.board.get(G.line[0][0]+','+G.line[0][1]):null;
   const winningColor=winningPiece===0?'#1c3fb7':'#d8322b';
   const winningTint=winningPiece===0?'rgba(28,63,183,.14)':'rgba(216,50,43,.14)';
   if(G.line)G.line.forEach(([x,y])=>cell(x,y,winningTint));
   cx.lineCap='round';cx.lineWidth=Math.max(2,c*.1);
-  G.board.forEach((v,k)=>{const[x,y]=k.split(',').map(Number);if(x<i0||x>i1||y<j0||y>j1)return;
+  G.board.forEach((v,k)=>{
+    const[x,y]=k.split(',').map(Number);
+    if(x<0||x>=N||y<0||y>=N)return;
     const px=ox+(x+.5)*c,py=oy+(y+.5)*c,r=c*.3,q=c*.07;cx.beginPath();
-    if(v===0){cx.strokeStyle='#1c3fb7';
+    if(v===0){
+      cx.strokeStyle='#1c3fb7';
       cx.moveTo(px-r+h(x,y,1)*q,py-r+h(x,y,2)*q);cx.quadraticCurveTo(px+h(x,y,3)*q,py+h(x,y,4)*q,px+r+h(x,y,5)*q,py+r+h(x,y,6)*q);
-      cx.moveTo(px+r+h(x,y,7)*q,py-r+h(x,y,8)*q);cx.quadraticCurveTo(px+h(x,y,9)*q,py+h(x,y,1)*q,px-r+h(x,y,2)*q,py+r+h(x,y,3)*q)}
-    else{cx.strokeStyle='#d8322b';cx.ellipse(px,py,r*(1+h(x,y,4)*.12),r*(1+h(x,y,5)*.12),h(x,y,6)*1.2,0,7)}
-    cx.stroke()});
+      cx.moveTo(px+r+h(x,y,7)*q,py-r+h(x,y,8)*q);cx.quadraticCurveTo(px+h(x,y,9)*q,py+h(x,y,1)*q,px-r+h(x,y,2)*q,py+r+h(x,y,3)*q);
+    }else{
+      cx.strokeStyle='#d8322b';cx.ellipse(px,py,r*(1+h(x,y,4)*.12),r*(1+h(x,y,5)*.12),h(x,y,6)*1.2,0,7);
+    }
+    cx.stroke();
+  });
   if(G.line&&G.line.length>=5){
     let a=G.line[0],b=G.line[0],far=-1;
     for(const p of G.line)for(const q of G.line){const dd=(p[0]-q[0])**2+(p[1]-q[1])**2;if(dd>far){far=dd;a=p;b=q}}
@@ -416,8 +439,8 @@ function draw(){
 }
 /* ---------- Chấm điểm chiến thuật Caro ---------- */
 function candidates(b){
-  const out=new Set();if(!b.size)return [[0,0]];
-  b.forEach((v,k)=>{const[x,y]=k.split(',').map(Number);for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const xx=x+dx,yy=y+dy,key=xx+','+yy;if(!b.has(key))out.add(key)}});
+  const out=new Set();if(!b.size)return [[Math.floor(N/2),Math.floor(N/2)]];
+  b.forEach((v,k)=>{const[x,y]=k.split(',').map(Number);for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const xx=x+dx,yy=y+dy,key=xx+','+yy;if(xx>=0&&xx<N&&yy>=0&&yy<N&&!b.has(key))out.add(key)}});
   return [...out].map(k=>k.split(',').map(Number));
 }
 function ev(b,x,y,p){let t=0;for(const[dx,dy]of D){let n=1,o=0;for(const s of[1,-1]){let i=x+dx*s,j=y+dy*s;while(b.get(i+','+j)===p){n++;i+=dx*s;j+=dy*s}if(!b.has(i+','+j))o++}
@@ -446,17 +469,19 @@ function startGame(mode){
   const mine=Math.random()<.5?0:1;
   G={mode,mine,botElo,noise:botNoise(botElo),board:new Map(),turn:0,n:0,over:0,names:mine===0?[me.name,botName]:[botName,me.name],moves:[],last:null,line:null,msg:'',winner:null,review:[]};
   $('review').hidden=true;$('reviewSummary').textContent='';$('reviewList').innerHTML='';$('tm').textContent='';
-  cam.x=cam.y=.5;cam.s=36;setActive(true);ui();draw();stat();
+  resetCamera();setActive(true);ui();draw();stat();
   if(G.turn!==G.mine)setTimeout(botTurn,350);
 }
 function applyMove(x,y,p){
   if(!G||G.over||G.board.has(x+','+y))return false;
+  if(x<0||x>=N||y<0||y>=N)return false;
   G.board.set(x+','+y,p);G.moves.push({x,y,p});G.last=[x,y];G.n++;
   const line=win(G.board,x,y);if(line){G.line=line;finishGame(p,'win');return true}
   G.turn=1-p;draw();stat();return true;
 }
 function playerMove(x,y){
-  if(!G||G.over||G.turn!==G.mine||G.board.has(x+','+y))return;
+  if(!G||G.over||G.turn!==G.mine||x<0||x>=N||y<0||y>=N||G.board.has(x+','+y))return;
+  if(G.mode==='online'&&G.roomStatus!=='play')return;
   if(G.mode==='online'){submitOnlineMove(x,y);return}
   if(!applyMove(x,y,G.mine))return;
   if(!G.over&&G.turn!==G.mine)setTimeout(botTurn,260);
@@ -502,17 +527,20 @@ async function openGame(gid){
   const ref=db.ref('games/'+gid),snap=await ref.once('value'),v=snap.val();
   if(!v||!Array.isArray(v.p))throw new Error('Không tìm thấy ván đấu.');
   const mine=v.p.findIndex(q=>q.uid===me.uid);if(mine<0)throw new Error('Ván đấu không thuộc tài khoản này.');
-  G={mode:'online',gid,ref,mine,board:new Map(),turn:Number(v.turn)||0,n:0,over:0,dl:v.dl||now()+TURN,names:v.p.map(q=>`${q.name} (${q.elo})`),myElo:Number(v.p[mine].elo)||me.elo,oppElo:Number(v.p[1-mine].elo)||1000,moves:[],last:null,line:null,msg:'',winner:null,review:[]};
-  await db.ref('invite/'+me.uid).remove().catch(()=>{});setActive(true);ui();draw();stat();cam.x=cam.y=.5;
+  G={mode:'online',gid,ref,mine,board:new Map(),turn:Number(v.turn)||0,n:0,over:0,dl:v.dl||now()+TURN,names:v.p.map(q=>`${q.name} (${q.elo})`),myElo:Number(v.p[mine].elo)||me.elo,oppElo:Number(v.p[1-mine]?.elo)||1000,moves:[],last:null,line:null,msg:'',winner:null,review:[],roomStatus:v.status,roomCode:/^[0-9]{4}$/.test(gid)?gid:null};
+  await db.ref('invite/'+me.uid).remove().catch(()=>{});setActive(true);resetCamera();ui();draw();stat();
   ref.on('value',onGame,e=>handleBackendFailure(e,'đồng bộ ván đấu'));
 }
 function onGame(s){
   const v=s.val();if(!v||!G||G.gid!==s.key)return;
   const keys=Object.keys(v.moves||{}).sort((a,b)=>Number(a)-Number(b));
   const moves=keys.map(k=>v.moves[k]).filter(Boolean),board=new Map();moves.forEach((m,i)=>board.set(m.x+','+m.y,Number.isInteger(m.p)?m.p:i%2));
-  const last=moves[moves.length-1];Object.assign(G,{board,moves,n:moves.length,turn:Number(v.turn)||0,dl:Number(v.dl)||0,last:last?[last.x,last.y]:null});
+  const last=moves[moves.length-1];const newMine=Array.isArray(v.p)?v.p.findIndex(q=>q.uid===me.uid):G.mine;
+  Object.assign(G,{board,moves,n:moves.length,turn:Number(v.turn)||0,dl:Number(v.dl)||0,last:last?[last.x,last.y]:null,roomStatus:v.status,mine:newMine>=0?newMine:G.mine,names:Array.isArray(v.p)?v.p.map(q=>`${q.name} (${q.elo})`):G.names});
+  G.myElo=Number(v.p&&v.p[G.mine]&&v.p[G.mine].elo)||G.myElo||me.elo;
+  G.oppElo=Number(v.p&&v.p[1-G.mine]&&v.p[1-G.mine].elo)||G.oppElo||1000;
   if(v.status==='over'&&!G.over){G.winner=Number.isInteger(v.winner)?v.winner:-1;G.line=v.why==='win'&&last?win(board,last.x,last.y):null;finishGame(G.winner,v.why);return}
-  draw();stat();
+  ui();draw();stat();
 }
 async function startMatchmaking(retry=false){
   if(finding){await cancelFind();return}if(!me.name){showOv();return}
@@ -533,14 +561,37 @@ async function startMatchmaking(retry=false){
     }
   }catch(e){const switched=await handleBackendFailure(e,'ghép trận');if(switched){$('st').textContent='Đã chuyển máy chủ dự phòng. Nhấn Ghép trận để thử lại.';return}finding=false;ui();$('st').textContent='Ghép trận lỗi: '+(e.message||e)}
 }
-$('bFind').onclick=startMatchmaking;$('bBot').onclick=()=>startGame('bot');
+async function createRoom(){
+  if(!me.name){showOv();return}
+  if(G&&!G.over){$('st').textContent='Hãy kết thúc ván hiện tại trước khi tạo phòng mới.';return}
+  if(!db||!me.uid||!window.caroRenderRooms){$('st').textContent='Render chưa kết nối. Hãy thử lại sau.';return}
+  $('st').textContent='Đang tạo phòng…';
+  try{const result=await window.caroRenderRooms.create({uid:me.uid,name:me.name,elo:me.elo});await openGame(String(result.code));}
+  catch(e){$('st').textContent='Tạo phòng lỗi: '+(e.message||e);ui()}
+}
+async function joinRoom(){
+  if(!me.name){showOv();return}
+  if(G&&!G.over){$('st').textContent='Hãy kết thúc ván hiện tại trước khi vào phòng khác.';return}
+  if(!db||!me.uid||!window.caroRenderRooms){$('st').textContent='Render chưa kết nối. Hãy thử lại sau.';return}
+  const code=$('roomCodeInput').value.trim();
+  if(!/^[0-9]{4}$/.test(code)){$('st').textContent='Mã phòng phải gồm đúng 4 chữ số.';return}
+  $('st').textContent='Đang vào phòng…';
+  try{await window.caroRenderRooms.join({code,uid:me.uid,name:me.name,elo:me.elo});await openGame(code);}
+  catch(e){$('st').textContent='Vào phòng lỗi: '+(e.message||e);ui()}
+}
+$('bFind').onclick=startMatchmaking;
+$('bCreateRoom').onclick=createRoom;
+$('bJoinRoom').onclick=joinRoom;
+$('roomCodeInput').addEventListener('input',()=>{$('roomCodeInput').value=$('roomCodeInput').value.replace(/[^0-9]/g,'').slice(0,4)});
+$('roomCodeInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('bJoinRoom').click()});
+$('bBot').onclick=()=>startGame('bot');
 const savedBotElo=clamp(Math.round(Number(localStorage.getItem('caroBotElo'))||1500),1,3000);
 $('botEloRange').value=String(savedBotElo);$('botEloInput').value=String(savedBotElo);updateBotEloDisplay(savedBotElo);
 $('botEloRange').addEventListener('input',()=>{const n=Number($('botEloRange').value);$('botEloInput').value=String(n);localStorage.setItem('caroBotElo',String(n));updateBotEloDisplay(n)});
 $('botEloInput').addEventListener('input',()=>{const raw=$('botEloInput').value;if(raw==='')return;const n=clamp(Math.round(Number(raw)),1,3000);$('botEloRange').value=String(n);localStorage.setItem('caroBotElo',String(n));updateBotEloDisplay(n)});
 $('botEloInput').addEventListener('change',()=>{const n=clamp(Math.round(Number($('botEloInput').value)||1),1,3000);$('botEloInput').value=String(n);$('botEloRange').value=String(n);localStorage.setItem('caroBotElo',String(n));updateBotEloDisplay(n)});
 $('bRes').onclick=resign;
-$('bCen').onclick=()=>{const l=G&&G.last;cam.x=l?l[0]+.5:.5;cam.y=l?l[1]+.5:.5;draw()};
+$('bCen').onclick=()=>{const l=G&&G.last;if(l){cam.x=l[0]+.5;cam.y=l[1]+.5}else resetCamera();draw()};
 /* ---------- Xem lại nước đi ---------- */
 const QUALITY={
   'Thiên tài':['genius',100],'Sách giáo khoa':['book',100],'Nước thắng':['best',100],
@@ -583,7 +634,7 @@ cv.onpointermove=e=>{if(!ptr.has(e.pointerId))return;const p=ptr.get(e.pointerId
   if(ptr.size===2){const d=dist(),r=cv.getBoundingClientRect(),[a,b]=[...ptr.values()];zoomAt((a[0]+b[0])/2-r.left,(a[1]+b[1])/2-r.top,d/(pinch||d));pinch=d;moved=99;return}
   moved+=Math.abs(dx)+Math.abs(dy);if(moved>8){cam.x-=dx/cam.s;cam.y-=dy/cam.s;draw()}};
 cv.onpointerup=e=>{const one=ptr.size===1;ptr.delete(e.pointerId);if(!one||moved>8||!G||G.over||G.turn!==G.mine)return;
-  const r=cv.getBoundingClientRect(),x=Math.floor(cam.x+(e.clientX-r.left-r.width/2)/cam.s),y=Math.floor(cam.y+(e.clientY-r.top-r.height/2)/cam.s);if(!G.board.has(x+','+y))playerMove(x,y)};
+  const r=cv.getBoundingClientRect(),x=Math.floor(cam.x+(e.clientX-r.left-r.width/2)/cam.s),y=Math.floor(cam.y+(e.clientY-r.top-r.height/2)/cam.s);if(x>=0&&x<N&&y>=0&&y<N&&!G.board.has(x+','+y))playerMove(x,y)};
 cv.onpointercancel=e=>ptr.delete(e.pointerId);
 cv.addEventListener('wheel',e=>{e.preventDefault();const r=cv.getBoundingClientRect();zoomAt(e.clientX-r.left,e.clientY-r.top,e.deltaY<0?1.12:.89)},{passive:false});
 /* ---------- Hồ sơ người chơi ---------- */
@@ -595,7 +646,7 @@ $('nmOk').onclick=async()=>{
 };
 $('nm').onkeydown=e=>{if(e.key==='Enter')$('nmOk').click()};
 if(me.name){$('nm').value=me.name;hideOv()}else showOv();
-addEventListener('resize',draw);ui();stat();draw();connectInitial();
+addEventListener('resize',()=>{if(!G||!G.moves.length)resetCamera();draw()});ui();stat();draw();connectInitial();
 setInterval(()=>{
   if(!G||G.mode!=='online'||G.over||!G.dl)return;
   const seconds=Math.max(0,Math.ceil((G.dl-now())/1000));$('tm').textContent=`${G.turn===G.mine?'Bạn':'Đối thủ'} còn ${seconds}s`;
