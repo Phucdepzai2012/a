@@ -102,6 +102,47 @@ function reply(ack, result) {
 io.on('connection', socket => {
   socket.data.subscriptions = new Map();
 
+  socket.on('room:create', (payload, ack) => {
+    try {
+      const uid = String(payload && payload.uid || '').trim();
+      if (!uid || uid.length > 128) throw new Error('Không xác định được người chơi.');
+      const name = String(payload && payload.name || 'Người chơi').trim().slice(0, 14) || 'Người chơi';
+      const rawElo = Number(payload && payload.elo);
+      const elo = Number.isFinite(rawElo) ? Math.max(100, Math.min(3000, Math.round(rawElo))) : 1000;
+      let code = '';
+      for (let attempt = 0; attempt < 100; attempt++) {
+        const candidate = String(require('node:crypto').randomInt(1000, 10000));
+        if (!data.games[candidate]) { code = candidate; break; }
+      }
+      if (!code) throw new Error('Không tạo được mã phòng. Hãy thử lại.');
+      data.games[code] = { roomCode: code, p: [{ uid, name, elo }], moves: {}, turn: 0, status: 'waiting', dl: 0, createdAt: Date.now() };
+      version++;
+      notifySubscribers();
+      reply(ack, { ok: true, code });
+    } catch (error) { reply(ack, { ok: false, error: error.message || 'Không tạo được phòng.' }); }
+  });
+
+  socket.on('room:join', (payload, ack) => {
+    try {
+      const code = String(payload && payload.code || '').trim();
+      const uid = String(payload && payload.uid || '').trim();
+      if (!/^[0-9]{4}$/.test(code)) throw new Error('Mã phòng phải gồm đúng 4 chữ số.');
+      if (!uid || uid.length > 128) throw new Error('Không xác định được người chơi.');
+      const game = data.games[code];
+      if (!game || game.roomCode !== code) throw new Error('Không tìm thấy phòng. Hãy kiểm tra mã.');
+      if (game.status !== 'waiting' || !Array.isArray(game.p) || game.p.length !== 1) throw new Error('Phòng này đã bắt đầu hoặc đã đủ người.');
+      if (game.p[0].uid === uid) throw new Error('Hãy dùng trình duyệt hoặc tài khoản khác để vào phòng.');
+      const name = String(payload && payload.name || 'Người chơi').trim().slice(0, 14) || 'Người chơi';
+      const rawElo = Number(payload && payload.elo);
+      const elo = Number.isFinite(rawElo) ? Math.max(100, Math.min(3000, Math.round(rawElo))) : 1000;
+      game.p.push({ uid, name, elo });
+      if (Math.random() < 0.5) game.p.reverse();
+      game.status = 'play'; game.turn = 0; game.dl = Date.now() + 30000;
+      version++; notifySubscribers();
+      reply(ack, { ok: true, code });
+    } catch (error) { reply(ack, { ok: false, error: error.message || 'Không thể vào phòng.' }); }
+  });
+
   socket.on('db:read', (payload, ack) => {
     try {
       const path = String(payload && payload.path || '');
