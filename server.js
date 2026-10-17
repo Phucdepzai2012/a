@@ -519,6 +519,64 @@ io.on('connection', socket => {
     catch (error) { reply(ack, { ok: false, error: error.message || 'Không thể lưu trạng thái đăng xuất.' }); }
   });
 
+  socket.on('draw:offer', async (payload, ack) => {
+    try {
+      const uid = requireSession(payload);
+      const gid = String(payload && payload.gid || '');
+      const game = data.games[gid];
+      if (!game || game.status !== 'play' || !Array.isArray(game.p) || game.p.length !== 2) {
+        throw new Error('Không tìm thấy trận đang diễn ra để xin hòa.');
+      }
+      const player = game.p.find(item => item && item.uid === uid);
+      if (!player) throw new Error('Bạn không thuộc trận đấu này.');
+      if (game.drawOffer) {
+        throw new Error(game.drawOffer.uid === uid ? 'Bạn đã gửi lời hòa, đang chờ đối thủ trả lời.' : 'Đối thủ đã gửi lời hòa. Hãy chọn chấp nhận hoặc từ chối.');
+      }
+      game.drawOffer = {
+        uid,
+        name: String(player.name || (accountsByUid.get(uid) && accountsByUid.get(uid).name) || 'Đối thủ'),
+        at: Date.now()
+      };
+      game.drawResponse = null;
+      version++;
+      notifySubscribers();
+      await persistState();
+      reply(ack, { ok: true, gid, drawOffer: game.drawOffer });
+    } catch (error) {
+      reply(ack, { ok: false, error: error.message || 'Không thể gửi lời xin hòa.' });
+    }
+  });
+
+  socket.on('draw:respond', async (payload, ack) => {
+    try {
+      const uid = requireSession(payload);
+      const gid = String(payload && payload.gid || '');
+      const accept = payload && payload.accept === true;
+      const game = data.games[gid];
+      if (!game || game.status !== 'play' || !Array.isArray(game.p) || game.p.length !== 2) {
+        throw new Error('Trận đấu không còn hoạt động.');
+      }
+      if (!game.p.some(item => item && item.uid === uid)) throw new Error('Bạn không thuộc trận đấu này.');
+      const offer = game.drawOffer;
+      if (!offer || !offer.uid || offer.uid === uid) throw new Error('Không có lời xin hòa từ đối thủ để phản hồi.');
+      const now = Date.now();
+      game.drawOffer = null;
+      game.drawResponse = { offerUid: offer.uid, uid, accepted: accept, at: now };
+      if (accept) {
+        game.status = 'over';
+        game.winner = -1;
+        game.why = 'draw';
+        game.drawAgreedAt = now;
+      }
+      version++;
+      notifySubscribers();
+      await persistState();
+      reply(ack, { ok: true, accepted: accept, gid });
+    } catch (error) {
+      reply(ack, { ok: false, error: error.message || 'Không thể phản hồi lời xin hòa.' });
+    }
+  });
+
   socket.on('admin:overview', (payload, ack) => {
     try { requireAdmin(payload); reply(ack, getAdminOverview()); }
     catch(error) { reply(ack, {ok:false,error:error.message||'Không thể đọc bảng quản trị.'}); }
