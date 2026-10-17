@@ -825,24 +825,52 @@ async function submitOnlineMove(x,y){
 }
 function botTurn(){if(!G||G.over||G.turn===G.mine)return;const p=1-G.mine,[x,y]=botMove(G.board,p,G.noise,G.botElo);applyMove(x,y,p)}
 function finishGame(winner,why){
-  if(!G||G.over)return;G.over=1;G.winner=winner;
-  const score=winner===-1?.5:winner===G.mine?1:0;let rating='';
-  if(G.mode==='ranked'||G.mode==='online'){
-    const baseElo=Number(G.myElo)||me.elo||1000;
-    const opponentElo=Number(G.mode==='online'?G.oppElo:G.botElo)||1000;
-    const expected=1/(1+10**((opponentElo-baseElo)/400));const next=Math.max(100,Math.round(baseElo+32*(score-expected)));
-    const delta=next-baseElo;me.elo=next;if(score===1)me.w++;else if(score===0)me.l++;else me.d++;
-    saveProfile();rating=` · ${delta>=0?'+':''}${delta} ELO`;
-    if(G.mode==='online'&&db&&me.uid){db.ref('players/'+me.uid).update({elo:me.elo,w:me.w,l:me.l,d:me.d,name:me.name}).catch(e=>handleBackendFailure(e,'lưu điểm ELO'))}
-  }
-  G.reason=why;
-  G.msg=(winner===-1?'Hòa':score===1?'Bạn thắng!':'Bạn thua')+(why==='timeout'?' (hết giờ)':why==='resign'?' (đầu hàng)':'')+rating;
+  if(!G||G.over)return;
+  G.over=1;G.winner=winner;G.reason=why;
+  const score=winner===-1?.5:winner===G.mine?1:0;
+  const ratedOnline=G.mode==='online'&&!G.roomCode;
+  const resultText=(winner===-1?'Hòa':score===1?'Bạn thắng!':'Bạn thua')+(why==='timeout'?' (hết giờ)':why==='resign'?' (đầu hàng)':'');
+  G.msg=resultText+(ratedOnline?' · Đang xác nhận ELO…':'');
   $('tm').textContent='';setActive(false);ui();draw();stat();showReview();
-  saveFinishedMatchHistory(G).catch(error=>console.error('Không lưu được lịch sử:',error));
+  const completed=G;
+  if(!ratedOnline){
+    saveFinishedMatchHistory(completed).catch(error=>console.error('Không lưu được lịch sử:',error));
+    return;
+  }
+  const oldProfile={elo:me.elo,w:me.w,l:me.l,d:me.d};
+  if(!window.caroAuth||!completed.gid||!me.uid){
+    completed.msg=resultText+' · Chưa xác nhận được ELO';
+    stat();
+    saveFinishedMatchHistory(completed).catch(error=>console.error('Không lưu được lịch sử:',error));
+    return;
+  }
+  window.caroAuth.finishRanked({gid:completed.gid,winnerIndex:winner,reason:why}).then(result=>{
+    me.elo=Number(result.elo)||oldProfile.elo;
+    me.w=Number(result.w)||0;me.l=Number(result.l)||0;me.d=Number(result.d)||0;
+    saveProfile();
+    const delta=Number(result.delta)||0;
+    completed.msg=resultText+` · ${delta>=0?'+':''}${delta} ELO`;
+    completed.ratingConfirmed=true;
+    ui();stat();
+  }).catch(async error=>{
+    me.elo=oldProfile.elo;me.w=oldProfile.w;me.l=oldProfile.l;me.d=oldProfile.d;
+    try{
+      if(db&&me.uid){
+        const snap=await db.ref('players/'+me.uid).once('value'),profileValue=snap.val();
+        if(profileValue){me.elo=Number(profileValue.elo)||1000;me.w=Number(profileValue.w)||0;me.l=Number(profileValue.l)||0;me.d=Number(profileValue.d)||0}
+      }
+    }catch{}
+    saveProfile();
+    completed.msg=resultText+' · ELO chưa được máy chủ xác nhận';
+    $('st').textContent=completed.msg+' ('+(error.message||'lỗi máy chủ')+')';
+    ui();
+  }).finally(()=>{
+    saveFinishedMatchHistory(completed).catch(error=>console.error('Không lưu được lịch sử:',error));
+  });
 }
 function resign(){
   if(!G||G.over)return;
-  if(G.mode==='online'){G.ref.update({status:'over',winner:1-G.mine,why:'resign'}).catch(e=>handleBackendFailure(e,'đầu hàng'));return}
+  if(G.mode==='online'){G.ref.update({status:'over',winner:1-G.mine,why:'resign',resignedBy:me.uid}).catch(e=>handleBackendFailure(e,'đầu hàng'));return}
   finishGame(1-G.mine,'resign');
 }
 async function cancelFind(showMessage=true){
