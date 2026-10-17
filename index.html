@@ -30,6 +30,23 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 #ov>div{background:var(--paper);padding:24px;border-radius:3px;max-width:340px;width:100%;box-shadow:0 10px 30px -12px rgba(27,36,48,.45)}
 #ov p{margin:8px 0 0;color:var(--mut);font-size:13px}#nmEr{color:var(--red);font-size:13px;min-height:1.4em;margin-top:6px}#me{font-weight:600;color:var(--ink)}
 #review[hidden]{display:none}
+.history-search,.history-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:8px}
+.history-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+.history-search input,.history-search button,.history-actions button{margin:0;min-width:0}
+.history-search button,.history-actions button{padding:8px 6px;font-size:12px}
+#historyList{max-height:360px;overflow:auto;counter-reset:none}
+#historyList li{display:block;padding:0;border:0;counter-increment:none}
+#historyList li:before{display:none}
+.history-item{display:flex;align-items:center;gap:8px;padding:8px 3px;border-bottom:1px dashed var(--ln);font-size:12px}
+.history-outcome{flex:none;min-width:48px;text-align:center;border-radius:4px;padding:4px;font-size:10px;font-weight:700}
+.history-outcome.win{background:#d9f6e5;color:#087344}
+.history-outcome.loss{background:#ffd9d9;color:#a51d1d}
+.history-outcome.draw{background:#edf0f2;color:#59636b}
+.history-main{flex:1;min-width:0}
+.history-main strong,.history-main small{display:block;overflow:hidden;text-overflow:ellipsis}
+.history-main small{font-size:10px;color:var(--mut);white-space:normal;margin-top:3px}
+.history-rating{font-size:10px;color:var(--mut);white-space:nowrap}
+.history-player-choice{display:block;width:100%;margin:0;border:0;border-bottom:1px dashed var(--ln);border-radius:0;padding:9px 3px;background:transparent;text-align:left;font-size:12px}
 .note{color:var(--mut);font-size:12px;margin-top:8px;line-height:1.45}
 .review-summary{font-size:13px;line-height:1.6;margin:8px 0;color:var(--ink)}
 #reviewList{max-height:360px;overflow:auto;counter-reset:none}
@@ -102,6 +119,21 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
     <section>
       <h2>Ván hiện tại</h2>
       <div id="vs">—</div><div id="st">Đặt tên rồi chọn chế độ.</div><div id="tm"></div>
+    </section>
+    <section id="historySection">
+      <h2>Lịch sử đấu</h2>
+      <div id="historyTitle" class="note">Lịch sử trận đấu sẽ hiện ở đây.</div>
+      <div class="history-search">
+        <input id="historyPlayerInput" type="text" maxlength="14" placeholder="Tên người chơi cần xem" aria-label="Tên người chơi cần xem lịch sử">
+        <button id="bHistorySearch" type="button">Tra cứu</button>
+      </div>
+      <div class="history-actions">
+        <button id="bMyHistory" type="button">Lịch sử của tôi</button>
+        <button id="bShareHistory" type="button">Chia sẻ lịch sử</button>
+      </div>
+      <div id="historyStatus" class="note">Có thể tra cứu lịch sử công khai bằng tên người chơi hoặc mở liên kết được chia sẻ.</div>
+      <ol id="historyList"></ol>
+      <div class="note">Lịch sử được chia sẻ công khai. Máy chủ hiện lưu trong RAM nên dữ liệu có thể mất khi Render khởi động lại hoặc deploy.</div>
     </section>
     <section id="review" hidden>
       <h2>Phân tích sau ván</h2>
@@ -322,7 +354,7 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 let profile={};try{profile=JSON.parse(localStorage.getItem('caroProfileSeason2')||'{}')}catch{}
 let me={uid:null,name:localStorage.getItem('caroName')||'',elo:Number(profile.elo)||1000,w:Number(profile.w)||0,l:Number(profile.l)||0,d:Number(profile.d)||0};
-let G=null,finding=false,findTimer=null,inviteRef=null,db=null,activeBackend=null,activeBackendIndex=-1,backendCandidates=[],serverOffset=0,switchingBackend=false,onlineLeaderboard=[],profileRef=null,leaderboardRef=null,serverOffsetRef=null,duplicateBackupConfig=false;
+let G=null,finding=false,findTimer=null,inviteRef=null,db=null,activeBackend=null,activeBackendIndex=-1,backendCandidates=[],serverOffset=0,switchingBackend=false,onlineLeaderboard=[],profileRef=null,leaderboardRef=null,serverOffsetRef=null,duplicateBackupConfig=false,currentHistoryUid=null;
 const now=()=>Date.now()+serverOffset;
 const cv=$('bd'),cx=cv.getContext('2d');
 function resetCamera(){cam.x=cam.y=N/2;cam.s=Math.min(36,Math.max(12,(cv.clientWidth-16)/N));}
@@ -349,6 +381,83 @@ function stat(){
 function renderLeaderboard(){
   const rows=onlineLeaderboard.length?onlineLeaderboard:(me.name?[{name:me.name,elo:me.elo}]:[]);
   $('lb').innerHTML=rows.length?rows.map(p=>`<li><span>${esc(p.name||'Người chơi')}</span><i>${tier(Number(p.elo)||1000)}</i><b>${Number(p.elo)||1000}</b></li>`).join(''):'<li><span>Chưa có người chơi</span><i>—</i><b>—</b></li>';
+}
+function historyDate(value){
+  const date=new Date(Number(value));
+  return Number.isFinite(date.getTime())?date.toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'Không rõ thời gian';
+}
+function renderHistory(records,uid,name){
+  currentHistoryUid=uid;
+  $('historyTitle').textContent=`Lịch sử của ${name||'người chơi'} · ${records.length} trận`;
+  if(!records.length){
+    $('historyList').innerHTML='<li class="note">Chưa có trận đã kết thúc được lưu.</li>';
+    return;
+  }
+  $('historyList').innerHTML=records.slice(0,30).map(r=>{
+    const result=r.result==='win'?['THẮNG','win']:r.result==='loss'?['THUA','loss']:['HÒA','draw'];
+    const before=Number(r.playerEloBefore),after=Number(r.playerEloAfter);
+    const rating=Number.isFinite(before)&&Number.isFinite(after)&&before>0?(after-before):null;
+    const ratingText=rating===null?'':`${rating>0?'+':''}${rating} ELO`;
+    return `<li><div class="history-item"><span class="history-outcome ${result[1]}">${result[0]}</span><div class="history-main"><strong>vs ${esc(r.opponentName||'Đối thủ')}</strong><small>${historyDate(r.timestamp)} · ${esc(r.gameType||'Caro')} · ${Math.max(0,Number(r.moveCount)||0)} nước</small></div><span class="history-rating">${ratingText}</span></div></li>`;
+  }).join('');
+}
+async function loadHistoryByUid(uid,nameHint=''){
+  if(!db)throw new Error('Render chưa kết nối nên chưa thể tải lịch sử.');
+  const safeUid=String(uid||'').trim();
+  if(!/^[A-Za-z0-9_-]{1,128}$/.test(safeUid))throw new Error('Liên kết lịch sử không hợp lệ.');
+  $('historyStatus').textContent='Đang tải lịch sử…';
+  const [profileSnap,historySnap]=await Promise.all([
+    db.ref('players/'+safeUid).once('value'),
+    db.ref('history/'+safeUid).once('value')
+  ]);
+  const profileValue=profileSnap.val()||{};
+  const raw=historySnap.val()||{};
+  const records=Object.entries(raw&&typeof raw==='object'?raw:{}).filter(([,r])=>r&&typeof r==='object').map(([key,r])=>({...r,historyKey:key})).sort((a,b)=>(Number(b.timestamp)||0)-(Number(a.timestamp)||0));
+  const displayName=profileValue.name||nameHint||(safeUid===me.uid?me.name:'Người chơi');
+  $('historyPlayerInput').value=displayName;
+  renderHistory(records,safeUid,displayName);
+  $('historyStatus').textContent=safeUid===me.uid?'Lịch sử của bạn được hiển thị công khai qua liên kết chia sẻ.':'Đang xem lịch sử công khai của người chơi này.';
+}
+async function searchPlayerHistory(){
+  if(!db){$('historyStatus').textContent='Render chưa kết nối.';return}
+  const wanted=$('historyPlayerInput').value.trim().toLocaleLowerCase('vi');
+  if(!wanted){$('historyStatus').textContent='Hãy nhập tên người chơi cần tra cứu.';return}
+  $('historyStatus').textContent='Đang tìm người chơi…';
+  try{
+    const snap=await db.ref('players').once('value'),players=[];
+    snap.forEach(child=>{
+      const p=child.val()||{},name=String(p.name||'');
+      if(name)players.push({uid:child.key,name,elo:Number(p.elo)||1000});
+    });
+    const exact=players.filter(p=>p.name.toLocaleLowerCase('vi')===wanted);
+    const matches=(exact.length?exact:players.filter(p=>p.name.toLocaleLowerCase('vi').includes(wanted))).sort((a,b)=>b.elo-a.elo);
+    if(!matches.length){$('historyTitle').textContent='Không tìm thấy người chơi';$('historyList').innerHTML='';$('historyStatus').textContent='Kiểm tra lại tên hoặc yêu cầu người chơi gửi liên kết lịch sử.';return}
+    if(matches.length===1){await loadHistoryByUid(matches[0].uid,matches[0].name);return}
+    $('historyTitle').textContent='Chọn đúng người chơi';
+    $('historyStatus').textContent=`Tìm thấy ${matches.length} hồ sơ phù hợp. Chọn một người để xem lịch sử.`;
+    $('historyList').innerHTML=matches.slice(0,20).map(p=>`<li><button class="history-player-choice" type="button" data-history-uid="${esc(p.uid)}" data-history-name="${esc(p.name)}"><b>${esc(p.name)}</b> · ${p.elo} ELO</button></li>`).join('');
+  }catch(error){$('historyStatus').textContent='Không tải được lịch sử: '+(error.message||error)}
+}
+async function saveFinishedMatchHistory(game){
+  if(!game||game.historySaved||!db||!me.uid)return;
+  game.historySaved=true;
+  const opponent=(Array.isArray(game.players)?game.players[1-game.mine]:null)||{name:(game.names&&game.names[1-game.mine]||'Đối thủ').replace(/ \\(\d+(?: ELO)?\\)$/,''),elo:game.oppElo||game.botElo||1000};
+  const score=game.winner===-1?.5:game.winner===game.mine?1:0;
+  const result=score===.5?'draw':score===1?'win':'loss';
+  const gameKey=game.mode==='online'?'g_'+String(game.gid||Date.now()).replace(/[^A-Za-z0-9_-]/g,'_'):'bot_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8);
+  const record={
+    timestamp:Date.now(),playerUid:me.uid,playerName:me.name,
+    playerEloBefore:Number(game.myElo)||Number(me.elo)||1000,playerEloAfter:Number(me.elo)||1000,
+    opponentUid:opponent.uid||'',opponentName:opponent.name||'Đối thủ',opponentElo:Number(opponent.elo)||Number(game.oppElo)||Number(game.botElo)||1000,
+    result, winnerName:result==='draw'?'Hòa':result==='win'?me.name:(opponent.name||'Đối thủ'),
+    gameType:game.mode==='bot'?'Đấu máy':game.roomCode?'Phòng riêng':'Xếp hạng',
+    reason:game.reason||'',moveCount:Array.isArray(game.moves)?game.moves.length:0,
+    moves:(Array.isArray(game.moves)?game.moves:[]).map(m=>({x:Number(m.x),y:Number(m.y),p:Number(m.p),t:Number(m.t)||0})).filter(m=>Number.isInteger(m.x)&&Number.isInteger(m.y)&&Number.isInteger(m.p))
+  };
+  try{
+    await db.ref('history/'+me.uid+'/'+gameKey).set(record);
+    if(currentHistoryUid===me.uid)await loadHistoryByUid(me.uid,me.name);
+  }catch(error){game.historySaved=false;throw error}
 }
 function setActive(active){
   $('bFind').disabled=!me.name||active||(!db&&!finding);
@@ -398,8 +507,12 @@ async function activateBackend(entry){
   if(snap.exists()){const v=snap.val();me.name=v.name||me.name;me.elo=Number(v.elo)||1000;me.w=Number(v.w)||0;me.l=Number(v.l)||0;me.d=Number(v.d)||0;saveProfile()}
   else if(me.name){await db.ref('players/'+me.uid).update(profileData())}
   bindBackendListeners();
-  if(me.name)hideOv();else showOv();
+  const sharedHistoryUid=new URLSearchParams(window.location.search).get('history');
+  if(me.name||sharedHistoryUid)hideOv();else showOv();
   setNetwork(`Đã kết nối ${b.name} · có thể ghép trận người thật.`);ui();stat();
+  if(sharedHistoryUid)await loadHistoryByUid(sharedHistoryUid).catch(error=>{$('historyStatus').textContent=error.message||String(error)});
+  else if(me.uid)await loadHistoryByUid(me.uid,me.name).catch(error=>{$('historyStatus').textContent=error.message||String(error)});
+  if(G&&G.over)saveFinishedMatchHistory(G).catch(error=>console.error('Không lưu được lịch sử:',error));
 }
 async function connectInitial(){
   prepareBackendCandidates();
@@ -525,7 +638,8 @@ function startGame(mode){
   const botElo=ranked?clamp(Math.round(me.elo+(Math.random()-.5)*150),700,2200):clamp(Math.round(Number($('botEloInput').value)||1500),1,10000);
   const botName=ranked?`Máy ${tier(botElo)} (${botElo})`:`Máy ${tier(botElo)} (${botElo} ELO)`;
   const mine=Math.random()<.5?0:1;
-  G={mode,mine,botElo,noise:botNoise(botElo),board:new Map(),turn:0,n:0,over:0,names:mine===0?[me.name,botName]:[botName,me.name],moves:[],last:null,line:null,msg:'',winner:null,review:[]};
+  const myPlayer={uid:me.uid||'',name:me.name,elo:me.elo},botPlayer={uid:'',name:botName,elo:botElo};
+  G={mode,mine,botElo,noise:botNoise(botElo),board:new Map(),turn:0,n:0,over:0,names:mine===0?[me.name,botName]:[botName,me.name],players:mine===0?[myPlayer,botPlayer]:[botPlayer,myPlayer],moves:[],last:null,line:null,msg:'',winner:null,review:[]};
   $('review').hidden=true;$('reviewSummary').textContent='';$('reviewList').innerHTML='';$('tm').textContent='';
   resetCamera();setActive(true);ui();draw();stat();
   if(G.turn!==G.mine)setTimeout(botTurn,350);
@@ -564,7 +678,9 @@ function finishGame(winner,why){
     saveProfile();rating=` · ${delta>=0?'+':''}${delta} ELO`;
     if(G.mode==='online'&&db&&me.uid){db.ref('players/'+me.uid).update({elo:me.elo,w:me.w,l:me.l,d:me.d,name:me.name}).catch(e=>handleBackendFailure(e,'lưu điểm ELO'))}
   }
+  G.reason=why;
   G.msg=(winner===-1?'Hòa':score===1?'Bạn thắng!':'Bạn thua')+(why==='timeout'?' (hết giờ)':why==='resign'?' (đầu hàng)':'')+rating;
+  saveFinishedMatchHistory(G).catch(error=>console.error('Không lưu được lịch sử:',error));
   $('tm').textContent='';setActive(false);ui();draw();stat();showReview();
 }
 function resign(){
@@ -585,7 +701,7 @@ async function openGame(gid){
   const ref=db.ref('games/'+gid),snap=await ref.once('value'),v=snap.val();
   if(!v||!Array.isArray(v.p))throw new Error('Không tìm thấy ván đấu.');
   const mine=v.p.findIndex(q=>q.uid===me.uid);if(mine<0)throw new Error('Ván đấu không thuộc tài khoản này.');
-  G={mode:'online',gid,ref,mine,board:new Map(),turn:Number(v.turn)||0,n:0,over:0,dl:v.dl||now()+TURN,names:v.p.map(q=>`${q.name} (${q.elo})`),myElo:Number(v.p[mine].elo)||me.elo,oppElo:Number(v.p[1-mine]?.elo)||1000,moves:[],last:null,line:null,msg:'',winner:null,review:[],roomStatus:v.status,roomCode:/^[0-9]{4}$/.test(gid)?gid:null};
+  G={mode:'online',gid,ref,mine,board:new Map(),turn:Number(v.turn)||0,n:0,over:0,dl:v.dl||now()+TURN,names:v.p.map(q=>`${q.name} (${q.elo})`),players:v.p.map(q=>({uid:q.uid||'',name:q.name||'Người chơi',elo:Number(q.elo)||1000})),myElo:Number(v.p[mine].elo)||me.elo,oppElo:Number(v.p[1-mine]?.elo)||1000,moves:[],last:null,line:null,msg:'',winner:null,review:[],roomStatus:v.status,roomCode:/^[0-9]{4}$/.test(gid)?gid:null};
   await db.ref('invite/'+me.uid).remove().catch(()=>{});setActive(true);resetCamera();ui();draw();stat();
   ref.on('value',onGame,e=>handleBackendFailure(e,'đồng bộ ván đấu'));
 }
@@ -594,7 +710,7 @@ function onGame(s){
   const keys=Object.keys(v.moves||{}).sort((a,b)=>Number(a)-Number(b));
   const moves=keys.map(k=>v.moves[k]).filter(Boolean),board=new Map();moves.forEach((m,i)=>board.set(m.x+','+m.y,Number.isInteger(m.p)?m.p:i%2));
   const last=moves[moves.length-1];const newMine=Array.isArray(v.p)?v.p.findIndex(q=>q.uid===me.uid):G.mine;
-  Object.assign(G,{board,moves,n:moves.length,turn:Number(v.turn)||0,dl:Number(v.dl)||0,last:last?[last.x,last.y]:null,roomStatus:v.status,mine:newMine>=0?newMine:G.mine,names:Array.isArray(v.p)?v.p.map(q=>`${q.name} (${q.elo})`):G.names});
+  Object.assign(G,{board,moves,n:moves.length,turn:Number(v.turn)||0,dl:Number(v.dl)||0,last:last?[last.x,last.y]:null,roomStatus:v.status,mine:newMine>=0?newMine:G.mine,names:Array.isArray(v.p)?v.p.map(q=>`${q.name} (${q.elo})`):G.names,players:Array.isArray(v.p)?v.p.map(q=>({uid:q.uid||'',name:q.name||'Người chơi',elo:Number(q.elo)||1000})):G.players});
   G.myElo=Number(v.p&&v.p[G.mine]&&v.p[G.mine].elo)||G.myElo||me.elo;
   G.oppElo=Number(v.p&&v.p[1-G.mine]&&v.p[1-G.mine].elo)||G.oppElo||1000;
   if(v.status==='over'&&!G.over){G.winner=Number.isInteger(v.winner)?v.winner:-1;G.line=v.why==='win'&&last?win(board,last.x,last.y):null;finishGame(G.winner,v.why);return}
@@ -671,6 +787,24 @@ $('botEloRange').addEventListener('input',()=>{const n=Number($('botEloRange').v
 $('botEloInput').addEventListener('input',()=>{const raw=$('botEloInput').value;if(raw==='')return;const n=clamp(Math.round(Number(raw)),1,10000);$('botEloRange').value=String(n);localStorage.setItem('caroBotElo',String(n));updateBotEloDisplay(n)});
 $('botEloInput').addEventListener('change',()=>{const n=clamp(Math.round(Number($('botEloInput').value)||1),1,10000);$('botEloInput').value=String(n);$('botEloRange').value=String(n);localStorage.setItem('caroBotElo',String(n));updateBotEloDisplay(n)});
 $('bRes').onclick=resign;
+$('bHistorySearch').onclick=searchPlayerHistory;
+$('historyPlayerInput').addEventListener('keydown',e=>{if(e.key==='Enter')searchPlayerHistory()});
+$('bMyHistory').onclick=()=>loadHistoryByUid(me.uid,me.name).catch(error=>{$('historyStatus').textContent=error.message||String(error)});
+$('bShareHistory').onclick=async()=>{
+  if(!db||!me.uid){$('historyStatus').textContent='Hãy kết nối Render trước khi chia sẻ lịch sử.';return}
+  const url=new URL(window.location.href);url.searchParams.set('history',me.uid);
+  try{
+    await navigator.clipboard.writeText(url.href);
+    $('historyStatus').textContent='Đã sao chép liên kết lịch sử của bạn. Gửi liên kết này cho người khác để họ xem.';
+  }catch{
+    window.prompt('Sao chép liên kết lịch sử này để chia sẻ:',url.href);
+  }
+};
+$('historyList').addEventListener('click',e=>{
+  const button=e.target.closest('[data-history-uid]');
+  if(!button)return;
+  loadHistoryByUid(button.dataset.historyUid,button.dataset.historyName||'').catch(error=>{$('historyStatus').textContent=error.message||String(error)});
+});
 $('bCen').onclick=()=>{const l=G&&G.last;if(l){cam.x=l[0]+.5;cam.y=l[1]+.5}else resetCamera();draw()};
 /* ---------- Xem lại nước đi ---------- */
 const QUALITY={
