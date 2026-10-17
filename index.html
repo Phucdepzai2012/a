@@ -149,7 +149,7 @@ body.online-match-active main>.paper{width:100%;padding:6px}
 body.online-match-active main>aside{display:none!important}
 #matchActions{position:fixed;z-index:30;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;width:min(94vw,380px);padding:9px 10px;background:rgba(253,253,250,.97);border:1px solid var(--ln);border-radius:12px;box-shadow:0 8px 26px rgba(27,36,48,.18);backdrop-filter:blur(10px)}
 #matchActions[hidden]{display:none!important}
-.match-action-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%}
+.match-action-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}
 #matchActions button{width:100%;margin:0;min-width:0;padding:10px 14px;font-weight:700}
 #bOfferDraw{background:#e7efff;border-color:#9cb7ff;color:#1c3fb7}
 #bRes{background:#fff0f0;border-color:#edb4b4;color:#a51d1d}
@@ -1335,6 +1335,105 @@ $('drawOfferModal').addEventListener('keydown',e=>{
   if(e.key==='Escape'&&G&&G.drawOffer&&G.drawOffer.uid!==me.uid)respondDraw(false);
 });
 $('bRes').onclick=resign;
+$('bOpenChat').onclick=()=>{
+  if(!G||G.mode!=='online'||G.over)return;
+  chatPanelOpen=!chatPanelOpen;
+  if(chatPanelOpen)chatUnread=0;
+  ui();
+  if(chatPanelOpen)$('chatMessageInput').focus();
+};
+$('bCloseChat').onclick=()=>{chatPanelOpen=false;ui()};
+$('matchChatForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!G||G.mode!=='online'||G.over||!window.caroAuth)return;
+  const text=$('chatMessageInput').value.trim();
+  if(!text)return;
+  const gameId=G.gid,input=$('chatMessageInput');
+  $('bSendChat').disabled=true;$('chatStatus').textContent='Đang gửi…';
+  try{
+    await window.caroAuth.sendChat({gid:gameId,text});
+    if(G&&G.gid===gameId&&input.value.trim()===text)input.value='';
+    $('chatStatus').textContent='';
+  }catch(error){$('chatStatus').textContent=error.message||'Không gửi được tin nhắn.'}
+  finally{$('bSendChat').disabled=false;input.focus()}
+});
+$('bFriendSearch').onclick=searchFriends;
+$('friendSearchInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();searchFriends()}});
+$('socialSection').addEventListener('click',e=>{
+  const map=[['friend-request','request'],['friend-accept','accept'],['friend-decline','decline'],['friend-remove','remove']];
+  for(const item of map){
+    const attribute=item[0],action=item[1],button=e.target.closest('[data-'+attribute+']');
+    if(button){performFriendAction(action,button.getAttribute('data-'+attribute));return}
+  }
+});
+$('bProfile').onclick=()=>{
+  if(!me.uid||me.isAdmin)return;
+  selectedAvatarData=null;$('avatarFile').value='';$('profileStatus').textContent='';
+  setAvatarElement($('profileAvatarPreview'),me.avatar,me.name);
+  $('profileModal').hidden=false;
+};
+function resizeAvatarImage(file){
+  return new Promise((resolve,reject)=>{
+    if(!file||!/^image\/(jpeg|png|webp)$/.test(file.type))return reject(new Error('Chỉ hỗ trợ ảnh JPG, PNG hoặc WebP.'));
+    if(file.size>6*1024*1024)return reject(new Error('Ảnh gốc phải nhỏ hơn 6 MB.'));
+    const reader=new FileReader();
+    reader.onerror=()=>reject(new Error('Không đọc được tệp ảnh.'));
+    reader.onload=()=>{
+      const image=new Image();
+      image.onerror=()=>reject(new Error('Tệp này không phải ảnh hợp lệ.'));
+      image.onload=()=>{
+        try{
+          const side=Math.min(image.naturalWidth,image.naturalHeight);
+          const sx=(image.naturalWidth-side)/2,sy=(image.naturalHeight-side)/2;
+          const canvas=document.createElement('canvas');canvas.width=256;canvas.height=256;
+          const context=canvas.getContext('2d');
+          if(!context)return reject(new Error('Trình duyệt không hỗ trợ xử lý ảnh.'));
+          context.drawImage(image,sx,sy,side,side,0,0,256,256);
+          const avatar=canvas.toDataURL('image/jpeg',.76);
+          if(avatar.length>95000)return reject(new Error('Ảnh vẫn quá lớn. Hãy chọn ảnh khác.'));
+          resolve(avatar);
+        }catch(error){reject(new Error(error.message||'Không thu nhỏ được ảnh.'))}
+      };
+      image.src=String(reader.result||'');
+    };
+    reader.readAsDataURL(file);
+  });
+}
+$('avatarFile').addEventListener('change',async()=>{
+  const file=$('avatarFile').files&&$('avatarFile').files[0];
+  if(!file)return;
+  $('profileStatus').textContent='Đang xử lý ảnh…';
+  try{
+    selectedAvatarData=await resizeAvatarImage(file);
+    setAvatarElement($('profileAvatarPreview'),selectedAvatarData,me.name);
+    $('profileStatus').textContent='Ảnh đã sẵn sàng. Nhấn “Lưu ảnh”.';
+  }catch(error){
+    selectedAvatarData=null;
+    $('profileStatus').textContent=error.message||'Không xử lý được ảnh.';
+  }
+});
+$('bClearAvatar').onclick=()=>{
+  selectedAvatarData='';
+  setAvatarElement($('profileAvatarPreview'),'','?');
+  $('avatarFile').value='';
+  $('profileStatus').textContent='Ảnh sẽ được gỡ khi bạn lưu thay đổi.';
+};
+$('bSaveAvatar').onclick=async()=>{
+  if(selectedAvatarData===null){$('profileStatus').textContent='Hãy chọn ảnh mới hoặc bấm “Bỏ ảnh”.';return}
+  $('bSaveAvatar').disabled=true;$('profileStatus').textContent='Đang lưu ảnh đại diện…';
+  try{
+    const result=await window.caroAuth.updateAvatar({avatar:selectedAvatarData});
+    me.avatar=result.avatar||'';selectedAvatarData=null;
+    setAvatarElement($('profileAvatarPreview'),me.avatar,me.name);ui();
+    $('profileStatus').textContent='Đã lưu ảnh đại diện vào tài khoản.';
+    await refreshSocial().catch(()=>{});
+  }catch(error){$('profileStatus').textContent=error.message||'Không lưu được ảnh.'}
+  finally{$('bSaveAvatar').disabled=false}
+};
+$('bCloseProfile').onclick=()=>{$('profileModal').hidden=true};
+$('profileModal').addEventListener('click',e=>{if(e.target===$('profileModal'))$('profileModal').hidden=true});
+$('profileModal').addEventListener('keydown',e=>{if(e.key==='Escape')$('profileModal').hidden=true});
+
 $('bHistorySearch').onclick=searchPlayerHistory;
 $('bAdminRefresh').onclick=loadAdminOverview;
 $('adminUsers').addEventListener('click',async e=>{
