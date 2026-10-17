@@ -484,6 +484,26 @@ function durationLabel(ms){
   const seconds=Math.max(0,Number(ms)||0)/1000;
   return seconds>=60?`${Math.floor(seconds/60)}m ${(seconds%60).toFixed(1)}s`:`${seconds.toFixed(1)}s`;
 }
+function formatAdminDate(value){
+  const date=new Date(Number(value));
+  return Number.isFinite(date.getTime())?date.toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+}
+function renderAdminOverview(data){
+  $('adminStats').innerHTML=`Tài khoản: <b>${Number(data.totalAccounts)||0}</b> · Đang khóa: <b>${Number(data.bannedAccounts)||0}</b> · Cảnh báo: <b>${(data.alerts||[]).length}</b>`;
+  $('adminAlerts').innerHTML=(data.alerts||[]).length?(data.alerts||[]).map(a=>`<li><div class="admin-row"><span class="admin-pill warn">${a.type==='room_spam'?'SPAM PHÒNG':'TÁI ĐẤU'}</span><div class="admin-detail">${esc(a.message||'Cần kiểm tra')}<small>${formatAdminDate(a.lastAt)}</small></div></div></li>`).join(''):'<li class="note">Chưa có cảnh báo tự động.</li>';
+  $('adminUsers').innerHTML=(data.users||[]).length?(data.users||[]).map(u=>`<li><div class="admin-row"><div class="admin-detail"><b>${esc(u.name)}</b><small>${Number(u.elo)||1000} ELO · ${Number(u.w)||0}T ${Number(u.l)||0}B ${Number(u.d)||0}H · ${esc(u.uid)}</small>${u.banned?'<small>Tạm khóa: '+esc(u.banReason||'Vi phạm quy định')+'</small>':''}</div><span class="admin-pill ${u.banned?'block':''}">${u.banned?'ĐÃ KHÓA':'HOẠT ĐỘNG'}</span><button type="button" class="admin-action ${u.banned?'':'danger'}" data-admin-ban="${esc(u.uid)}" data-banned="${u.banned?'true':'false'}">${u.banned?'Mở khóa':'Khóa'}</button></div></li>`).join(''):'<li class="note">Chưa có tài khoản.</li>';
+  $('adminMatches').innerHTML=(data.recentMatches||[]).slice(0,30).map(m=>`<li><div class="admin-row"><span class="admin-pill">${esc(m.gameType||'Caro')}</span><div class="admin-detail"><b>${esc(m.playerName)} vs ${esc(m.opponentName)}</b><small>${formatAdminDate(m.timestamp)} · ${esc(m.result)} · ${Number(m.moveCount)||0} nước · ${Number(m.eloBefore)||1000} → ${Number(m.eloAfter)||1000} ELO</small></div></div></li>`).join('')||'<li class="note">Chưa có trận đã lưu.</li>';
+  $('adminAudit').innerHTML=(data.audit||[]).slice(0,30).map(a=>`<li><div class="admin-row"><div class="admin-detail"><b>${esc(a.action||'Hoạt động')}</b> · ${esc(a.targetName||a.targetUid||'—')}<small>${formatAdminDate(a.at)} · ${esc(a.reason||'')}</small></div></div></li>`).join('')||'<li class="note">Chưa có nhật ký quản trị.</li>';
+  $('adminStatus').textContent=data.configuredAdmin?'Đã xác thực admin ở máy chủ. Cảnh báo là dấu hiệu cần xem xét, không phải kết luận gian lận.':'Chưa cấu hình CARO_ADMIN_PASSWORD trong biến môi trường Render.';
+}
+async function loadAdminOverview(){
+  if(!me.isAdmin||!window.caroAuth){$('adminStatus').textContent='Không có quyền quản trị.';return}
+  $('adminStatus').textContent='Đang tải dữ liệu quản trị…';
+  $('bAdminRefresh').disabled=true;
+  try{const data=await window.caroAuth.adminOverview();renderAdminOverview(data)}
+  catch(error){$('adminStatus').textContent='Không tải được bảng quản trị: '+(error.message||error)}
+  finally{$('bAdminRefresh').disabled=false}
+}
 function renderHistory(records,uid,name){
   currentHistoryUid=uid;
   historyRecordsByKey.clear();
@@ -927,6 +947,18 @@ $('botEloInput').addEventListener('input',()=>{const raw=$('botEloInput').value;
 $('botEloInput').addEventListener('change',()=>{const n=clamp(Math.round(Number($('botEloInput').value)||1),1,10000);$('botEloInput').value=String(n);$('botEloRange').value=String(n);localStorage.setItem('caroBotElo',String(n));updateBotEloDisplay(n)});
 $('bRes').onclick=resign;
 $('bHistorySearch').onclick=searchPlayerHistory;
+$('bAdminRefresh').onclick=loadAdminOverview;
+$('adminUsers').addEventListener('click',async e=>{
+  const button=e.target.closest('[data-admin-ban]');
+  if(!button||!me.isAdmin||!window.caroAuth)return;
+  const uid=button.dataset.adminBan;
+  const shouldBan=button.dataset.banned!=='true';
+  if(shouldBan&&!window.confirm('Khóa tài khoản này? Tài khoản sẽ không thể tiếp tục sử dụng phiên đăng nhập.'))return;
+  const reason=shouldBan?(window.prompt('Lý do khóa tài khoản:','Nghi vấn lạm dụng ELO hoặc spam phòng')||'Nghi vấn lạm dụng'): 'Mở khóa theo quyết định quản trị';
+  button.disabled=true;
+  try{await window.caroAuth.adminBan(uid,shouldBan,reason);await loadAdminOverview()}
+  catch(error){$('adminStatus').textContent='Không thực hiện được thao tác: '+(error.message||error);button.disabled=false}
+});
 $('historyPlayerInput').addEventListener('keydown',e=>{if(e.key==='Enter')searchPlayerHistory()});
 $('bMyHistory').onclick=()=>loadHistoryByUid(me.uid,me.name).catch(error=>{$('historyStatus').textContent=error.message||String(error)});
 $('bShareHistory').onclick=async()=>{
