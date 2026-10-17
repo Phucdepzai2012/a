@@ -22,6 +22,7 @@ const accountsByName = new Map();
 const accountsByUid = new Map();
 const sessions = new Map();
 const bannedUids = new Map();
+const loginFailures = new Map();
 const roomCreateEvents = new Map();
 const adminAudit = [];
 const ADMIN_UID = '__caro_admin__';
@@ -68,6 +69,22 @@ function requireAdmin(payload) {
   if (uid !== ADMIN_UID) throw new Error('Bạn không có quyền quản trị.');
   return uid;
 }
+
+function assertLoginAllowed(key) {
+  const record=loginFailures.get(key);
+  if(!record)return;
+  if(record.lockedUntil>Date.now())throw new Error('Quá nhiều lần đăng nhập thất bại. Hãy thử lại sau 15 phút.');
+  if(Date.now()-record.startedAt>15*60*1000)loginFailures.delete(key);
+}
+function recordLoginFailure(key) {
+  const now=Date.now(),current=loginFailures.get(key);
+  if(current&&current.lockedUntil>now)return;
+  const record=!current||now-current.startedAt>15*60*1000?{startedAt:now,count:0,lockedUntil:0}:current;
+  record.count++;
+  if(record.count>=5)record.lockedUntil=now+15*60*1000;
+  loginFailures.set(key,record);
+}
+function clearLoginFailures(key){loginFailures.delete(key)}
 
 function hasFiveInMoves(moves, winner) {
   const board = new Map();
@@ -330,8 +347,11 @@ io.on('connection', socket => {
   });
 
   socket.on('auth:login', (payload, ack) => {
+    let throttleKey=String(socket.handshake.address||'unknown')+'|invalid';
     try {
       const { key } = parseAccountName(payload && payload.name);
+      throttleKey=String(socket.handshake.address||'unknown')+'|'+key;
+      assertLoginAllowed(throttleKey);
       const password = String(payload && payload.password || '');
       if (key === ADMIN_NAME_KEY) {
         const configuredPassword = String(process.env.CARO_ADMIN_PASSWORD || '');
@@ -339,6 +359,7 @@ io.on('connection', socket => {
         const suppliedHash=crypto.createHash('sha256').update(password).digest();
         const expectedHash=crypto.createHash('sha256').update(configuredPassword).digest();
         if(!password || !crypto.timingSafeEqual(suppliedHash,expectedHash)) throw new Error('Tên đăng nhập hoặc mật khẩu không đúng.');
+        clearLoginFailures(throttleKey);
         reply(ack, makeAdminSession());
         return;
       }
@@ -352,8 +373,10 @@ io.on('connection', socket => {
       if (storedHash.length !== suppliedHash.length || !crypto.timingSafeEqual(storedHash, suppliedHash)) {
         throw new Error('Tên đăng nhập hoặc mật khẩu không đúng.');
       }
+      clearLoginFailures(throttleKey);
       reply(ack, makeAccountSession(uid));
     } catch (error) {
+      recordLoginFailure(throttleKey);
       reply(ack, { ok: false, error: error.message || 'Không thể đăng nhập.' });
     }
   });
