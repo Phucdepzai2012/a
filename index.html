@@ -948,7 +948,7 @@ $('nm').onkeydown=e=>{if(e.key==='Enter')$('nmOk').click()};
 $('pw').onkeydown=e=>{if(e.key==='Enter')$('nmOk').click()};
 $('pwConfirm').onkeydown=e=>{if(e.key==='Enter')$('nmOk').click()};
 $('bLogout').onclick=async()=>{
-  if(G&&!G.over){$('nmEr').textContent='Hãy kết thúc trận trước khi đăng xuất.';return}
+  if(G&&!G.over){$('st').textContent='Hãy kết thúc trận trước khi đăng xuất.';return}
   $('bLogout').disabled=true;
   try{if(window.caroAuth)await window.caroAuth.logout();location.reload()}
   catch(error){$('bLogout').disabled=false;$('historyStatus').textContent=error.message||String(error)}
