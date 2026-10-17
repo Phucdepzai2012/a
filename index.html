@@ -3,9 +3,53 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Caro 5 — Đấu xếp hạng</title>
+<title>Caro 5 – Chơi Caro Online Miễn Phí, Đấu Máy & Bạn Bè</title>
+<meta name="description" content="Chơi Caro 5 online miễn phí ngay trên trình duyệt. Đấu với máy, ghép trận xếp hạng, tạo phòng cùng bạn bè, xem lại ván đấu và học chiến thuật Caro.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="googlebot" content="index,follow">
+<link rel="canonical" href="https://phucdepzai2012.github.io/a/">
+<link rel="sitemap" type="application/xml" title="Sitemap" href="https://phucdepzai2012.github.io/a/sitemap.xml">
 <link rel="icon" type="image/svg+xml" href="./favicon.svg?v=3">
 <meta name="theme-color" content="#101a32">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="vi_VN">
+<meta property="og:site_name" content="Caro 5">
+<meta property="og:title" content="Caro 5 – Chơi Caro Online Miễn Phí">
+<meta property="og:description" content="Chơi Caro 5 online miễn phí ngay trên trình duyệt. Đấu với máy, ghép trận xếp hạng, tạo phòng cùng bạn bè, xem lại ván đấu và học chiến thuật Caro.">
+<meta property="og:url" content="https://phucdepzai2012.github.io/a/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Caro 5 – Chơi Caro Online Miễn Phí">
+<meta name="twitter:description" content="Chơi Caro 5 online miễn phí ngay trên trình duyệt. Đấu với máy, ghép trận xếp hạng, tạo phòng cùng bạn bè, xem lại ván đấu và học chiến thuật Caro.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "name": "Caro 5",
+      "url": "https://phucdepzai2012.github.io/a/",
+      "inLanguage": "vi",
+      "description": "Chơi Caro 5 online miễn phí ngay trên trình duyệt. Đấu với máy, ghép trận xếp hạng, tạo phòng cùng bạn bè, xem lại ván đấu và học chiến thuật Caro."
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "Caro 5",
+      "url": "https://phucdepzai2012.github.io/a/",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "Any",
+      "inLanguage": "vi",
+      "browserRequirements": "Requires JavaScript and a modern web browser",
+      "isAccessibleForFree": true,
+      "description": "Chơi Caro 5 online miễn phí ngay trên trình duyệt. Đấu với máy, ghép trận xếp hạng, tạo phòng cùng bạn bè, xem lại ván đấu và học chiến thuật Caro.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "VND"
+      }
+    }
+  ]
+}
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
 <style>
 :root{--desk:#e4e9ec;--paper:#fdfdfa;--blue:#1c3fb7;--red:#d8322b;--ink:#1b2430;--mut:#667381;--ln:#c9d3da}
@@ -17,6 +61,11 @@ main{display:grid;grid-template-columns:minmax(0,640px) 280px;gap:24px;width:100
 canvas{display:block;width:100%;aspect-ratio:1;cursor:crosshair;touch-action:none}
 h1{margin:0;font:700 44px/1 Caveat,cursive;color:var(--blue)}h1 b{color:var(--red)}
 h2{margin:22px 0 6px;font-size:13px;font-weight:600;color:var(--mut)}
+/* Search-friendly game summary, kept visible and consistent with the sidebar. */
+.seo-game-info{margin-top:18px;padding:11px 12px;border:1px solid #d8e0e8;border-radius:8px;background:#f7f9fb}
+.seo-game-info h2{margin:0 0 7px;color:#33445a;font-size:12px;line-height:1.5}
+.seo-game-info p{margin:6px 0 0;color:#687788;font-size:11px;line-height:1.7}
+
 section{border-bottom:1px solid var(--ln);padding-bottom:14px}
 input,button{width:100%;font:inherit;padding:10px 12px;border-radius:6px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);margin-top:8px}
 button{cursor:pointer;font-weight:600}button.pri{background:var(--ink);color:var(--paper)}
@@ -675,6 +724,12 @@ body.study-modal-open{overflow:hidden}
     <h2>Bảng xếp hạng</h2>
     <ol id="lb"></ol>
     <div class="note">Bảng xếp hạng lấy từ Render khi đã kết nối. Dữ liệu mẫu trên máy chủ sẽ bị xóa khi máy chủ khởi động lại.</div>
+    <section class="seo-game-info" aria-labelledby="seoGameTitle">
+      <h2 id="seoGameTitle">Caro 5 – Game Caro online miễn phí</h2>
+      <p>Chơi Caro 5 trực tuyến ngay trong trình duyệt, không cần cài đặt. Luyện tập với máy hoặc thử sức cùng người chơi khác.</p>
+      <p>Ghép trận xếp hạng, tạo phòng riêng để chơi với bạn bè, xem lại lịch sử ván đấu và phân tích nước đi.</p>
+      <p>Sổ tay Caro gồm hướng dẫn khai cuộc, trung cuộc, tàn cuộc cùng các sơ đồ chiến thuật để bạn luyện cách đọc thế cờ.</p>
+    </section>
   </aside>
 </main>
 <button id="bOpenStudyFloating" class="study-float" type="button" aria-label="Mở sổ tay học Caro" title="Sổ tay Caro" hidden>
