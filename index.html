@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Caro 5 — Đấu xếp hạng</title>
-<link rel="icon" type="image/svg+xml" href="./favicon.svg?v=1">
+<link rel="icon" type="image/svg+xml" href="./favicon.svg?v=2">
 <meta name="theme-color" content="#101a32">
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
 <style>
@@ -357,6 +357,12 @@ aside>.note{background:#fff;border:1px solid var(--ln);border-radius:8px;padding
 .tier-f .study-tier-head strong{background:#ffd9d9;color:#a51d1d}
 .study-tier-note{font-size:11px;line-height:1.7;color:#647384;margin:12px 0 0}
 /* Image-based, draggable Caro tier maker */
+/* Branded Caro 5 wordmark replaces external icon images. */
+.study-logo-mark{display:flex;align-items:baseline;justify-content:center;gap:2px;flex:none;width:72px;height:36px;padding:0 4px;border:1px solid #ccdaf6;border-radius:9px;background:linear-gradient(145deg,#f7faff,#e6eeff);color:#1c3fb7;font-family:'Caveat',cursive;font-size:25px;font-weight:700;line-height:1;letter-spacing:-.7px;white-space:nowrap;text-shadow:0 1px 0 #fff;box-shadow:0 2px 5px rgba(28,63,183,.12)}
+.study-logo-mark b{color:#d8322b;font-size:1.12em;font-weight:700}
+.study-head-icon .study-logo-mark{width:59px;height:34px;padding:0 3px;border:0;background:transparent;border-radius:0;font-size:23px;box-shadow:none}
+.study-float .study-logo-mark{width:auto;height:auto;padding:0;border:0;border-radius:0;background:transparent;font-size:16px;letter-spacing:-.6px;box-shadow:none}
+.study-float .study-logo-mark b{font-size:1.15em}
 .tier-image-workshop{display:grid;gap:12px}
 .tier-image-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid #e0e6ed;border-radius:10px;background:#f7f9fc}
 .tier-image-toolbar span{font-size:11px;color:#596a7c;line-height:1.5}
@@ -539,12 +545,7 @@ body.study-modal-open{overflow:hidden}
 
 
 /* Use the player's supplied Ender Chest image for every study-guide icon. */
-.study-ender-chest{display:block;flex:none;width:28px;height:28px;object-fit:contain;object-position:center;border-radius:5px;background:#f3edff;filter:drop-shadow(0 2px 2px rgba(20,30,50,.24))}
-.study-head-icon{background:#fff}
-.study-head-icon .study-ender-chest{width:34px;height:34px}
-.study-ender-chest{object-fit:contain;background:#fff}
-.study-float .study-ender-chest{width:27px;height:27px}
-
+.study-head-icon .study-float 
 </style>
 </head>
 <body>
@@ -588,7 +589,7 @@ body.study-modal-open{overflow:hidden}
       </div>
       <button id="bCen" type="button">Về nước vừa đánh</button>
       <button id="bOpenStudy" class="study-launch" type="button" aria-haspopup="dialog" aria-controls="studyModal">
-        <img class="study-ender-chest" src="https://www.spigotmc.org/attachments/ac9c0b104245c66ace8ef8a867c78f1e20485fc3-png.908368/" alt="Rương Ender Minecraft" aria-hidden="true" referrerpolicy="no-referrer" loading="eager">
+        <span class="study-logo-mark" aria-label="Caro 5" aria-hidden="true"><span>Caro</span><b>5</b></span>
         <span><strong>Sổ tay Caro</strong><small>Khai cuộc · Trung cuộc · Tàn cuộc</small></span>
         <span class="study-launch-arrow" aria-hidden="true">↗</span>
       </button>
@@ -676,13 +677,13 @@ body.study-modal-open{overflow:hidden}
   </aside>
 </main>
 <button id="bOpenStudyFloating" class="study-float" type="button" aria-label="Mở sổ tay học Caro" title="Sổ tay Caro" hidden>
-  <img class="study-ender-chest" src="https://www.spigotmc.org/attachments/ac9c0b104245c66ace8ef8a867c78f1e20485fc3-png.908368/" alt="Rương Ender Minecraft" aria-hidden="true" referrerpolicy="no-referrer" loading="eager">
+  <span class="study-logo-mark" aria-label="Caro 5" aria-hidden="true"><span>Caro</span><b>5</b></span>
 </button>
 <div id="studyModal" class="study-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="studyTitle">
   <div class="study-card">
     <header class="study-head">
       <div class="study-head-icon">
-        <img class="study-ender-chest" src="https://www.spigotmc.org/attachments/ac9c0b104245c66ace8ef8a867c78f1e20485fc3-png.908368/" alt="Rương Ender Minecraft" aria-hidden="true" referrerpolicy="no-referrer" loading="eager">
+        <span class="study-logo-mark" aria-label="Caro 5" aria-hidden="true"><span>Caro</span><b>5</b></span>
       </div>
       <div class="study-head-title">
         <h2 id="studyTitle">Sổ tay Caro</h2>
@@ -2673,18 +2674,6 @@ render();
 });
 })();
 </script>
-<script>
-(function(){
-  const fallbackSvg='<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 64 64" shape-rendering="crispEdges"><rect width="64" height="64" rx="8" fill="#fff"/><path d="M7 21 31 7 57 20 33 35Z" fill="#182b31" stroke="#08171d" stroke-width="2"/><path d="M7 21 33 35 33 57 7 42Z" fill="#123d3b" stroke="#08171d" stroke-width="2"/><path d="M33 35 57 20 57 42 33 57Z" fill="#071a22" stroke="#08171d" stroke-width="2"/><path d="M11 22 31 11 52 21 33 32Z" fill="#263d3c"/><path d="M13 25 28 33 28 50 13 41Z" fill="#1c5550"/><path d="M38 36 52 27 52 40 38 49Z" fill="#102932"/><path d="M26 28 34 32 34 47 26 43Z" fill="#418b65" stroke="#19392f" stroke-width="1.5"/><path d="M24 29 29 26 37 30 32 33Z" fill="#9ad878"/><path d="M27 35 33 38 33 47 27 44Z" fill="#d4b13d" stroke="#876520" stroke-width="1.5"/><path d="M29 36 33 38 33 43 29 41Z" fill="#fff0a1"/><path d="M9 20 12 18 34 30 31 32Z" fill="#45615b"/><path d="M35 34 55 22 55 25 35 37Z" fill="#253a3d"/></svg>';
-  const fallbackUrl='data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(fallbackSvg);
-  document.querySelectorAll('.study-ender-chest').forEach(img=>{
-    img.addEventListener('error',function(){
-      if(this.dataset.fallbackUsed)return;
-      this.dataset.fallbackUsed='1';
-      this.src=fallbackUrl;
-    });
-  });
-})();
-</script>
+
 </body>
 </html>
