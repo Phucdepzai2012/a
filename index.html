@@ -706,6 +706,95 @@ function renderLeaderboard(){
   const rows=onlineLeaderboard.length?onlineLeaderboard:(me.name?[{name:me.name,elo:me.elo}]:[]);
   $('lb').innerHTML=rows.length?rows.map(p=>`<li><span>${esc(p.name||'Người chơi')}</span><i>${tier(Number(p.elo)||1000)}</i><b>${Number(p.elo)||1000}</b></li>`).join(''):'<li><span>Chưa có người chơi</span><i>—</i><b>—</b></li>';
 }
+function safeAvatar(value){const avatar=String(value||'');return avatar.length<100000&&/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(avatar)?avatar:''}
+function setAvatarElement(element,avatar,name){
+  if(!element)return;
+  const safe=safeAvatar(avatar);
+  if(safe)element.innerHTML='<img src="'+safe+'" alt="">';
+  else element.textContent=String(name||'?').trim().slice(0,1).toLocaleUpperCase('vi')||'?';
+}
+function renderAccountSummary(){setAvatarElement($('accountAvatar'),me.avatar,me.name)}
+function renderPersonRow(person,mode){
+  const p=person||{},name=String(p.name||'Người chơi'),uid=String(p.uid||''),avatar=safeAvatar(p.avatar);
+  const avatarHtml='<span class="avatar avatar-small">'+(avatar?'<img src="'+avatar+'" alt="">':esc(name.slice(0,1).toLocaleUpperCase('vi')||'?'))+'</span>';
+  let action='<span class="social-empty">—</span>';
+  if(mode==='search'){
+    if(p.relationship==='self')action='<span class="social-empty">Bạn</span>';
+    else if(p.relationship==='friend')action='<span class="social-empty">Đã kết bạn</span>';
+    else if(p.relationship==='incoming')action='<button type="button" class="friend-accept" data-friend-accept="'+esc(uid)+'">Chấp nhận</button>';
+    else if(p.relationship==='outgoing')action='<span class="social-empty">Đã gửi</span>';
+    else action='<button type="button" data-friend-request="'+esc(uid)+'">＋ Kết bạn</button>';
+  }else if(mode==='incoming'){
+    action='<button type="button" class="friend-accept" data-friend-accept="'+esc(uid)+'">Chấp nhận</button><button type="button" data-friend-decline="'+esc(uid)+'">Từ chối</button>';
+  }else if(mode==='friend'){
+    action='<button type="button" class="friend-remove" data-friend-remove="'+esc(uid)+'">Xóa bạn</button>';
+  }else if(mode==='outgoing'){
+    action='<span class="social-empty">Đang chờ</span>';
+  }
+  return '<div class="person-row">'+avatarHtml+'<div class="person-info"><strong>'+esc(name)+'</strong><small>'+(Number(p.elo)||1000)+' ELO</small></div>'+action+'</div>';
+}
+function renderPeople(targetId,people,mode,emptyText){
+  const target=$(targetId);
+  if(!Array.isArray(people)||!people.length){target.innerHTML='<div class="social-empty">'+esc(emptyText)+'</div>';return}
+  target.innerHTML=people.map(person=>renderPersonRow(person,mode)).join('');
+}
+async function refreshSocial(){
+  if(me.isAdmin||!me.uid||!window.caroAuth||typeof window.caroAuth.friendsList!=='function')return;
+  const list=await window.caroAuth.friendsList();
+  renderPeople('friendRequests',list.incoming,'incoming','Chưa có lời mời kết bạn.');
+  renderPeople('friendList',list.friends,'friend','Bạn chưa có bạn bè. Hãy tìm người chơi bên trên.');
+  renderPeople('friendOutgoing',list.outgoing,'outgoing','Chưa có lời mời nào đang chờ.');
+}
+async function searchFriends(){
+  if(!window.caroAuth||!me.uid){$('socialStatus').textContent='Hãy đăng nhập để tìm bạn bè.';return}
+  const query=$('friendSearchInput').value.trim();
+  if(query.length<2){$('socialStatus').textContent='Nhập ít nhất 2 ký tự để tìm người chơi.';$('friendSearchResults').innerHTML='';return}
+  if(socialBusy)return;
+  socialBusy=true;$('bFriendSearch').disabled=true;
+  try{
+    const result=await window.caroAuth.searchFriends({query});
+    renderPeople('friendSearchResults',result.results,'search','Không tìm thấy người chơi phù hợp.');
+    $('socialStatus').textContent='Tìm thấy '+result.results.length+' người chơi phù hợp.';
+  }catch(error){$('socialStatus').textContent=error.message||'Không tìm được người chơi.'}
+  finally{socialBusy=false;$('bFriendSearch').disabled=false}
+}
+async function performFriendAction(action,targetUid){
+  if(!targetUid||!window.caroAuth)return;
+  if(action==='remove'&&!window.confirm('Xóa người này khỏi danh sách bạn bè?'))return;
+  const buttons=$('socialSection').querySelectorAll('button');buttons.forEach(button=>button.disabled=true);
+  $('socialStatus').textContent='Đang cập nhật bạn bè…';
+  try{
+    if(action==='request')await window.caroAuth.requestFriend({targetUid});
+    else if(action==='accept')await window.caroAuth.respondFriend({targetUid,accept:true});
+    else if(action==='decline')await window.caroAuth.respondFriend({targetUid,accept:false});
+    else if(action==='remove')await window.caroAuth.removeFriend({targetUid});
+    await refreshSocial();
+    if($('friendSearchInput').value.trim().length>=2)await searchFriends();
+    $('socialStatus').textContent=action==='request'?'Đã gửi lời mời kết bạn.':'Danh sách bạn bè đã được cập nhật.';
+  }catch(error){$('socialStatus').textContent=error.message||'Không cập nhật được bạn bè.'}
+  finally{buttons.forEach(button=>button.disabled=false)}
+}
+function renderMatchChat(){
+  const panel=$('matchChatPanel'),button=$('chatUnread');
+  const online=!!(G&&G.mode==='online'&&G.roomStatus==='play'&&Array.isArray(G.players)&&G.players.length===2);
+  if(!online){panel.hidden=true;button.hidden=true;return}
+  button.hidden=chatUnread<=0;button.textContent=String(chatUnread>99?'99+':chatUnread);
+  const opponent=G.players[1-G.mine];
+  $('chatOpponentTitle').textContent='Chat · '+String(opponent&&opponent.name||'Đối thủ');
+  const messages=Array.isArray(G.chat)?G.chat:[];
+  const last=messages.length?messages[messages.length-1]:null;
+  const fingerprint=String(G.gid)+'|'+messages.length+'|'+String(last&&last.id||'');
+  if(fingerprint!==chatRenderFingerprint){
+    chatRenderFingerprint=fingerprint;
+    $('matchChatMessages').innerHTML=messages.length?messages.map(message=>{
+      const own=message.uid===me.uid,name=String(message.name||'Người chơi'),avatar=safeAvatar(message.avatar);
+      const time=Number(message.at)?new Date(Number(message.at)).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}):'';
+      const avatarHtml='<span class="avatar avatar-small">'+(avatar?'<img src="'+avatar+'" alt="">':esc(name.slice(0,1).toLocaleUpperCase('vi')||'?'))+'</span>';
+      return '<div class="chat-message '+(own?'mine':'')+'">'+avatarHtml+'<div class="chat-bubble"><span class="chat-author">'+esc(own?'Bạn':name)+'</span><div class="chat-text">'+esc(message.text||'')+'</div><span class="chat-time">'+esc(time)+'</span></div></div>';
+    }).join(''):'<div class="chat-empty">Chưa có tin nhắn. Hãy chào đối thủ nhé!</div>';
+  }
+  if(chatPanelOpen){$('matchChatMessages').scrollTop=$('matchChatMessages').scrollHeight;chatUnread=0;button.hidden=true}
+}
 function historyDate(value){
   const date=new Date(Number(value));
   return Number.isFinite(date.getTime())?date.toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'Không rõ thời gian';
@@ -1122,17 +1211,23 @@ async function openGame(gid){
   const ref=db.ref('games/'+gid),snap=await ref.once('value'),v=snap.val();
   if(!v||!Array.isArray(v.p))throw new Error('Không tìm thấy ván đấu.');
   const mine=v.p.findIndex(q=>q.uid===me.uid);if(mine<0)throw new Error('Ván đấu không thuộc tài khoản này.');
-  G={mode:'online',gid,ref,mine,board:new Map(),turn:Number(v.turn)||0,n:0,over:0,startedAt:Number(v.createdAt)||now(),turnStartedAt:now(),dl:v.dl||now()+TURN,names:v.p.map(q=>`${q.name} (${q.elo})`),players:v.p.map(q=>({uid:q.uid||'',name:q.name||'Người chơi',elo:Number(q.elo)||1000})),myElo:Number(v.p[mine].elo)||me.elo,oppElo:Number(v.p[1-mine]?.elo)||1000,moves:[],last:null,line:null,msg:'',winner:null,review:[],roomStatus:v.status,roomCode:/^[0-9]{4}$/.test(gid)?gid:null,drawOffer:v.drawOffer||null,drawResponse:v.drawResponse||null};
+  chatPanelOpen=false;chatUnread=0;chatRenderFingerprint='';
+  G={mode:'online',gid,ref,mine,board:new Map(),turn:Number(v.turn)||0,n:0,over:0,startedAt:Number(v.createdAt)||now(),turnStartedAt:now(),dl:v.dl||now()+TURN,names:v.p.map(q=>`${q.name} (${q.elo})`),players:v.p.map(q=>({uid:q.uid||'',name:q.name||'Người chơi',elo:Number(q.elo)||1000,avatar:safeAvatar(q.avatar)})),myElo:Number(v.p[mine].elo)||me.elo,oppElo:Number(v.p[1-mine]?.elo)||1000,moves:[],last:null,line:null,msg:'',winner:null,review:[],roomStatus:v.status,roomCode:/^[0-9]{4}$/.test(gid)?gid:null,drawOffer:v.drawOffer||null,drawResponse:v.drawResponse||null,chat:Array.isArray(v.chat)?v.chat:[]};
   await db.ref('invite/'+me.uid).remove().catch(()=>{});setActive(true);resetCamera();ui();draw();stat();
   ref.on('value',onGame,e=>handleBackendFailure(e,'đồng bộ ván đấu'));
 }
 function onGame(s){
   const v=s.val();if(!v||!G||G.gid!==s.key)return;
   const previousMoveCount=G.moves.length;
+  const priorChat=Array.isArray(G.chat)?G.chat:[];
+  const updatedChat=Array.isArray(v.chat)?v.chat:[];
+  const priorIds=new Set(priorChat.map(message=>message&&message.id).filter(Boolean));
+  const arrivingMessages=updatedChat.filter(message=>message&&message.uid!==me.uid&&!priorIds.has(message.id));
+  if(!chatPanelOpen)chatUnread=Math.min(99,chatUnread+arrivingMessages.length);
   const keys=Object.keys(v.moves||{}).sort((a,b)=>Number(a)-Number(b));
   const moves=keys.map(k=>v.moves[k]).filter(Boolean),board=new Map();moves.forEach((m,i)=>board.set(m.x+','+m.y,Number.isInteger(m.p)?m.p:i%2));
   const last=moves[moves.length-1];const newMine=Array.isArray(v.p)?v.p.findIndex(q=>q.uid===me.uid):G.mine;
-  Object.assign(G,{board,moves,n:moves.length,turn:Number(v.turn)||0,dl:Number(v.dl)||0,last:last?[last.x,last.y]:null,roomStatus:v.status,mine:newMine>=0?newMine:G.mine,names:Array.isArray(v.p)?v.p.map(q=>`${q.name} (${q.elo})`):G.names,players:Array.isArray(v.p)?v.p.map(q=>({uid:q.uid||'',name:q.name||'Người chơi',elo:Number(q.elo)||1000})):G.players,drawOffer:v.drawOffer||null,drawResponse:v.drawResponse||null});
+  Object.assign(G,{board,moves,n:moves.length,turn:Number(v.turn)||0,dl:Number(v.dl)||0,last:last?[last.x,last.y]:null,roomStatus:v.status,mine:newMine>=0?newMine:G.mine,names:Array.isArray(v.p)?v.p.map(q=>`${q.name} (${q.elo})`):G.names,players:Array.isArray(v.p)?v.p.map(q=>({uid:q.uid||'',name:q.name||'Người chơi',elo:Number(q.elo)||1000,avatar:safeAvatar(q.avatar)})):G.players,drawOffer:v.drawOffer||null,drawResponse:v.drawResponse||null,chat:updatedChat});
   if(moves.length>previousMoveCount)G.turnStartedAt=now();
   G.myElo=Number(v.p&&v.p[G.mine]&&v.p[G.mine].elo)||G.myElo||me.elo;
   G.oppElo=Number(v.p&&v.p[1-G.mine]&&v.p[1-G.mine].elo)||G.oppElo||1000;
