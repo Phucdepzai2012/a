@@ -300,6 +300,90 @@ aside>.note{background:#fff;border:1px solid var(--ln);border-radius:8px;padding
   #matchActions{padding:7px 8px}
 }
 
+
+/* Caro study guide and Bootstrap Icons book-half SVG button. */
+.study-launch{display:flex;align-items:center;gap:10px;text-align:left;padding:10px;margin-top:8px;border:1px solid #cbd8f4;background:linear-gradient(100deg,#f0f5ff,#fff);color:#1c3fb7;border-radius:9px}
+.study-book-icon{flex:none}
+.study-launch>span:nth-child(2){display:flex;flex:1;flex-direction:column;gap:2px;min-width:0}
+.study-launch strong{font-size:12px;line-height:1.25}
+.study-launch small{color:#647384;font-size:10px;font-weight:500;line-height:1.35}
+.study-launch-arrow{font-size:20px;line-height:1;color:#6e86c9}
+.study-float{position:fixed;z-index:32;top:12px;right:12px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;margin:0;padding:0;border:1px solid #cbd8f4;background:#fff;color:#1c3fb7;border-radius:12px;box-shadow:0 4px 16px #172b451f}
+.study-float[hidden]{display:none!important}
+.study-overlay{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:clamp(8px,2vw,22px);background:rgba(15,24,39,.58);backdrop-filter:blur(5px)}
+.study-overlay[hidden]{display:none!important}
+.study-card{display:flex;flex-direction:column;width:min(100%,920px);max-height:min(92dvh,940px);background:#f8fafc;border:1px solid #d9e1e8;border-radius:18px;overflow:hidden;box-shadow:0 24px 80px rgba(3,12,25,.36)}
+.study-head{display:flex;align-items:center;gap:13px;padding:17px 20px;background:#fff;border-bottom:1px solid #e1e7ed}
+.study-head-icon{display:flex;align-items:center;justify-content:center;flex:none;width:48px;height:48px;border-radius:14px;background:#e9efff;color:#1c3fb7}
+.study-head-title{flex:1;min-width:0}
+.study-head-title h2{margin:0;font-size:20px;letter-spacing:-.035em;color:#1b2430}
+.study-head-title p{margin:4px 0 0;font-size:12px;color:#647384}
+.study-close{width:38px;height:38px;flex:none;margin:0;padding:0;border:0;background:#f0f3f6;color:#465363;border-radius:10px;font-size:26px;line-height:1}
+.study-tabs{display:flex;gap:5px;padding:8px 14px;background:#fff;border-bottom:1px solid #e1e7ed;overflow-x:auto;scrollbar-width:thin}
+.study-tabs button{flex:1 0 auto;width:auto;margin:0;padding:10px 12px;border:1px solid transparent;border-radius:9px;background:transparent;color:#647384;font-size:12px;font-weight:700;white-space:nowrap}
+.study-tabs button.active,.study-tabs button[aria-selected=true]{background:#e9efff;color:#1c3fb7;border-color:#cddafb}
+.study-content{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:20px}
+.study-panel[hidden]{display:none!important}
+.study-intro{margin-bottom:16px}
+.study-kicker{display:block;margin-bottom:5px;color:#536fb7;font-size:10px;letter-spacing:.1em;font-weight:800}
+.study-intro h3{margin:0;font-size:clamp(21px,3vw,28px);line-height:1.2;letter-spacing:-.04em;color:#1b2430}
+.study-intro p{max-width:700px;margin:8px 0 0;font-size:13px;line-height:1.7;color:#647384}
+.study-feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.study-cardlet{padding:14px;border:1px solid #e0e6ed;background:#fff;border-radius:12px}
+.study-cardlet-head{display:flex;align-items:center;gap:9px}
+.study-number{display:inline-flex;align-items:center;justify-content:center;flex:none;width:27px;height:27px;border-radius:8px;background:#e9efff;color:#1c3fb7;font-size:11px;font-weight:800}
+.study-cardlet h4,.study-example h4{margin:0;font-size:13px;line-height:1.4;color:#202b36}
+.study-cardlet p,.study-example p{margin:8px 0 0;font-size:12px;line-height:1.65;color:#647384}
+.study-example{display:grid;grid-template-columns:minmax(0,1fr) 160px;align-items:center;gap:18px;margin-top:12px;padding:15px;border:1px solid #dce4ee;border-radius:13px;background:linear-gradient(120deg,#fff,#f0f5ff)}
+.study-mini-board{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));width:160px;max-width:100%;aspect-ratio:1;border-top:1px solid #aebfd2;border-left:1px solid #aebfd2;background:#fbfdff;overflow:hidden;border-radius:3px}
+.study-mini-cell{display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;border-right:1px solid #c6d3df;border-bottom:1px solid #c6d3df;color:transparent;font-size:clamp(10px,2vw,16px);font-weight:800;line-height:1}
+.study-mini-cell.stone-x{color:#1c3fb7}
+.study-mini-cell.stone-o{color:#d8322b}
+.study-mini-cell.win-spot{background:#fff0bd;box-shadow:inset 0 0 0 2px #e2a928;color:#7c5b11}
+.study-check{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:12px;padding:13px;border-radius:11px;background:#edf2f7;color:#4f5e6d;font-size:11px;line-height:1.55}
+.study-check strong{grid-column:1/-1;color:#202b36;font-size:12px}
+.study-callout{margin-top:12px;padding:13px 14px;border-left:3px solid #1c3fb7;border-radius:7px;background:#eaf0ff;font-size:12px;line-height:1.7;color:#354663}
+.study-tier-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.study-tier{padding:13px 14px;border:1px solid #e0e6ed;border-radius:12px;background:#fff}
+.study-tier-head{display:flex;align-items:center;gap:9px}
+.study-tier-head strong{display:flex;align-items:center;justify-content:center;width:38px;height:38px;flex:none;border-radius:10px;font-size:20px;line-height:1;font-weight:900}
+.study-tier-head span{font-size:12px;font-weight:800;color:#445263}
+.study-tier ul{margin:9px 0 0;padding-left:18px;color:#627181;font-size:11px;line-height:1.7}
+.tier-s .study-tier-head strong{background:#d8f7e5;color:#087344}
+.tier-a .study-tier-head strong{background:#dce8ff;color:#1c3fb7}
+.tier-b .study-tier-head strong{background:#e8e6ff;color:#5141a5}
+.tier-c .study-tier-head strong{background:#e8edf1;color:#536171}
+.tier-e .study-tier-head strong{background:#fff0c7;color:#876000}
+.tier-f .study-tier-head strong{background:#ffd9d9;color:#a51d1d}
+.study-tier-note{font-size:11px;line-height:1.7;color:#647384;margin:12px 0 0}
+.study-footer{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 18px;border-top:1px solid #e1e7ed;background:#fff}
+.study-footer span{font-size:10px;color:#647384;line-height:1.5}
+.study-footer button{flex:none;width:auto;margin:0;padding:8px 15px;border:1px solid #1c3fb7;background:#1c3fb7;color:#fff;border-radius:8px;font-size:12px}
+body.study-modal-open{overflow:hidden}
+@media(max-width:620px){
+  .study-card{max-height:96dvh;border-radius:14px}
+  .study-head{padding:12px 13px;gap:9px}
+  .study-head-icon{width:40px;height:40px;border-radius:11px}
+  .study-head-title h2{font-size:17px}
+  .study-head-title p{font-size:10px;line-height:1.5}
+  .study-close{width:32px;height:32px;font-size:22px}
+  .study-tabs{padding:7px 8px;gap:3px}
+  .study-tabs button{padding:8px 10px;font-size:11px}
+  .study-content{padding:13px}
+  .study-feature-grid{grid-template-columns:1fr;gap:8px}
+  .study-cardlet{padding:12px}
+  .study-cardlet p{margin-top:6px}
+  .study-example{grid-template-columns:minmax(0,1fr) 112px;gap:10px;padding:11px}
+  .study-mini-board{width:112px}
+  .study-check{grid-template-columns:1fr}
+  .study-check strong{grid-column:auto}
+  .study-tier-grid{grid-template-columns:1fr;gap:8px}
+  .study-footer{padding:9px 12px}
+  .study-footer span{font-size:9px}
+  .study-footer button{padding:8px 11px}
+}
+@media(prefers-reduced-motion:reduce){.study-overlay{backdrop-filter:none}}
+
 </style>
 </head>
 <body>
@@ -342,6 +426,11 @@ aside>.note{background:#fff;border:1px solid var(--ln);border-radius:8px;padding
         <button id="bStartBot" class="pri">Bắt đầu đấu máy</button>
       </div>
       <button id="bCen" type="button">Về nước vừa đánh</button>
+      <button id="bOpenStudy" class="study-launch" type="button" aria-haspopup="dialog" aria-controls="studyModal">
+        <svg class="study-book-icon" xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8.5 2.687c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.936 8.985.81 8 1.783"/></svg>
+        <span><strong>Sổ tay Caro</strong><small>Khai cuộc · Trung cuộc · Tàn cuộc</small></span>
+        <span class="study-launch-arrow" aria-hidden="true">↗</span>
+      </button>
       <button id="bToggleTools" class="tools-toggle" type="button" aria-expanded="false" aria-controls="extraControls">＋ Hiện thêm công cụ</button>
       <div id="extraControls" hidden>
         <div id="network" class="note">Đang kết nối Render để ghép trận người thật…</div>
@@ -425,6 +514,139 @@ aside>.note{background:#fff;border:1px solid var(--ln);border-radius:8px;padding
     <div class="note">Bảng xếp hạng lấy từ Render khi đã kết nối. Dữ liệu mẫu trên máy chủ sẽ bị xóa khi máy chủ khởi động lại.</div>
   </aside>
 </main>
+<button id="bOpenStudyFloating" class="study-float" type="button" aria-label="Mở sổ tay học Caro" title="Sổ tay Caro" hidden>
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8.5 2.687c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.936 8.985.81 8 1.783"/></svg>
+</button>
+<div id="studyModal" class="study-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="studyTitle">
+  <div class="study-card">
+    <header class="study-head">
+      <div class="study-head-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8.5 2.687c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105z"/></svg>
+      </div>
+      <div class="study-head-title">
+        <h2 id="studyTitle">Sổ tay Caro</h2>
+        <p>Học cách nhìn thế cờ, tạo đòn kép và phòng thủ đúng lúc.</p>
+      </div>
+      <button id="bCloseStudy" class="study-close" type="button" aria-label="Đóng sổ tay">×</button>
+    </header>
+    <nav class="study-tabs" role="tablist" aria-label="Các phần học Caro">
+      <button type="button" role="tab" data-study-tab="opening" aria-selected="true" class="active">Khai cuộc</button>
+      <button type="button" role="tab" data-study-tab="middlegame" aria-selected="false">Trung cuộc</button>
+      <button type="button" role="tab" data-study-tab="endgame" aria-selected="false">Tàn cuộc</button>
+      <button type="button" role="tab" data-study-tab="tiers" aria-selected="false">Tier list</button>
+    </nav>
+    <div class="study-content">
+      <section class="study-panel" data-study-panel="opening" role="tabpanel">
+        <div class="study-intro">
+          <span class="study-kicker">01 · BUILD A GOOD POSITION</span>
+          <h3>Khai cuộc — dựng nền thế cờ</h3>
+          <p>Mục tiêu không phải đặt thật nhiều quân, mà tạo một cụm quân liên kết, có thể phát triển theo nhiều hướng.</p>
+        </div>
+        <div class="study-feature-grid">
+          <article class="study-cardlet">
+            <div class="study-cardlet-head"><span class="study-number">1</span><h4>Chiếm vùng trung tâm</h4></div>
+            <p>Ưu tiên khu vực giữa bàn để có nhiều hướng nối quân. Nếu đối thủ mở ở trung tâm, hãy phát triển gần cụm quân đó thay vì chạy ra góc xa.</p>
+          </article>
+          <article class="study-cardlet">
+            <div class="study-cardlet-head"><span class="study-number">2</span><h4>Quân phải hỗ trợ nhau</h4></div>
+            <p>Đặt quân sao cho nước tiếp theo có thể nối thành hàng ngang, dọc hoặc chéo. Tránh để một quân đứng lẻ loi không tạo được đe dọa.</p>
+          </article>
+          <article class="study-cardlet">
+            <div class="study-cardlet-head"><span class="study-number">3</span><h4>Giữ nhiều lựa chọn</h4></div>
+            <p>Một cấu trúc có thể phát triển theo hai hướng thường linh hoạt hơn một hàng chỉ có một đầu trống. Đừng vội khóa kín hàng của chính mình.</p>
+          </article>
+          <article class="study-cardlet">
+            <div class="study-cardlet-head"><span class="study-number">4</span><h4>Đừng quên phòng thủ</h4></div>
+            <p>Mỗi lượt hãy kiểm tra cả quân mình lẫn quân đối thủ. Nếu bên kia sắp có nước thắng, xử lý nguy cơ đó trước khi nghĩ đến kế hoạch dài hạn.</p>
+          </article>
+        </div>
+        <div class="study-example">
+          <div><span class="study-kicker">THẾ CỜ MINH HỌA</span><h4>Tạo cụm quân gần nhau</h4><p>X có thể phát triển thành nhiều hướng; O là quân đối thủ. Đây là ví dụ về cấu trúc, không phải khai cuộc bắt buộc.</p></div>
+          <div class="study-mini-board" data-study-board="opening" aria-label="Ví dụ cụm quân ở gần trung tâm"></div>
+        </div>
+        <div class="study-check"><strong>Checklist mỗi lượt</strong><span>① Có nước thắng ngay không?</span><span>② Đối thủ có nước thắng ngay không?</span><span>③ Nước nào vừa tạo kết nối vừa giữ được hai hướng phát triển?</span></div>
+      </section>
+      <section class="study-panel" data-study-panel="middlegame" role="tabpanel" hidden>
+        <div class="study-intro">
+          <span class="study-kicker">02 · CREATE THREATS</span>
+          <h3>Trung cuộc — ép đối thủ trả lời</h3>
+          <p>Khi bàn cờ đã đông quân, lợi thế thuộc về người tạo ra các đe dọa liên tiếp mà đối thủ khó hóa giải cùng lúc.</p>
+        </div>
+        <div class="study-feature-grid">
+          <article class="study-cardlet">
+            <div class="study-cardlet-head"><span class="study-number">A</span><h4>Ba mở</h4></div>
+            <p>Ba quân cùng hàng còn hai đầu trống có thể phát triển thành bốn mở. Hãy tính trước xem đối thủ có thể chặn hay tạo đòn nguy hiểm hơn không.</p>
+          </article>
+          <article class="study-cardlet">
+            <div class="study-cardlet-head"><span class="study-number">B</span><h4>Bốn mở</h4></div>
+            <p>Bốn quân liên tiếp có hai đầu nối thành năm thường tạo hai điểm thắng. Vì vậy, đừng để đối thủ dựng được thế này nếu không có phản đòn thắng ngay.</p>
+          </article>
+          <article class="study-cardlet">
+            <div class="study-cardlet-head"><span class="study-number">C</span><h4>Đòn kép</h4></div>
+            <p>Tạo hai mối đe dọa thắng ở hai đường khác nhau. Nếu đối thủ chỉ có thể chặn một điểm, đòn còn lại có thể quyết định ván đấu.</p>
+          </article>
+          <article class="study-cardlet">
+            <div class="study-cardlet-head"><span class="study-number">D</span><h4>Phá thế đối phương</h4></div>
+            <p>Chặn ô nối quân quan trọng hoặc buộc đối thủ phải tự khóa một đầu hàng. Đừng chặn theo cảm tính: xác định chính xác ô nào làm hỏng kế hoạch của họ.</p>
+          </article>
+        </div>
+        <div class="study-example">
+          <div><span class="study-kicker">THẾ CỜ MINH HỌA</span><h4>Giao điểm tạo nhiều hướng</h4><p>Hình dấu cộng cho thấy X có thể mở rộng theo hàng ngang và cột dọc. Luôn kiểm tra xem nước tạo thế có bị chặn ngay không.</p></div>
+          <div class="study-mini-board" data-study-board="middlegame" aria-label="Ví dụ cấu trúc nhiều hướng"></div>
+        </div>
+        <div class="study-callout"><strong>Quy tắc vàng:</strong> ưu tiên nước tạo đe dọa bắt buộc đối thủ phản ứng. Đừng mở rộng một hàng yếu nếu đối thủ có đòn trực tiếp.</div>
+      </section>
+      <section class="study-panel" data-study-panel="endgame" role="tabpanel" hidden>
+        <div class="study-intro">
+          <span class="study-kicker">03 · CALCULATE PRECISELY</span>
+          <h3>Tàn cuộc — một ô cũng quyết định</h3>
+          <p>Khi đã có các hàng ba hoặc bốn quân, hãy tính những điểm thắng cụ thể trước khi đặt quân.</p>
+        </div>
+        <div class="study-feature-grid">
+          <article class="study-cardlet">
+            <div class="study-cardlet-head"><span class="study-number">1</span><h4>Thắng ngay nếu có thể</h4></div>
+            <p>Nếu một nước giúp nối đủ năm quân theo luật ván đấu, hãy chọn nước đó. Không bỏ qua cơ hội thắng để tạo một thế đẹp hơn.</p>
+          </article>
+          <article class="study-cardlet">
+            <div class="study-cardlet-head"><span class="study-number">2</span><h4>Chặn nước thắng tức thì</h4></div>
+            <p>Tìm mọi ô đối thủ có thể nối thành năm ở lượt kế tiếp. Nếu có hai điểm thắng cùng lúc, một nước chặn thường không đủ — hãy ngăn đòn kép từ sớm hoặc tìm nước thắng phản công ngay.</p>
+          </article>
+          <article class="study-cardlet">
+            <div class="study-cardlet-head"><span class="study-number">3</span><h4>Đếm điểm nối thành năm</h4></div>
+            <p>Với mỗi hàng bốn quân, kiểm tra hai đầu và các ô trống có thể hoàn thiện hàng. Đừng chỉ nhìn theo chiều ngang; cần rà cả dọc và hai đường chéo.</p>
+          </article>
+          <article class="study-cardlet">
+            <div class="study-cardlet-head"><span class="study-number">4</span><h4>Tính trước một đến hai lượt</h4></div>
+            <p>Sau khi chọn ô, tự hỏi đối thủ sẽ chặn đâu và nước kế tiếp của mình có còn đe dọa thắng không. Nếu kế hoạch bị chặn hoàn toàn, cân nhắc phương án khác.</p>
+          </article>
+        </div>
+        <div class="study-example">
+          <div><span class="study-kicker">Ô ƯU TIÊN</span><h4>Hoàn thành hàng bốn</h4><p>Ô màu vàng là điểm X có thể nối thành năm. Trong ván thật, hãy kiểm tra các hướng còn lại trước khi quyết định.</p></div>
+          <div class="study-mini-board" data-study-board="endgame" aria-label="Ví dụ điểm thắng kế tiếp"></div>
+        </div>
+        <div class="study-callout"><strong>Thứ tự tính toán:</strong> nước thắng của mình → chặn nước thắng đối thủ → tạo đòn kép → phá đòn kép → phát triển thế cờ.</div>
+      </section>
+      <section class="study-panel" data-study-panel="tiers" role="tabpanel" hidden>
+        <div class="study-intro">
+          <span class="study-kicker">04 · QUICK REFERENCE</span>
+          <h3>Tier list chiến thuật Caro</h3>
+          <p>Xếp hạng độ ưu tiên chiến thuật trong tình huống thông thường. Tình thế thực tế vẫn quan trọng hơn điểm tier.</p>
+        </div>
+        <div class="study-tier-grid">
+          <article class="study-tier tier-s"><div class="study-tier-head"><strong>S</strong><span>Ưu tiên cao nhất</span></div><ul><li>Đi nước thắng ngay.</li><li>Chặn nước thắng ngay của đối thủ.</li><li>Tạo đòn kép khiến đối thủ không thể chặn hết.</li><li>Xử lý nguy cơ bốn mở trước khi quá muộn.</li></ul></article>
+          <article class="study-tier tier-a"><div class="study-tier-head"><strong>A</strong><span>Rất mạnh</span></div><ul><li>Tạo bốn mở hoặc chuỗi đe dọa liên tiếp.</li><li>Tạo hai hướng phát triển thành ba mở.</li><li>Chặn điểm nối quan trọng làm hỏng đòn kép của đối thủ.</li></ul></article>
+          <article class="study-tier tier-b"><div class="study-tier-head"><strong>B</strong><span>Tốt</span></div><ul><li>Tạo ba mở có tiềm năng lên bốn.</li><li>Nối các quân đang hỗ trợ nhau.</li><li>Buộc đối thủ phản ứng nhưng vẫn giữ được phương án khác.</li></ul></article>
+          <article class="study-tier tier-c"><div class="study-tier-head"><strong>C</strong><span>Ổn định</span></div><ul><li>Cải thiện vị trí và giữ vùng trung tâm.</li><li>Phòng thủ sớm khi chưa có đe dọa tức thì.</li><li>Tạo cấu trúc linh hoạt nhưng chưa ép được đối thủ.</li></ul></article>
+          <article class="study-tier tier-e"><div class="study-tier-head"><strong>E</strong><span>Yếu</span></div><ul><li>Đặt quân xa khỏi cụm đấu mà không có mục tiêu rõ.</li><li>Tạo hàng chỉ có một hướng phát triển, dễ bị khóa.</li><li>Chạy theo một hàng yếu trong khi có phương án tốt hơn.</li></ul></article>
+          <article class="study-tier tier-f"><div class="study-tier-head"><strong>F</strong><span>Sai nguy hiểm</span></div><ul><li>Bỏ lỡ nước thắng ngay.</li><li>Không chặn đối thủ có thể nối đủ năm ở lượt kế.</li><li>Bỏ qua đòn kép có thể kết thúc ván đấu.</li></ul></article>
+        </div>
+        <p class="study-tier-note">Tier này là bảng ghi nhớ để học, không phải đánh giá cố định cho mọi thế cờ. Một nước phòng thủ C có thể tốt hơn nước tấn công A nếu đang bị đe dọa thua ngay.</p>
+      </section>
+    </div>
+    <footer class="study-footer"><span>Ghi nhớ: luôn kiểm tra cả 4 hướng — ngang, dọc, chéo xuôi và chéo ngược.</span><button id="bCloseStudyBottom" type="button">Đã hiểu</button></footer>
+  </div>
+</div>
+
 <div id="matchActions" hidden>
   <div id="turnStatus" role="status" aria-live="polite">
     <span id="turnStatusLabel">Đang xác định lượt đi…</span>
@@ -791,6 +1013,7 @@ function ui(){
   const onlinePlaying=!!(G&&G.mode==='online'&&!G.over&&G.roomStatus==='play'&&Array.isArray(G.players)&&G.players.length===2);
   document.body.classList.toggle('online-match-active',onlinePlaying);
   $('matchActions').hidden=!onlinePlaying;
+  $('bOpenStudyFloating').hidden=!onlinePlaying;
   $('bRes').hidden=!onlinePlaying;
   $('bOfferDraw').hidden=!onlinePlaying;
   $('bOpenChat').hidden=!onlinePlaying;
@@ -1899,6 +2122,86 @@ setInterval(()=>{
     }
   };
   setTimeout(step,reduced?60:220);
+})();
+</script>
+
+
+<script>
+/* Interactive Caro study guide */
+(function(){
+  const modal=document.getElementById('studyModal');
+  const openButtons=[document.getElementById('bOpenStudy'),document.getElementById('bOpenStudyFloating')].filter(Boolean);
+  const closeButtons=[document.getElementById('bCloseStudy'),document.getElementById('bCloseStudyBottom')].filter(Boolean);
+  if(!modal||!openButtons.length)return;
+  let previousFocus=null;
+  const boards={
+    opening:{label:'Cụm quân đầu ván',marks:[{x:3,y:3,p:'X'},{x:4,y:3,p:'X'},{x:3,y:4,p:'O'}]},
+    middlegame:{label:'Cấu trúc nhiều hướng',marks:[{x:2,y:3,p:'X'},{x:3,y:3,p:'X'},{x:4,y:3,p:'X'},{x:3,y:2,p:'X'},{x:3,y:4,p:'X'},{x:1,y:3,p:'O'},{x:3,y:1,p:'O'}]},
+    endgame:{label:'Điểm thắng kế tiếp',marks:[{x:1,y:3,p:'X'},{x:2,y:3,p:'X'},{x:3,y:3,p:'X'},{x:4,y:3,p:'X'},{x:5,y:3,p:'W'},{x:0,y:2,p:'O'}]}
+  };
+  document.querySelectorAll('[data-study-board]').forEach(board=>{
+    const kind=board.getAttribute('data-study-board');
+    const setup=boards[kind];if(!setup)return;
+    board.setAttribute('role','img');
+    board.setAttribute('aria-label',setup.label);
+    const map=new Map(setup.marks.map(m=>[m.x+','+m.y,m.p]));
+    for(let y=0;y<7;y++)for(let x=0;x<7;x++){
+      const cell=document.createElement('span');cell.className='study-mini-cell';
+      const mark=map.get(x+','+y);
+      if(mark==='X'||mark==='O'){cell.classList.add(mark==='X'?'stone-x':'stone-o');cell.textContent=mark}
+      else if(mark==='W'){cell.classList.add('win-spot');cell.textContent='+'}
+      else cell.textContent='·';
+      board.appendChild(cell);
+    }
+  });
+  function selectTab(name,focusTab){
+    const tabs=[...modal.querySelectorAll('[data-study-tab]')];
+    tabs.forEach(tab=>{
+      const active=tab.dataset.studyTab===name;
+      tab.classList.toggle('active',active);
+      tab.setAttribute('aria-selected',active?'true':'false');
+      tab.tabIndex=active?0:-1;
+      const panel=modal.querySelector('[data-study-panel="'+name+'"]');
+      if(panel)panel.hidden=!active;
+      if(active&&focusTab)tab.focus();
+    });
+    modal.querySelectorAll('[data-study-panel]').forEach(panel=>{panel.hidden=panel.dataset.studyPanel!==name});
+  }
+  function open(){
+    previousFocus=document.activeElement;
+    modal.hidden=false;
+    document.body.classList.add('study-modal-open');
+    selectTab('opening',false);
+    const close=modal.querySelector('#bCloseStudy');if(close)close.focus();
+  }
+  function close(){
+    if(modal.hidden)return;
+    modal.hidden=true;
+    document.body.classList.remove('study-modal-open');
+    if(previousFocus&&typeof previousFocus.focus==='function')previousFocus.focus();
+  }
+  openButtons.forEach(button=>button.addEventListener('click',open));
+  closeButtons.forEach(button=>button.addEventListener('click',close));
+  modal.querySelectorAll('[data-study-tab]').forEach(tab=>{
+    tab.addEventListener('click',()=>selectTab(tab.dataset.studyTab,false));
+    tab.addEventListener('keydown',event=>{
+      const tabs=[...modal.querySelectorAll('[data-study-tab]')];
+      const index=tabs.indexOf(tab);
+      let next=index;
+      if(event.key==='ArrowRight')next=(index+1)%tabs.length;
+      else if(event.key==='ArrowLeft')next=(index+tabs.length-1)%tabs.length;
+      else if(event.key==='Home')next=0;
+      else if(event.key==='End')next=tabs.length-1;
+      else return;
+      event.preventDefault();
+      selectTab(tabs[next].dataset.studyTab,true);
+    });
+  });
+  modal.addEventListener('click',event=>{if(event.target===modal)close()});
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape'&&!modal.hidden)close();
+  });
+  const originalUi=window.ui;
 })();
 </script>
 
