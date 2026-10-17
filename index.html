@@ -356,6 +356,58 @@ aside>.note{background:#fff;border:1px solid var(--ln);border-radius:8px;padding
 .tier-e .study-tier-head strong{background:#fff0c7;color:#876000}
 .tier-f .study-tier-head strong{background:#ffd9d9;color:#a51d1d}
 .study-tier-note{font-size:11px;line-height:1.7;color:#647384;margin:12px 0 0}
+/* Image-based, draggable Caro tier maker */
+.tier-image-workshop{display:grid;gap:12px}
+.tier-image-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid #e0e6ed;border-radius:10px;background:#f7f9fc}
+.tier-image-toolbar span{font-size:11px;color:#596a7c;line-height:1.5}
+.tier-image-toolbar button{flex:none;width:auto;margin:0;padding:8px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#26364a;font-size:11px;font-weight:800;cursor:pointer}
+.tier-image-lanes{display:grid;gap:7px}
+.tier-image-lane{display:grid;grid-template-columns:112px minmax(0,1fr);min-height:106px;overflow:hidden;border:1px solid #dce3ec;border-radius:11px;background:#fff}
+.tier-image-label{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:9px 5px;text-align:center;border-right:1px solid rgba(30,41,59,.09)}
+.tier-image-label strong{display:flex;align-items:center;justify-content:center;width:37px;height:37px;border-radius:9px;background:rgba(255,255,255,.8);color:#1c2938;font-size:21px;font-weight:950;box-shadow:inset 0 0 0 1px rgba(30,41,59,.08)}
+.tier-image-label span{font-size:10px;font-weight:800;color:#354257}
+.tier-image-label small{font-size:9px;color:#5f6f82}
+.tier-lane-s .tier-image-label{background:#b8edc9}
+.tier-lane-a .tier-image-label{background:#c8dbff}
+.tier-lane-b .tier-image-label{background:#d8d2ff}
+.tier-lane-c .tier-image-label{background:#dfe6ec}
+.tier-lane-e .tier-image-label{background:#ffe4a6}
+.tier-lane-f .tier-image-label{background:#ffc8c8}
+.tier-image-drop{display:flex;align-content:flex-start;align-items:flex-start;flex-wrap:wrap;gap:8px;min-width:0;min-height:104px;padding:8px;background:#fbfcfe;transition:background .15s,box-shadow .15s}
+.tier-image-drop:empty:after{content:'Thả ảnh vào đây';align-self:center;margin:auto;color:#9aa7b6;font-size:10px;pointer-events:none}
+.tier-image-drop.is-drop-target,.tier-image-pool.is-drop-target{background:#eaf1ff;box-shadow:inset 0 0 0 2px #6c8ff0}
+.tier-image-bank-wrap{padding:11px;border:1px solid #dce3ec;border-radius:12px;background:#f7f9fc}
+.tier-image-bank-head{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-bottom:10px;color:#253347}
+.tier-image-bank-head strong{font-size:12px}
+.tier-image-bank-head span{font-size:10px;color:#647384}
+.tier-image-pool{display:grid;grid-template-columns:repeat(auto-fill,minmax(94px,1fr));align-items:start;gap:8px;min-height:116px;padding:8px;border:1px dashed #c7d1df;border-radius:10px;background:#fff}
+.tier-piece{display:flex;flex-direction:column;align-items:stretch;gap:5px;width:91px;min-width:0;margin:0;padding:5px;border:1px solid #d8e0ea;border-radius:8px;background:#fff;color:#26364a;text-align:center;cursor:grab;user-select:none;touch-action:manipulation;transition:border-color .12s,box-shadow .12s,transform .12s}
+.tier-piece:hover{border-color:#8aa8ee;box-shadow:0 3px 10px rgba(31,54,92,.12);transform:translateY(-1px)}
+.tier-piece:active{cursor:grabbing}
+.tier-piece.is-selected{border-color:#2d5ed5;box-shadow:0 0 0 3px rgba(45,94,213,.2)}
+.tier-piece img{display:block;width:100%;aspect-ratio:1;object-fit:cover;border-radius:5px;background:#f8f2df}
+.tier-piece span{display:-webkit-box;overflow:hidden;min-height:25px;font-size:9px;font-weight:800;line-height:1.35;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.tier-piece small{display:block;overflow:hidden;color:#768497;font-size:8px;line-height:1.2;white-space:nowrap;text-overflow:ellipsis}
+.tier-image-drop .tier-piece{width:82px;flex:0 0 82px}
+.tier-image-drop .tier-piece img{width:100%;aspect-ratio:1}
+.tier-image-drop .tier-piece span{font-size:8px;min-height:21px}
+.tier-image-drop .tier-piece small{display:none}
+@media(max-width:620px){
+  .tier-image-toolbar{align-items:flex-start}
+  .tier-image-toolbar span{max-width:72%}
+  .tier-image-lane{grid-template-columns:63px minmax(0,1fr);min-height:82px}
+  .tier-image-label{padding:6px 3px;gap:3px}
+  .tier-image-label strong{width:29px;height:29px;font-size:17px;border-radius:7px}
+  .tier-image-label span{font-size:9px}
+  .tier-image-label small{font-size:8px}
+  .tier-image-drop{min-height:80px;gap:5px;padding:5px}
+  .tier-image-drop .tier-piece{width:65px;flex:0 0 65px;padding:4px;gap:3px}
+  .tier-image-drop .tier-piece span{min-height:21px;font-size:7px}
+  .tier-image-pool{grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:6px;padding:6px}
+  .tier-piece{width:100%;padding:4px}
+  .tier-piece span{font-size:8px}
+}
+
 .study-footer{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 18px;border-top:1px solid #e1e7ed;background:#fff}
 .study-footer span{font-size:10px;color:#647384;line-height:1.5}
 .study-footer button{flex:none;width:auto;margin:0;padding:8px 15px;border:1px solid #1c3fb7;background:#1c3fb7;color:#fff;border-radius:8px;font-size:12px}
@@ -764,19 +816,29 @@ body.study-modal-open{overflow:hidden}
 </section>
       <section class="study-panel" data-study-panel="tiers" role="tabpanel" hidden>
         <div class="study-intro">
-          <span class="study-kicker">05 · QUICK REFERENCE</span>
+          <span class="study-kicker">05 · IMAGE TIER MAKER</span>
           <h3>Tier list chiến thuật Caro</h3>
-          <p>Xếp hạng độ ưu tiên chiến thuật trong tình huống thông thường. Tình thế thực tế vẫn quan trọng hơn điểm tier.</p>
+          <p>Kéo ảnh sơ đồ thế cờ vào bậc bạn đánh giá. Trên điện thoại, chạm ảnh rồi chạm vùng của bậc muốn xếp. Thứ tự do bạn tự quyết định.</p>
         </div>
-        <div class="study-tier-grid">
-          <article class="study-tier tier-s"><div class="study-tier-head"><strong>S</strong><span>Ưu tiên cao nhất</span></div><ul><li>Đi nước thắng ngay.</li><li>Chặn nước thắng ngay của đối thủ.</li><li>Tạo đòn kép khiến đối thủ không thể chặn hết.</li><li>Xử lý nguy cơ bốn mở trước khi quá muộn.</li></ul></article>
-          <article class="study-tier tier-a"><div class="study-tier-head"><strong>A</strong><span>Rất mạnh</span></div><ul><li>Tạo bốn mở hoặc chuỗi đe dọa liên tiếp.</li><li>Tạo hai hướng phát triển thành ba mở.</li><li>Chặn điểm nối quan trọng làm hỏng đòn kép của đối thủ.</li></ul></article>
-          <article class="study-tier tier-b"><div class="study-tier-head"><strong>B</strong><span>Tốt</span></div><ul><li>Tạo ba mở có tiềm năng lên bốn.</li><li>Nối các quân đang hỗ trợ nhau.</li><li>Buộc đối thủ phản ứng nhưng vẫn giữ được phương án khác.</li></ul></article>
-          <article class="study-tier tier-c"><div class="study-tier-head"><strong>C</strong><span>Ổn định</span></div><ul><li>Cải thiện vị trí và giữ vùng trung tâm.</li><li>Phòng thủ sớm khi chưa có đe dọa tức thì.</li><li>Tạo cấu trúc linh hoạt nhưng chưa ép được đối thủ.</li></ul></article>
-          <article class="study-tier tier-e"><div class="study-tier-head"><strong>E</strong><span>Yếu</span></div><ul><li>Đặt quân xa khỏi cụm đấu mà không có mục tiêu rõ.</li><li>Tạo hàng chỉ có một hướng phát triển, dễ bị khóa.</li><li>Chạy theo một hàng yếu trong khi có phương án tốt hơn.</li></ul></article>
-          <article class="study-tier tier-f"><div class="study-tier-head"><strong>F</strong><span>Sai nguy hiểm</span></div><ul><li>Bỏ lỡ nước thắng ngay.</li><li>Không chặn đối thủ có thể nối đủ năm ở lượt kế.</li><li>Bỏ qua đòn kép có thể kết thúc ván đấu.</li></ul></article>
+        <div id="tierImageWorkshop" class="tier-image-workshop">
+          <div class="tier-image-toolbar">
+            <span id="tierImageStatus" role="status" aria-live="polite">42 ảnh thế cờ · Bố cục tự lưu trên trình duyệt</span>
+            <button id="tierImageReset" type="button">Đặt lại</button>
+          </div>
+          <div class="tier-image-lanes">
+            <section class="tier-image-lane tier-lane-s"><div class="tier-image-label"><strong>S</strong><span>Xuất sắc</span><small data-tier-count="S">0 ảnh</small></div><div class="tier-image-drop" data-tier-slot="S" aria-label="Thả ảnh vào bậc S"></div></section>
+            <section class="tier-image-lane tier-lane-a"><div class="tier-image-label"><strong>A</strong><span>Rất mạnh</span><small data-tier-count="A">0 ảnh</small></div><div class="tier-image-drop" data-tier-slot="A" aria-label="Thả ảnh vào bậc A"></div></section>
+            <section class="tier-image-lane tier-lane-b"><div class="tier-image-label"><strong>B</strong><span>Tốt</span><small data-tier-count="B">0 ảnh</small></div><div class="tier-image-drop" data-tier-slot="B" aria-label="Thả ảnh vào bậc B"></div></section>
+            <section class="tier-image-lane tier-lane-c"><div class="tier-image-label"><strong>C</strong><span>Trung bình</span><small data-tier-count="C">0 ảnh</small></div><div class="tier-image-drop" data-tier-slot="C" aria-label="Thả ảnh vào bậc C"></div></section>
+            <section class="tier-image-lane tier-lane-e"><div class="tier-image-label"><strong>E</strong><span>Yếu</span><small data-tier-count="E">0 ảnh</small></div><div class="tier-image-drop" data-tier-slot="E" aria-label="Thả ảnh vào bậc E"></div></section>
+            <section class="tier-image-lane tier-lane-f"><div class="tier-image-label"><strong>F</strong><span>Không hiệu quả</span><small data-tier-count="F">0 ảnh</small></div><div class="tier-image-drop" data-tier-slot="F" aria-label="Thả ảnh vào bậc F"></div></section>
+          </div>
+          <div class="tier-image-bank-wrap">
+            <div class="tier-image-bank-head"><strong>Ảnh chưa xếp</strong><span id="tierImagePoolCount">42 ảnh</span></div>
+            <div id="tierImagePool" class="tier-image-pool" data-tier-slot="pool" aria-label="Kho ảnh chưa xếp"></div>
+          </div>
+          <p class="study-tier-note">Ảnh là sơ đồ minh họa từ 42 bài học trong sổ tay. Đây là công cụ tự xếp tier, không phải bảng xếp hạng chuyên môn cố định. Bấm “Đặt lại” để đưa toàn bộ ảnh về kho.</p>
         </div>
-        <p class="study-tier-note">Tier này là bảng ghi nhớ để học, không phải đánh giá cố định cho mọi thế cờ. Một nước phòng thủ C có thể tốt hơn nước tấn công A nếu đang bị đe dọa thua ngay.</p>
       </section>
     </div>
     <footer class="study-footer"><span>Ghi nhớ: luôn kiểm tra cả 4 hướng — ngang, dọc, chéo xuôi và chéo ngược.</span><button id="bCloseStudyBottom" type="button">Đã hiểu</button></footer>
@@ -2347,6 +2409,121 @@ const rawCatalog=[{"id":"center","title":"Triển khai trung tâm","label":"atta
 const catalogs={opening:rawCatalog.slice(0,14),middlegame:rawCatalog.slice(14,28),endgame:rawCatalog.slice(28,42)};
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function marks(text){return String(text||'').split(/\s+/).map(v=>{const m=v.match(/^(\d+),(\d+):([XOW])$/);return m?{x:+m[1],y:+m[2],p:m[3]}:null}).filter(Boolean);}
+
+/* Interactive image tier list: every lesson becomes a draggable board-position picture. */
+const tierImageRoot=document.getElementById('tierImageWorkshop');
+if(tierImageRoot){
+  const tierItems=rawCatalog.map(item=>({id:item.id,title:item.title,tag:item.tag,marks:item.marks,label:item.label}));
+  const allowedTiers=['S','A','B','C','E','F'];
+  const tierStoreKey='caro-study-tier-images-v1';
+  let tierAssignments={};
+  let selectedTierPiece='';
+  try{
+    const saved=JSON.parse(localStorage.getItem(tierStoreKey)||'{}');
+    tierItems.forEach(item=>{if(saved&&allowedTiers.includes(saved[item.id]))tierAssignments[item.id]=saved[item.id];});
+  }catch(_){tierAssignments={};}
+  function tierImageSource(item){
+    const pos=marks(item.marks),step=28,start=14;
+    let svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 196 196"><rect width="196" height="196" rx="12" fill="#f8f1dc"/><rect x="8" y="8" width="180" height="180" rx="5" fill="#f7efd8" stroke="#d8c69b" stroke-width="1"/>';
+    for(let i=0;i<7;i++){
+      const n=start+i*step;
+      svg+='<path d="M'+n+' 14V182 M14 '+n+'H182" fill="none" stroke="#c9b98e" stroke-width="1.15"/>';
+    }
+    pos.forEach(p=>{
+      const x=start+p.x*step,y=start+p.y*step;
+      if(p.p==='X'){
+        svg+='<circle cx="'+x+'" cy="'+y+'" r="8.5" fill="#2855bd" stroke="#173d95" stroke-width="1"/><path d="M'+(x-3.3)+' '+(y-3.3)+'L'+(x+3.3)+' '+(y+3.3)+' M'+(x+3.3)+' '+(y-3.3)+'L'+(x-3.3)+' '+(y+3.3)+'" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>';
+      }else if(p.p==='O'){
+        svg+='<circle cx="'+x+'" cy="'+y+'" r="8.5" fill="#de454c" stroke="#ab252d" stroke-width="1"/><circle cx="'+x+'" cy="'+y+'" r="4.2" fill="none" stroke="#fff" stroke-width="1.7"/>';
+      }else if(p.p==='W'){
+        svg+='<circle cx="'+x+'" cy="'+y+'" r="9.5" fill="#ffe39a" stroke="#d49b22" stroke-width="1.2"/><path d="M'+x+' '+(y-6)+'L'+(x+1.8)+' '+(y-1.8)+'L'+(x+6)+' '+(y-1.5)+'L'+(x+2.8)+' '+(y+1.5)+'L'+(x+3.8)+' '+(y+5.8)+'L'+x+' '+(y+3.5)+'L'+(x-3.8)+' '+(y+5.8)+'L'+(x-2.8)+' '+(y+1.5)+'L'+(x-6)+' '+(y-1.5)+'L'+(x-1.8)+' '+(y-1.8)+'Z" fill="#a96b00"/>';
+      }
+    });
+    return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg+'</svg>');
+  }
+  function tierCard(item){
+    return '<button type="button" class="tier-piece'+(selectedTierPiece===item.id?' is-selected':'')+'" draggable="true" data-tier-piece="'+esc(item.id)+'" aria-label="Chọn ảnh: '+esc(item.title)+'" title="'+esc(item.title)+'"><img draggable="false" src="'+tierImageSource(item)+'" alt="Sơ đồ thế cờ: '+esc(item.title)+'"><span>'+esc(item.title)+'</span><small>'+esc(item.tag)+'</small></button>';
+  }
+  function saveTierAssignments(){
+    try{localStorage.setItem(tierStoreKey,JSON.stringify(tierAssignments));}catch(_){}
+  }
+  function renderTierImages(){
+    const slots=[...tierImageRoot.querySelectorAll('[data-tier-slot]')];
+    slots.forEach(slot=>{
+      const key=slot.dataset.tierSlot;
+      const items=tierItems.filter(item=>(tierAssignments[item.id]||'pool')===key);
+      slot.innerHTML=items.map(tierCard).join('');
+      if(key!=='pool'){
+        const count=tierImageRoot.querySelector('[data-tier-count="'+key+'"]');
+        if(count)count.textContent=items.length+' ảnh';
+      }
+    });
+    const remaining=tierItems.filter(item=>!tierAssignments[item.id]).length;
+    const countEl=document.getElementById('tierImagePoolCount');
+    if(countEl)countEl.textContent=remaining+' ảnh';
+    const status=document.getElementById('tierImageStatus');
+    if(status){
+      status.textContent=selectedTierPiece
+        ?'Đã chọn: '+(tierItems.find(item=>item.id===selectedTierPiece)?.title||'ảnh')+' · Chạm bậc để xếp'
+        :'42 ảnh thế cờ · Bố cục tự lưu trên trình duyệt';
+    }
+  }
+  function placeTierImage(id,slot){
+    if(!tierItems.some(item=>item.id===id))return;
+    if(slot==='pool')delete tierAssignments[id];
+    else if(allowedTiers.includes(slot))tierAssignments[id]=slot;
+    selectedTierPiece='';
+    saveTierAssignments();
+    renderTierImages();
+  }
+  tierImageRoot.addEventListener('click',event=>{
+    const piece=event.target.closest('[data-tier-piece]');
+    if(piece){
+      selectedTierPiece=piece.dataset.tierPiece;
+      renderTierImages();
+      return;
+    }
+    const slot=event.target.closest('[data-tier-slot]');
+    if(slot&&selectedTierPiece)placeTierImage(selectedTierPiece,slot.dataset.tierSlot);
+  });
+  tierImageRoot.addEventListener('dragstart',event=>{
+    const piece=event.target.closest('[data-tier-piece]');
+    if(!piece)return;
+    selectedTierPiece=piece.dataset.tierPiece;
+    if(event.dataTransfer){
+      event.dataTransfer.setData('text/plain',selectedTierPiece);
+      event.dataTransfer.effectAllowed='move';
+    }
+  });
+  tierImageRoot.addEventListener('dragover',event=>{
+    const slot=event.target.closest('[data-tier-slot]');
+    if(!slot)return;
+    event.preventDefault();
+    if(event.dataTransfer)event.dataTransfer.dropEffect='move';
+    slot.classList.add('is-drop-target');
+  });
+  tierImageRoot.addEventListener('dragleave',event=>{
+    const slot=event.target.closest('[data-tier-slot]');
+    if(slot&&!slot.contains(event.relatedTarget))slot.classList.remove('is-drop-target');
+  });
+  tierImageRoot.addEventListener('drop',event=>{
+    const slot=event.target.closest('[data-tier-slot]');
+    if(!slot)return;
+    event.preventDefault();
+    slot.classList.remove('is-drop-target');
+    const id=(event.dataTransfer&&event.dataTransfer.getData('text/plain'))||selectedTierPiece;
+    placeTierImage(id,slot.dataset.tierSlot);
+  });
+  const resetButton=document.getElementById('tierImageReset');
+  if(resetButton)resetButton.addEventListener('click',()=>{
+    tierAssignments={};
+    selectedTierPiece='';
+    saveTierAssignments();
+    renderTierImages();
+  });
+  renderTierImages();
+}
+
 function board(items){
 const map=new Map(items.map(m=>[m.x+','+m.y,m.p]));let out='<div class="lesson-board-grid" role="img" aria-label="Sơ đồ Caro 7 nhân 7">';
 for(let y=0;y<7;y++)for(let x=0;x<7;x++){const p=map.get(x+','+y);out+='<span class="lesson-board-cell'+(p==='X'?' mark-x':p==='O'?' mark-o':p==='W'?' mark-win':'')+'">'+(p==='X'?'X':p==='O'?'O':p==='W'?'★':'·')+'</span>';}
