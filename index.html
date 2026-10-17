@@ -1226,17 +1226,17 @@ setInterval(()=>{
     board.appendChild(cell);
     cells.push(cell);
   }
-  /* A short, believable 3x3 XO game: X wins across the middle row. */
+  /* A simple XO-like loading animation; it does not declare a winner. */
   const moves=[
-    {cell:3,p:'x'},{cell:0,p:'o'},
-    {cell:4,p:'x'},{cell:2,p:'o'},
-    {cell:8,p:'x'},{cell:6,p:'o'},
-    {cell:5,p:'x'}
+    {cell:4,p:'x'},{cell:0,p:'o'},
+    {cell:2,p:'x'},{cell:6,p:'o'},
+    {cell:1,p:'x'},{cell:7,p:'o'},
+    {cell:3,p:'x'},{cell:5,p:'o'}
   ];
   let index=0;
   const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const interval=reduced?95:360;
-  result.innerHTML='X ĐANG ĐÁNH<span class="loader-dots"></span>';
+  const interval=reduced?95:300;
+  result.innerHTML='ĐANG TẢI<span class="loader-dots"></span>';
   const step=()=>{
     if(index>=moves.length)return;
     const move=moves[index++];
@@ -1244,14 +1244,11 @@ setInterval(()=>{
     cell.textContent=move.p==='x'?'X':'O';
     cell.classList.add('show',move.p==='x'?'mark-x':'mark-o');
     if(index===moves.length){
-      [3,4,5].forEach(i=>cells[i].classList.add('winner'));
-      result.textContent='X THẮNG!';
-      result.classList.add('win');
-      setTimeout(()=>overlay.classList.add('done'),reduced?350:1000);
-      setTimeout(()=>overlay.hidden=true,reduced?650:1320);
+      result.textContent='ĐANG VÀO GAME...';
+      setTimeout(()=>overlay.classList.add('done'),reduced?220:500);
+      setTimeout(()=>overlay.hidden=true,reduced?520:820);
     }else{
-      result.textContent=move.p==='x'?'X ĐANG ĐÁNH':'O ĐANG ĐÁNH';
-      result.insertAdjacentHTML('beforeend','<span class="loader-dots"></span>');
+      result.innerHTML=(move.p==='x'?'X ĐANG ĐÁNH':'O ĐANG ĐÁNH')+'<span class="loader-dots"></span>';
       setTimeout(step,interval);
     }
   };
