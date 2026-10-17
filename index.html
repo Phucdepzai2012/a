@@ -49,6 +49,9 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 .history-player-choice{display:block;width:100%;margin:0;border:0;border-bottom:1px dashed var(--ln);border-radius:0;padding:9px 3px;background:transparent;text-align:left;font-size:12px}
 .note{color:var(--mut);font-size:12px;margin-top:8px;line-height:1.45}
 .review-summary{font-size:13px;line-height:1.6;margin:8px 0;color:var(--ink)}
+.auth-switch,.auth-logout{background:#edf1f4;border-color:var(--ln);font-size:13px}
+.auth-logout{margin:4px 0 2px;padding:6px 8px;width:auto}
+.auth-switch{margin-top:8px}
 #reviewList{max-height:360px;overflow:auto;counter-reset:none}
 #reviewList:before{display:none}
 #reviewList li{display:block;padding:0;border:0;counter-increment:none}
@@ -84,13 +87,14 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 </style>
 </head>
 <body>
-<div id="ov"><div><h1>Caro <b>5</b></h1><p>Đặt tên người chơi. Tên được lưu trong trình duyệt này.</p><input id="nm" maxlength="14" placeholder="Tên của bạn" autocomplete="off"><div id="nmEr"></div><button id="nmOk" class="pri">Vào chơi</button></div></div>
+<div id="ov"><div><h1>Caro <b>5</b></h1><p id="authHint">Đăng nhập để đồng bộ ELO và lịch sử đấu của bạn.</p><input id="nm" maxlength="14" placeholder="Tên đăng nhập (3–14 ký tự)" autocomplete="username"><input id="pw" type="password" minlength="8" maxlength="128" placeholder="Mật khẩu (ít nhất 8 ký tự)" autocomplete="current-password"><input id="pwConfirm" type="password" minlength="8" maxlength="128" placeholder="Nhập lại mật khẩu" autocomplete="new-password" hidden><div id="nmEr" role="status" aria-live="polite"></div><button id="nmOk" class="pri">Đăng nhập</button><button id="bSwitchAuth" class="auth-switch" type="button">Chưa có tài khoản? Đăng ký</button></div></div>
 <main>
   <div class="paper"><canvas id="bd" aria-label="Bàn cờ Caro vô hạn"></canvas></div>
   <aside>
     <section>
       <h1>Caro <b>5</b></h1>
       <div id="me"></div>
+      <button id="bLogout" class="auth-logout" type="button" hidden>Đăng xuất</button>
       <button id="bFind" class="pri">Ghép trận xếp hạng</button>
       <div class="quick-actions">
         <button id="bBot">Đấu máy</button>
@@ -196,7 +200,9 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
         else if (!result || result.ok !== true) reject(new Error(result && result.error || 'Yêu cầu máy chủ thất bại.'));
         else resolve(result);
       }
-      socket.emit(event, payload, result => finish(null, result));
+      const sessionToken = (() => { try { return localStorage.getItem('caroSessionToken') || ''; } catch (_) { return ''; } })();
+      const requestPayload = payload && typeof payload === 'object' ? {...payload, sessionToken} : payload;
+      socket.emit(event, requestPayload, result => finish(null, result));
     });
   }
   function copy(value) { if (value === undefined) return undefined; return JSON.parse(JSON.stringify(value)); }
@@ -302,7 +308,19 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
   function makeApp(config, name) {
     const auth = {
       currentUser: null,
-      async signInAnonymously() { await waitForConnection(); this.currentUser = {uid: localUid, isAnonymous: true}; return {user: this.currentUser}; }
+      async signInAnonymously() {
+        await waitForConnection();
+        const token = (() => { try { return localStorage.getItem('caroSessionToken') || ''; } catch (_) { return ''; } })();
+        if (token) {
+          const session = await rpc('auth:session', {});
+          localUid = session.uid;
+          try { localStorage.setItem('caroRenderUid', localUid); } catch (_) {}
+          this.currentUser = {uid: session.uid, isAnonymous: false, displayName: session.name};
+        } else {
+          this.currentUser = {uid: localUid, isAnonymous: true};
+        }
+        return {user: this.currentUser};
+      }
     };
     const db = {ref: path => new Ref(path)};
     return {name: name || '[DEFAULT]', options: config || {}, auth: () => auth, database: () => db};
@@ -313,6 +331,30 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
       const existing = firebaseApps.find(app => app.name === (name || '[DEFAULT]'));
       if (existing) return existing;
       const app = makeApp(config, name); firebaseApps.push(app); return app;
+    }
+  };
+  async function completeAccountAction(event, payload) {
+    const result = await rpc(event, payload);
+    localUid = result.uid;
+    try {
+      localStorage.setItem('caroRenderUid', result.uid);
+      localStorage.setItem('caroSessionToken', result.token);
+      localStorage.setItem('caroName', result.name);
+      localStorage.setItem('caroProfileSeason2', JSON.stringify({elo: result.elo || 1000, w: result.w || 0, l: result.l || 0, d: result.d || 0}));
+    } catch (_) {}
+    return result;
+  }
+  window.caroAuth = {
+    register: payload => completeAccountAction('auth:register', payload),
+    login: payload => completeAccountAction('auth:login', payload),
+    async logout() {
+      try { await rpc('auth:logout', {}); } catch (_) {}
+      try {
+        localStorage.removeItem('caroSessionToken');
+        localStorage.removeItem('caroRenderUid');
+        localStorage.removeItem('caroName');
+        localStorage.removeItem('caroProfileSeason2');
+      } catch (_) {}
     }
   };
   window.caroRenderSocket = socket;
@@ -353,7 +395,7 @@ const tier=e=>TIERS.find(t=>e>=t[0])[1];
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 let profile={};try{profile=JSON.parse(localStorage.getItem('caroProfileSeason2')||'{}')}catch{}
-let me={uid:null,name:localStorage.getItem('caroName')||'',elo:Number(profile.elo)||1000,w:Number(profile.w)||0,l:Number(profile.l)||0,d:Number(profile.d)||0};
+let me={uid:null,name:(localStorage.getItem('caroSessionToken')?localStorage.getItem('caroName'):'')||'',elo:Number(profile.elo)||1000,w:Number(profile.w)||0,l:Number(profile.l)||0,d:Number(profile.d)||0};
 let G=null,finding=false,findTimer=null,inviteRef=null,db=null,activeBackend=null,activeBackendIndex=-1,backendCandidates=[],serverOffset=0,switchingBackend=false,onlineLeaderboard=[],profileRef=null,leaderboardRef=null,serverOffsetRef=null,duplicateBackupConfig=false,currentHistoryUid=null;
 const now=()=>Date.now()+serverOffset;
 const cv=$('bd'),cx=cv.getContext('2d');
@@ -370,6 +412,7 @@ function ui(){
   $('botEloRange').disabled=!!(G&&!G.over)||finding;
   $('botEloInput').disabled=!!(G&&!G.over)||finding;
   $('bRes').hidden=!(G&&!G.over);
+  $('bLogout').hidden=!localStorage.getItem('caroSessionToken');
   renderLeaderboard();
 }
 function stat(){
@@ -515,11 +558,25 @@ async function activateBackend(entry){
   if(G&&G.over)saveFinishedMatchHistory(G).catch(error=>console.error('Không lưu được lịch sử:',error));
 }
 async function connectInitial(){
+  const sharedHistoryUid=new URLSearchParams(window.location.search).get('history');
+  if(!localStorage.getItem('caroSessionToken')&&!sharedHistoryUid){
+    db=null;
+    setNetwork('Đăng nhập hoặc đăng ký tài khoản để chơi và lưu lịch sử.');
+    ui();
+    return;
+  }
   prepareBackendCandidates();
   if(!backendCandidates.length){setNetwork('Chưa có cấu hình Render hợp lệ. Bạn vẫn có thể luyện với máy.');ui();return}
   let errors=[];
   for(const entry of backendCandidates){try{await activateBackend(entry);return}catch(e){errors.push(`${entry.name}: ${e.message||e}`)}}
   db=null;activeBackend=null;activeBackendIndex=-1;
+  const invalidSession=!!localStorage.getItem('caroSessionToken')&&errors.some(message=>message.includes('Phiên đăng nhập không hợp lệ'));
+  if(invalidSession){
+    try{localStorage.removeItem('caroSessionToken');localStorage.removeItem('caroRenderUid')}catch{}
+    me.name='';
+    showOv();
+    $('nmEr').textContent='Phiên đăng nhập không còn hiệu lực. Nếu máy chủ vừa khởi động lại, tài khoản cũ có thể đã bị xóa; hãy thử đăng nhập hoặc đăng ký lại.';
+  }
   setNetwork('Không kết nối được Render. Hãy kiểm tra dịch vụ đã deploy và đang hoạt động. '+errors.join(' | '));ui();
 }
 async function handleBackendFailure(error,where='kết nối') {
@@ -853,13 +910,52 @@ cv.onpointercancel=e=>ptr.delete(e.pointerId);
 cv.addEventListener('wheel',e=>{e.preventDefault();const r=cv.getBoundingClientRect();zoomAt(e.clientX-r.left,e.clientY-r.top,e.deltaY<0?1.12:.89)},{passive:false});
 /* ---------- Hồ sơ người chơi ---------- */
 const ov=$('ov'),showOv=()=>{ov.hidden=false;$('nm').focus()},hideOv=()=>{ov.hidden=true};
+let authMode='login';
+function updateAuthMode(){
+  const registering=authMode==='register';
+  $('authHint').textContent=registering?'Tạo tài khoản mới để lưu ELO và lịch sử đấu trên máy chủ.':'Đăng nhập để đồng bộ ELO và lịch sử đấu của bạn.';
+  $('nmOk').textContent=registering?'Đăng ký tài khoản':'Đăng nhập';
+  $('bSwitchAuth').textContent=registering?'Đã có tài khoản? Đăng nhập':'Chưa có tài khoản? Đăng ký';
+  $('pwConfirm').hidden=!registering;
+  $('pw').setAttribute('autocomplete',registering?'new-password':'current-password');
+  $('nmEr').textContent='';
+}
+$('bSwitchAuth').onclick=()=>{
+  authMode=authMode==='login'?'register':'login';
+  updateAuthMode();
+};
 $('nmOk').onclick=async()=>{
-  const n=$('nm').value.trim().replace(/\s+/g,' ');if(n.length<2){$('nmEr').textContent='Tên cần từ 2 đến 14 ký tự.';return}
-  me.name=n;saveProfile();hideOv();ui();stat();
-  if(db&&me.uid){try{await db.ref('players/'+me.uid).update(profileData())}catch(e){await handleBackendFailure(e,'lưu tên người chơi')}}
+  const name=$('nm').value.trim().replace(/\s+/g,' ');
+  const password=$('pw').value;
+  if(name.length<3||name.length>14){$('nmEr').textContent='Tên đăng nhập phải dài từ 3 đến 14 ký tự.';return}
+  if(password.length<8){$('nmEr').textContent='Mật khẩu phải có ít nhất 8 ký tự.';$('pw').focus();return}
+  if(authMode==='register'&&password!==$('pwConfirm').value){$('nmEr').textContent='Hai mật khẩu chưa khớp.';$('pwConfirm').focus();return}
+  $('nmOk').disabled=true;$('bSwitchAuth').disabled=true;$('nmEr').textContent=authMode==='register'?'Đang tạo tài khoản…':'Đang đăng nhập…';
+  try{
+    if(!window.caroAuth)throw new Error('Không tải được chức năng đăng nhập. Hãy tải lại trang.');
+    const result=authMode==='register'
+      ?await window.caroAuth.register({name,password})
+      :await window.caroAuth.login({name,password});
+    me.name=result.name;
+    saveProfile();
+    location.reload();
+  }catch(error){
+    $('nmEr').textContent=error&&error.message?error.message:'Không thể đăng nhập. Hãy thử lại.';
+    $('nmOk').disabled=false;$('bSwitchAuth').disabled=false;
+  }
 };
 $('nm').onkeydown=e=>{if(e.key==='Enter')$('nmOk').click()};
-if(me.name){$('nm').value=me.name;hideOv()}else showOv();
+$('pw').onkeydown=e=>{if(e.key==='Enter')$('nmOk').click()};
+$('pwConfirm').onkeydown=e=>{if(e.key==='Enter')$('nmOk').click()};
+$('bLogout').onclick=async()=>{
+  if(G&&!G.over){$('nmEr').textContent='Hãy kết thúc trận trước khi đăng xuất.';return}
+  $('bLogout').disabled=true;
+  try{if(window.caroAuth)await window.caroAuth.logout();location.reload()}
+  catch(error){$('bLogout').disabled=false;$('historyStatus').textContent=error.message||String(error)}
+};
+if(me.name)$('nm').value=me.name;
+if(me.name||new URLSearchParams(window.location.search).get('history'))hideOv();else showOv();
+updateAuthMode();
 addEventListener('resize',()=>{if(!G||!G.moves.length)resetCamera();draw()});ui();stat();draw();connectInitial();
 setInterval(()=>{
   if(!G||G.mode!=='online'||G.over||!G.dl)return;
