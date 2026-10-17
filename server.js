@@ -15,7 +15,7 @@ const io = new Server(server, {
 });
 
 // In-memory only: data resets when the Render instance restarts/redeploys.
-const data = { players: {}, lobby: null, invite: {}, games: {} };
+const data = { players: {}, lobby: null, invite: {}, games: {}, history: {} };
 let version = 0;
 
 app.get('/', (_req, res) => res.status(200).json({ service: 'caro-realtime', status: 'ok' }));
@@ -31,7 +31,7 @@ function cleanPath(path) {
     if (p !== '.info/serverTimeOffset') throw new Error('Đường dẫn hệ thống không hợp lệ.');
     return parts;
   }
-  if (!['players', 'lobby', 'invite', 'games'].includes(parts[0])) throw new Error('Đường dẫn không được phép.');
+  if (!['players', 'lobby', 'invite', 'games', 'history'].includes(parts[0])) throw new Error('Đường dẫn không được phép.');
   return parts;
 }
 
