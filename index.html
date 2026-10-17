@@ -459,6 +459,12 @@ body.study-modal-open{overflow:hidden}
 [data-study-panel="endgame"]>.study-example,
 [data-study-panel="endgame"]>.study-callout{display:none!important}
 
+
+/* Use the player's supplied Ender Chest image for every study-guide icon. */
+.study-ender-chest{display:block;flex:none;width:23px;height:23px;background-image:url("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5OjcBCgoKDQwNGg8PGjclHyU3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3N//AABEIAFwAXAMBIgACEQEDEQH/xAAcAAABBAMBAAAAAAAAAAAAAAAAAQIDBQQGBwj/xAAyEAABBAECBAQDBwUAAAAAAAABAAIDEQQFIQYSMUETIlFhcYGhByMyQpGx0RQVQ1LB/8QAGQEBAQEBAQEAAAAAAAAAAAAAAAECAwQF/8QAHxEBAAMAAQUBAQAAAAAAAAAAAAECESEDBBMxQRIU/9oADAMBAAIRAxEAPwDjlBFBOpFIybSKTqRSBtIr1UscbX83M8MppIu9z6JoaXfhaT8AhplIpTeBN18GWvUMKjILXFrgWuHVpFEIG0ik5FIG0ik6kIFQnUikZNRSe1tuA9VnwYLnkeUqTOJa0V9sAROI6LZOE9MxcqLLOfmDEYyF8rHkficKpu/zWUzDdLpkOL4DB4T3v8QDzO5g0UfYcu3xKtdYdp+LwM/Ag06s2QNa7JcdySbNDsOWwp+4cfNWZxc8P6zqHB2nQOzME5mJmkyxyY833rWihXKdiO/br1Wu8R8Vt4oZJBmY0riDtJJDEHxewPVaQzUtR04RsjyZDEzZsTzzMHwB6fJbto3Eum8Uanhwa5p4xY8bG5JH49+atgT+YdRtv0XD+bp+Ty5y9H7tFc+KLK4VyGYbcvDzcPKY7/EyWpW/EHb6qjlhkhdyyscw+hFKy1g82oCDCfI1lucyneYtum2R3pVsjZGyvZK55c3rzOul6pZjTKRSdSKUU6kBLSKVE+nxeLnQR/7SNH1XTcPhuuXyLnegN5tZwh6zM/cL07gadFjv5nxB4roVyv07Xnh8/u63tesVnIaLicPjw6LPosfiHQ2TYuPCyIh7S5zz6+n/AFdOGHG55IaGg9h2TczTYXNHlDtq3CW7eM4nl557bq/mbR8eY+NdGOCcQAV4ryBt8P5VnwrkM03TdXe7GZK7KiEDHvr7sgGiAR6uH6Lf/tT4VnycCDNw2RH+kLnPa4043Q8vYn+Vpmc/FwOEcKF2JJFnsL5sh7hXO3dwFfMD5K0rMRlnu7ebT0oi3tqEwk/qMjLa8MEbvDbfXbbb52sJri8F7zbnnmJKbJFJFEzxa55PezZ6/upAKFLo9RKRSWkKB1IpOSEbFUWvDvgQ6pjTzP8ALHI136Feo9K1HC1XGbPgzNkYRuAd2/ELy1pml5GoNJwmkvazmcALFCtyPTfqrTSde1fhnODWukgkb+QnZw9j0IV34xxr09QSO5QC5xAA6k9lzHQ/tbgfhSf3XFc6djba6Chzn0cD+H4rTOLPtN1HUo3sbIzGxz0bHdfy4o1kL77YNcxMifFi07NIlgDud0Z2Nkbe/Rc04o4rytdgjhyuR08UTYQYW03lDr3HY9tvTsqTLzZsx5Jc5rT1JPmcsaIAPeANqCSVrEH3I94dJ297Uln1SJVlvBaLQlQZCRPoIoKsL3gfiE8PaxHNIwOZyuZ1rqNj+tK8yYs7ipmv5Wq48WHLhsimiijb92S4Fry09aJZzd65iDa0UtBFEWFnYmtahg4zsePIecdzSwtvo09vceyxNfse2LVn3X2wcuSTDDxs4jYX23WEWPkb48ruY3QtT6rIJWF4rzb/AFUPjfctjiFvDua+wXV15wscjYJQ6QGxe1b2o4muFl2xPZOazzF7iXPO5cU9ZmdWIwJQCTQSsYXHbp6rIawNCiTKIRe6Xwx6lS0EUETSoQhVkIQhBDNjtlFXy31pI3GDRTSK+CnQi7KHwD6hKId9yKUqEXSAUKCVCEZCEIQf/9k=");background-repeat:no-repeat;background-position:center;background-size:contain}
+.study-head-icon .study-ender-chest{width:30px;height:30px}
+.study-float .study-ender-chest{width:22px;height:22px}
+
 </style>
 </head>
 <body>
@@ -502,7 +508,7 @@ body.study-modal-open{overflow:hidden}
       </div>
       <button id="bCen" type="button">Về nước vừa đánh</button>
       <button id="bOpenStudy" class="study-launch" type="button" aria-haspopup="dialog" aria-controls="studyModal">
-        <svg class="study-book-icon" xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8.5 2.687c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.936 8.985.81 8 1.783"/></svg>
+        <span class="study-ender-chest" aria-hidden="true"></span>
         <span><strong>Sổ tay Caro</strong><small>Khai cuộc · Trung cuộc · Tàn cuộc</small></span>
         <span class="study-launch-arrow" aria-hidden="true">↗</span>
       </button>
@@ -590,13 +596,13 @@ body.study-modal-open{overflow:hidden}
   </aside>
 </main>
 <button id="bOpenStudyFloating" class="study-float" type="button" aria-label="Mở sổ tay học Caro" title="Sổ tay Caro" hidden>
-  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8.5 2.687c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.936 8.985.81 8 1.783"/></svg>
+  <span class="study-ender-chest" aria-hidden="true"></span>
 </button>
 <div id="studyModal" class="study-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="studyTitle">
   <div class="study-card">
     <header class="study-head">
       <div class="study-head-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8.5 2.687c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105z"/></svg>
+        <span class="study-ender-chest" aria-hidden="true"></span>
       </div>
       <div class="study-head-title">
         <h2 id="studyTitle">Sổ tay Caro</h2>
