@@ -149,6 +149,11 @@ body.online-match-active main>.paper{width:100%;padding:6px}
 body.online-match-active main>aside{display:none!important}
 #matchActions{position:fixed;z-index:30;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;width:min(94vw,380px);padding:9px 10px;background:rgba(253,253,250,.97);border:1px solid var(--ln);border-radius:12px;box-shadow:0 8px 26px rgba(27,36,48,.18);backdrop-filter:blur(10px)}
 #matchActions[hidden]{display:none!important}
+#turnStatus{width:100%;padding:8px 9px;border-radius:8px;background:#eaf2ff;border:1px solid #bfd2fa;text-align:center;color:#1c3fb7}
+#turnStatus.opponent-turn{background:#fff1ef;border-color:#f2c7c2;color:#b52a25}
+#turnStatus[hidden]{display:none!important}
+#turnStatusLabel{display:block;font-size:13px;font-weight:800;letter-spacing:.015em}
+#turnClock{display:block;font-size:11px;color:var(--mut);margin-top:2px}
 .match-action-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}
 #matchActions button{width:100%;margin:0;min-width:0;padding:10px 14px;font-weight:700}
 #bOfferDraw{background:#e7efff;border-color:#9cb7ff;color:#1c3fb7}
@@ -348,6 +353,10 @@ body.online-match-active main>aside{display:none!important}
   </aside>
 </main>
 <div id="matchActions" hidden>
+  <div id="turnStatus" role="status" aria-live="polite">
+    <span id="turnStatusLabel">Đang xác định lượt đi…</span>
+    <span id="turnClock">Còn 30 giây</span>
+  </div>
   <div class="match-action-row">
     <button id="bOpenChat" type="button">💬 Chat <span id="chatUnread" hidden>0</span></button>
     <button id="bOfferDraw" type="button">Xin hòa</button>
@@ -681,7 +690,9 @@ function ui(){
   $('bRes').hidden=!onlinePlaying;
   $('bOfferDraw').hidden=!onlinePlaying;
   $('bOpenChat').hidden=!onlinePlaying;
+  $('turnStatus').hidden=!onlinePlaying;
   $('matchChatPanel').hidden=!onlinePlaying||!chatPanelOpen;
+  renderTurnStatus();
   $('socialSection').hidden=!!me.isAdmin||!localStorage.getItem('caroSessionToken');
   $('bProfile').disabled=!localStorage.getItem('caroSessionToken')||me.isAdmin;
   const offer=onlinePlaying&&G.drawOffer?G.drawOffer:null;
@@ -701,6 +712,22 @@ function ui(){
   renderLeaderboard();
   renderAccountSummary();
   renderMatchChat();
+}
+function renderTurnStatus(secondsLeft){
+  const status=$('turnStatus');
+  if(!status||!G||G.mode!=='online'||G.over||G.roomStatus!=='play'||!Array.isArray(G.players)||G.players.length!==2){
+    if(status)status.hidden=true;
+    return;
+  }
+  status.hidden=false;
+  const mineTurn=Number(G.turn)===Number(G.mine);
+  const side=mineTurn?Number(G.mine):1-Number(G.mine);
+  const piece=side===0?'X':'O';
+  const opponent=G.players[1-G.mine];
+  status.classList.toggle('opponent-turn',!mineTurn);
+  $('turnStatusLabel').textContent=mineTurn?'● ĐẾN LƯỢT BẠN · '+piece:'● ĐẾN LƯỢT ĐỐI THỦ · '+piece;
+  const seconds=Number.isFinite(secondsLeft)?Math.max(0,Math.ceil(secondsLeft)):G.dl?Math.max(0,Math.ceil((G.dl-now())/1000)):30;
+  $('turnClock').textContent=(mineTurn?'Bạn':'Đối thủ '+String(opponent&&opponent.name||''))+' còn '+seconds+' giây';
 }
 function stat(){
   if(!G){if(!$('st').textContent||$('st').textContent==='Chọn chế độ để bắt đầu.')$('st').textContent='Chọn chế độ để bắt đầu.';return}
@@ -1713,6 +1740,7 @@ addEventListener('resize',()=>{if(!G||!G.moves.length)resetCamera();draw()});ui(
 setInterval(()=>{
   if(!G||G.mode!=='online'||G.over||!G.dl)return;
   const seconds=Math.max(0,Math.ceil((G.dl-now())/1000));$('tm').textContent=`${G.turn===G.mine?'Bạn':'Đối thủ'} còn ${seconds}s`;
+  renderTurnStatus(seconds);
   if(now()>G.dl+1800){
     const ref=G.ref,expectedTurn=G.turn,expectedDl=G.dl;
     ref.transaction(v=>{if(!v||v.status!=='play'||Number(v.turn)!==expectedTurn||Number(v.dl)!==expectedDl||now()<=Number(v.dl)+1800)return;v.status='over';v.winner=1-expectedTurn;v.why='timeout';return v}).catch(e=>handleBackendFailure(e,'đồng hồ ván đấu'));
