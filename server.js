@@ -328,12 +328,14 @@ function validateGameRootPatch(gid, uid, patch) {
   if(playerIndex<0)throw new Error('Bạn không thuộc trận đấu này.');
   if(game.status!=='play')throw new Error('Trận đấu đã kết thúc hoặc không còn hoạt động.');
   if(!patch||typeof patch!=='object'||Array.isArray(patch))throw new Error('Dữ liệu nước đi không hợp lệ.');
-  if(['p','roomCode','createdAt','ratingResult','drawOffer','drawResponse','drawAgreedAt'].some(field=>Object.prototype.hasOwnProperty.call(patch,field)))throw new Error('Không được sửa thông tin cố định hoặc trạng thái hòa của trận đấu.');
+  if(['p','roomCode','createdAt','ratingResult','drawOffer','drawResponse','drawAgreedAt','chat'].some(field=>Object.prototype.hasOwnProperty.call(patch,field)))throw new Error('Không được sửa thông tin cố định hoặc trạng thái hòa của trận đấu.');
 
   const moveKeys=Object.keys(patch).filter(key=>key.startsWith('moves/'));
   if(Object.keys(patch).some(key=>key.startsWith('moves/')&&!/^moves\/\d+$/.test(key)))throw new Error('Chỉ được ghi từng nước đi theo thứ tự.');
   if(moveKeys.length>1)throw new Error('Mỗi lượt chỉ được ghi một nước đi.');
   if(moveKeys.length===1){
+    const allowedPatchKeys=new Set([moveKeys[0],'turn','dl','status','winner','why']);
+    if(Object.keys(patch).some(key=>!allowedPatchKeys.has(key)))throw new Error('Lượt đi chứa trường dữ liệu không được phép.');
     const moveKey=moveKeys[0],index=Number(moveKey.slice(6)),move=patch[moveKey];
     const existing=game.moves&&typeof game.moves==='object'?game.moves:{};
     if(index!==Object.keys(existing).length||Object.prototype.hasOwnProperty.call(existing,String(index)))throw new Error('Nước đi không đúng thứ tự.');
@@ -355,6 +357,7 @@ function validateGameRootPatch(gid, uid, patch) {
   }
 
   if(patch.status==='over'&&patch.why==='resign'){
+    if(Object.keys(patch).some(key=>!['status','winner','why','resignedBy'].includes(key)))throw new Error('Kết quả đầu hàng chứa trường dữ liệu không được phép.');
     if(patch.resignedBy!==uid||Number(patch.winner)!==1-playerIndex)throw new Error('Kết quả đầu hàng không hợp lệ.');
     if('turn' in patch||'dl' in patch)throw new Error('Không được đổi lượt khi đầu hàng.');
     return;
@@ -393,7 +396,7 @@ function assertWriteAccess(path, uid, value, mode='patch') {
       const p=value&&Array.isArray(value.p)?value.p:[];
       const creator=p[0],opponent=p[1],creatorProfile=creator&&data.players[creator.uid],opponentProfile=opponent&&data.players[opponent.uid];
       const currentTime=Date.now(),deadline=Number(value&&value.dl);
-      if(/^\d{4}$/.test(gid)||!value||['ratingResult','drawOffer','drawResponse','drawAgreedAt'].some(field=>Object.prototype.hasOwnProperty.call(value,field))||p.length!==2||!creator||!opponent||creator.uid!==uid||!accountsByUid.has(creator.uid)||!accountsByUid.has(opponent.uid)||creator.uid===opponent.uid||value.status!=='play'||Number(value.turn)!==0||Object.keys(value.moves||{}).length!==0||Number(value.createdAt)<currentTime-10000||Number(value.createdAt)>currentTime+10000||!Number.isFinite(deadline)||deadline<currentTime+25000||deadline>currentTime+35000||creator.name!==accountsByUid.get(creator.uid).name||opponent.name!==accountsByUid.get(opponent.uid).name||Number(creator.elo)!==(Number(creatorProfile&&creatorProfile.elo)||1000)||Number(opponent.elo)!==(Number(opponentProfile&&opponentProfile.elo)||1000))throw new Error('Không được tự tạo hoặc giả mạo trận xếp hạng.');
+      if(/^\d{4}$/.test(gid)||!value||['ratingResult','drawOffer','drawResponse','drawAgreedAt','chat'].some(field=>Object.prototype.hasOwnProperty.call(value,field))||p.length!==2||!creator||!opponent||creator.uid!==uid||!accountsByUid.has(creator.uid)||!accountsByUid.has(opponent.uid)||creator.uid===opponent.uid||value.status!=='play'||Number(value.turn)!==0||Object.keys(value.moves||{}).length!==0||Number(value.createdAt)<currentTime-10000||Number(value.createdAt)>currentTime+10000||!Number.isFinite(deadline)||deadline<currentTime+25000||deadline>currentTime+35000||creator.name!==accountsByUid.get(creator.uid).name||opponent.name!==accountsByUid.get(opponent.uid).name||Number(creator.elo)!==(Number(creatorProfile&&creatorProfile.elo)||1000)||Number(opponent.elo)!==(Number(opponentProfile&&opponentProfile.elo)||1000))throw new Error('Không được tự tạo hoặc giả mạo trận xếp hạng.');
       return;
     }
     if(parts.length!==2)throw new Error('Chỉ được cập nhật toàn bộ lượt chơi qua thao tác hợp lệ.');
