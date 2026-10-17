@@ -635,7 +635,7 @@ async function activateBackend(entry){
   const b=await connectBackend(entry);activeBackend=b;activeBackendIndex=backendCandidates.indexOf(entry);db=b.db;me.uid=b.uid;me.isAdmin=!!(b.auth.currentUser&&b.auth.currentUser.isAdmin);serverOffset=0;
   const snap=await db.ref('players/'+me.uid).once('value');
   if(snap.exists()){const v=snap.val();me.name=v.name||me.name;me.elo=Number(v.elo)||1000;me.w=Number(v.w)||0;me.l=Number(v.l)||0;me.d=Number(v.d)||0;saveProfile()}
-  else if(me.name){await db.ref('players/'+me.uid).update(profileData())}
+  else if(me.name){await db.ref('players/'+me.uid).update({name:me.name})}
   bindBackendListeners();
   const sharedHistoryUid=new URLSearchParams(window.location.search).get('history');
   if(me.name||sharedHistoryUid)hideOv();else showOv();
@@ -912,7 +912,7 @@ async function startMatchmaking(retry=false){
     await lobby.transaction(current=>{opponent=null;if(current&&current.uid!==me.uid&&now()-Number(current.t||0)<60000){opponent=current;return null}return {uid:me.uid,name:me.name,elo:me.elo,t:now()}});
     if(!finding)return;
     if(opponent){
-      const gid=db.ref('games').push().key;const players=[{uid:me.uid,name:me.name,elo:me.elo},{uid:opponent.uid,name:opponent.name||'Đối thủ',elo:Number(opponent.elo)||1000}];if(Math.random()<.5)players.reverse();
+      const gid=db.ref('games').push().key;const players=[{uid:me.uid,name:me.name,elo:me.elo},{uid:opponent.uid,name:opponent.name||'Đối thủ',elo:Number(opponent.elo)||1000}];
       await db.ref('games/'+gid).set({p:players,moves:{},turn:0,status:'play',dl:now()+TURN,createdAt:now()});
       await db.ref('invite/'+opponent.uid).set(gid);await openGame(gid);
     }else{
