@@ -192,24 +192,22 @@ function validateGameTransaction(gid,uid,nextValue){
 
 function assertWriteAccess(path, uid, value, mode='patch') {
   const parts = cleanPath(path);
-  if (parts[0] === 'players' || parts[0] === 'history') {
-    if (parts.length < 2 || parts[1] !== uid) {
-      throw new Error('Bạn chỉ được sửa hồ sơ và lịch sử của chính mình.');
-    }
-    if(parts[0]==='players'&&parts.length===2&&mode==='remove')throw new Error('Không được xóa hồ sơ trực tiếp.');
-    if (parts[0] === 'players' && parts.length === 2 && value && typeof value === 'object') {
-      const fields=Object.keys(value).map(field=>field.split('/')[0]);
-      if (['elo','w','l','d'].some(field => fields.includes(field))) {
-        throw new Error('ELO và thành tích xếp hạng chỉ được máy chủ cập nhật.');
-      }
-    }
+  if (parts[0] === 'players') {
+    if (parts.length < 2 || parts[1] !== uid) throw new Error('Bạn chỉ được xem hoặc sửa hồ sơ của chính mình.');
+    throw new Error('Hồ sơ và ELO chỉ được cập nhật qua chức năng máy chủ.');
+  }
+  if (parts[0] === 'history') {
+    if (parts.length < 2 || parts[1] !== uid) throw new Error('Bạn chỉ được sửa lịch sử của chính mình.');
   }
   if(parts[0]==='games'){
     const gid=parts[1];
     if(!gid)throw new Error('Phải chỉ rõ mã trận.');
     const game=data.games[gid];
     if(mode==='set'&&parts.length===2&&!game){
-      if(/^\d{4}$/.test(gid)||!value||!Array.isArray(value.p)||value.p.length!==2||!value.p.some(player=>player&&player.uid===uid)||value.status!=='play'||Object.keys(value.moves||{}).length!==0||value.p[0].uid===value.p[1].uid)throw new Error('Không được tự tạo hoặc giả mạo trận xếp hạng.');
+      const p=value&&Array.isArray(value.p)?value.p:[];
+      const creator=p[0],opponent=p[1],creatorProfile=creator&&data.players[creator.uid],opponentProfile=opponent&&data.players[opponent.uid];
+      const currentTime=Date.now(),deadline=Number(value&&value.dl);
+      if(/^\d{4}$/.test(gid)||!value||p.length!==2||!creator||!opponent||creator.uid!==uid||!accountsByUid.has(creator.uid)||!accountsByUid.has(opponent.uid)||creator.uid===opponent.uid||value.status!=='play'||Number(value.turn)!==0||Object.keys(value.moves||{}).length!==0||Number(value.createdAt)<currentTime-10000||Number(value.createdAt)>currentTime+10000||!Number.isFinite(deadline)||deadline<currentTime+25000||deadline>currentTime+35000||creator.name!==accountsByUid.get(creator.uid).name||opponent.name!==accountsByUid.get(opponent.uid).name||Number(creator.elo)!==(Number(creatorProfile&&creatorProfile.elo)||1000)||Number(opponent.elo)!==(Number(opponentProfile&&opponentProfile.elo)||1000))throw new Error('Không được tự tạo hoặc giả mạo trận xếp hạng.');
       return;
     }
     if(parts.length!==2)throw new Error('Chỉ được cập nhật toàn bộ lượt chơi qua thao tác hợp lệ.');
@@ -433,11 +431,12 @@ io.on('connection', socket => {
 
       const playerResults={};
       const winnerUid=winnerIndex===-1?null:game.p[winnerIndex].uid;
+      const beforeRatings=game.p.map(player=>Number(data.players[player.uid]&&data.players[player.uid].elo)||Number(player.elo)||1000);
       for(let i=0;i<2;i++){
         const player=game.p[i],profile=data.players[player.uid]||(data.players[player.uid]={name:player.name||'Người chơi',elo:1000,w:0,l:0,d:0});
-        const before=Number(profile.elo)||1000;
+        const before=beforeRatings[i];
         const score=winnerIndex===-1?0.5:winnerIndex===i?1:0;
-        const expected=1/(1+10**(((Number(data.players[game.p[1-i].uid]?.elo)||Number(game.p[1-i].elo)||1000)-before)/400));
+        const expected=1/(1+10**((beforeRatings[1-i]-before)/400));
         const after=Math.max(100,Math.round(before+32*(score-expected)));
         profile.name=player.name||profile.name||'Người chơi';
         profile.elo=after;
