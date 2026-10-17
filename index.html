@@ -521,8 +521,11 @@ aside>.note{background:#fff;border:1px solid var(--ln);border-radius:8px;padding
       function finish(err, result) {
         if (done) return; done = true; clearTimeout(timer);
         if (err) reject(err);
-        else if (!result || result.ok !== true) reject(new Error(result && result.error || 'Yêu cầu máy chủ thất bại.'));
-        else resolve(result);
+        else if (!result || result.ok !== true) {
+          const error = new Error(result && result.error || 'Yêu cầu máy chủ thất bại.');
+          if (result && Number.isFinite(Number(result.retryAfterMs))) error.retryAfterMs = Math.max(0, Number(result.retryAfterMs));
+          reject(error);
+        } else resolve(result);
       }
       const sessionToken = storedSessionToken();
       const requestPayload = payload && typeof payload === 'object' ? {...payload, sessionToken} : payload;
@@ -743,7 +746,35 @@ let profile={};try{profile=JSON.parse(localStorage.getItem('caroProfileSeason2')
 let me={uid:null,name:(localStorage.getItem('caroSessionToken')?localStorage.getItem('caroName'):'')||'',elo:Number(profile.elo)||1000,w:Number(profile.w)||0,l:Number(profile.l)||0,d:Number(profile.d)||0,isAdmin:localStorage.getItem('caroRole')==='admin'};
 let G=null,finding=false,findTimer=null,inviteRef=null,db=null,activeBackend=null,activeBackendIndex=-1,backendCandidates=[],serverOffset=0,switchingBackend=false,onlineLeaderboard=[],profileRef=null,leaderboardRef=null,serverOffsetRef=null,duplicateBackupConfig=false,currentHistoryUid=null,historyRecordsByKey=new Map(),historyReplayReturnGame=null;
 let chatPanelOpen=false,chatUnread=0,chatRenderFingerprint='',selectedAvatarData=null,socialBusy=false;
+let drawOfferCooldownUntil=0,drawCooldownOwner='';
 const now=()=>Date.now()+serverOffset;
+function syncDrawCooldownOwner(){
+  const owner=String(me.uid||localStorage.getItem('caroRenderUid')||'guest');
+  const key='caroDrawCooldownUntil:'+owner;
+  if(key!==drawCooldownOwner){
+    drawCooldownOwner=key;
+    try{drawOfferCooldownUntil=Number(localStorage.getItem(key))||0}catch(_){drawOfferCooldownUntil=0}
+  }
+  return key;
+}
+function setDrawCooldown(until){
+  const key=syncDrawCooldownOwner();
+  drawOfferCooldownUntil=Math.max(now(),Number(until)||0);
+  try{if(drawOfferCooldownUntil>now())localStorage.setItem(key,String(drawOfferCooldownUntil));else localStorage.removeItem(key)}catch(_){}
+  updateDrawCooldownButton();
+}
+function updateDrawCooldownButton(){
+  const button=$('bOfferDraw');if(!button)return;
+  const key=syncDrawCooldownOwner();
+  if(drawOfferCooldownUntil&&drawOfferCooldownUntil<=now()){drawOfferCooldownUntil=0;try{localStorage.removeItem(key)}catch(_){}}
+  const onlinePlaying=!!(G&&G.mode==='online'&&!G.over&&G.roomStatus==='play'&&Array.isArray(G.players)&&G.players.length===2);
+  const offer=onlinePlaying&&G.drawOffer?G.drawOffer:null;
+  const myOffer=!!(offer&&offer.uid===me.uid);
+  const remaining=Math.max(0,drawOfferCooldownUntil-now());
+  button.disabled=!onlinePlaying||!!offer||remaining>0;
+  button.textContent=myOffer?'Đang chờ đối thủ…':remaining>0?'Xin hòa · '+Math.ceil(remaining/1000)+'s':'Xin hòa';
+}
+setInterval(updateDrawCooldownButton,1000);
 const cv=$('bd'),cx=cv.getContext('2d');
 function resetCamera(){cam.x=cam.y=N/2;cam.s=Math.min(36,Math.max(12,(cv.clientWidth-16)/N));}
 function saveProfile(){localStorage.setItem('caroName',me.name);localStorage.setItem('caroProfileSeason2',JSON.stringify({elo:me.elo,w:me.w,l:me.l,d:me.d}))}
@@ -773,8 +804,7 @@ function ui(){
   $('drawOfferModal').hidden=!incomingOffer;
   if(incomingOffer)$('drawOfferText').textContent=(offer.name||'Đối thủ')+' xin hòa. Bạn có đồng ý kết thúc ván với kết quả hòa không?';
   const myOffer=!!(offer&&offer.uid===me.uid);
-  $('bOfferDraw').disabled=!onlinePlaying||!!offer;
-  $('bOfferDraw').textContent=myOffer?'Đang chờ đối thủ…':'Xin hòa';
+  updateDrawCooldownButton();
   let drawStatus='';
   if(myOffer)drawStatus='Đã gửi lời xin hòa, đang chờ đối thủ phản hồi.';
   else if(G&&G.drawResponse&&!G.drawResponse.accepted&&G.drawResponse.offerUid===me.uid)drawStatus='Đối thủ đã từ chối lời xin hòa.';
@@ -1416,11 +1446,15 @@ $('bOfferDraw').onclick=async()=>{
   $('bOfferDraw').disabled=true;
   $('drawActionStatus').textContent='Đang gửi lời xin hòa…';
   try{
-    await window.caroAuth.offerDraw({gid:G.gid});
+    const result=await window.caroAuth.offerDraw({gid:G.gid});
+    setDrawCooldown(Number(result&&result.cooldownUntil)||now()+45000);
     $('drawActionStatus').textContent='Đã gửi lời xin hòa, đang chờ đối thủ phản hồi.';
   }catch(error){
+    let retryMs=Number(error&&error.retryAfterMs)||0;
+    if(retryMs<=0){const match=String(error&&error.message||'').match(/chờ\s+(\d+)\s+giây/i);if(match)retryMs=Number(match[1])*1000}
+    if(retryMs>0)setDrawCooldown(now()+retryMs);
     $('drawActionStatus').textContent=error.message||'Không gửi được lời xin hòa.';
-    $('bOfferDraw').disabled=false;
+    updateDrawCooldownButton();
   }
 };
 async function respondDraw(accept){
