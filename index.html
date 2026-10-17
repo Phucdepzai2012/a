@@ -441,7 +441,7 @@ async function searchPlayerHistory(){
 async function saveFinishedMatchHistory(game){
   if(!game||game.historySaved||!db||!me.uid)return;
   game.historySaved=true;
-  const opponent=(Array.isArray(game.players)?game.players[1-game.mine]:null)||{name:(game.names&&game.names[1-game.mine]||'Đối thủ').replace(/ \\(\d+(?: ELO)?\\)$/,''),elo:game.oppElo||game.botElo||1000};
+  const opponent=(Array.isArray(game.players)?game.players[1-game.mine]:null)||{name:(game.names&&game.names[1-game.mine]||'Đối thủ').replace(/ \(\d+(?: ELO)?\)$/,''),elo:game.oppElo||game.botElo||1000};
   const score=game.winner===-1?.5:game.winner===game.mine?1:0;
   const result=score===.5?'draw':score===1?'win':'loss';
   const gameKey=game.mode==='online'?'g_'+String(game.gid||Date.now()).replace(/[^A-Za-z0-9_-]/g,'_'):'bot_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8);
