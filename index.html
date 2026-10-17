@@ -658,13 +658,18 @@ async function connectInitial(){
   for(const entry of backendCandidates){try{await activateBackend(entry);return}catch(e){errors.push(`${entry.name}: ${e.message||e}`)}}
   db=null;activeBackend=null;activeBackendIndex=-1;
   const invalidSession=!!localStorage.getItem('caroSessionToken')&&errors.some(message=>message.includes('Phiên đăng nhập không hợp lệ'));
-  if(invalidSession){
+  const needsDatabase=errors.some(message=>message.includes('DATABASE_URL')||message.includes('chưa kết nối PostgreSQL'));
+  if(invalidSession||needsDatabase){
     try{localStorage.removeItem('caroSessionToken');localStorage.removeItem('caroRenderUid')}catch{}
     me.name='';
     showOv();
-    $('nmEr').textContent='Phiên đăng nhập không còn hiệu lực. Nếu máy chủ vừa khởi động lại, tài khoản cũ có thể đã bị xóa; hãy thử đăng nhập hoặc đăng ký lại.';
+    $('nmEr').textContent=needsDatabase
+      ?'Máy chủ chưa kết nối cơ sở dữ liệu PostgreSQL nên tài khoản không thể được lưu an toàn. Hãy cấu hình DATABASE_URL trên Render và deploy lại trước khi đăng ký hoặc đăng nhập.'
+      :'Phiên đăng nhập không còn hiệu lực. Nếu máy chủ vừa khởi động lại trước khi cấu hình database, tài khoản cũ có thể đã bị mất; hãy kết nối PostgreSQL trước rồi đăng ký lại.';
   }
-  setNetwork('Không kết nối được Render. Hãy kiểm tra dịch vụ đã deploy và đang hoạt động. '+errors.join(' | '));ui();
+  setNetwork(needsDatabase
+    ?'Chưa cấu hình lưu tài khoản bền vững. Cần DATABASE_URL trên Render.'
+    :'Không kết nối được Render. Hãy kiểm tra dịch vụ đã deploy và đang hoạt động. '+errors.join(' | '));ui();
 }
 async function handleBackendFailure(error,where='kết nối') {
   if(switchingBackend)return false;
