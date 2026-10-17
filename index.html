@@ -51,6 +51,9 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 .quick-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .quick-actions button{margin-top:8px;padding:8px 6px;font-size:13px;line-height:1.25;min-width:0}
 #bCreateRoom{background:#edf1f4;border-color:var(--ln)}
+#bShowJoinRoom{grid-column:1/-1}
+#joinRoomPanel{margin-top:8px}
+#joinRoomPanel[hidden]{display:none}
 .tools-toggle{background:#edf1f4;border-color:var(--ln);color:var(--ink);font-size:13px;font-weight:600;text-align:center;margin-top:8px}
 #extraControls{margin-top:4px}
 #extraControls[hidden]{display:none}
@@ -72,10 +75,13 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
       <div class="quick-actions">
         <button id="bBot">Đấu máy</button>
         <button id="bCreateRoom">Tạo phòng</button>
+        <button id="bShowJoinRoom" type="button">Nhập mã phòng</button>
+      </div>
+      <div id="joinRoomPanel" hidden>
+        <div class="room-join-row"><input id="roomCodeInput" type="text" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="Mã phòng 4 số" aria-label="Nhập mã phòng gồm 4 chữ số"><button id="bJoinRoom">Vào phòng</button></div>
       </div>
       <button id="bToggleTools" class="tools-toggle" type="button" aria-expanded="false" aria-controls="extraControls">＋ Hiện thêm công cụ</button>
       <div id="extraControls" hidden>
-        <div class="room-join-row"><input id="roomCodeInput" type="text" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="Mã phòng 4 số" aria-label="Nhập mã phòng gồm 4 chữ số"><button id="bJoinRoom">Vào phòng</button></div>
         <div id="botSettings" class="bot-settings">
           <label for="botEloRange"><span>Sức mạnh của máy</span><strong id="botEloLabel">1500 ELO</strong></label>
           <input id="botEloRange" type="range" min="1" max="3000" step="1" value="1500" aria-label="Điều chỉnh ELO máy từ 1 đến 3000">
@@ -598,6 +604,12 @@ $('bToggleTools').onclick=()=>{
 };
 $('bFind').onclick=startMatchmaking;
 $('bCreateRoom').onclick=createRoom;
+$('bShowJoinRoom').onclick=()=>{
+  const panel=$('joinRoomPanel'),opening=panel.hidden;
+  panel.hidden=!opening;
+  $('bShowJoinRoom').textContent=opening?'Đóng nhập mã':'Nhập mã phòng';
+  if(opening)$('roomCodeInput').focus();
+};
 $('bJoinRoom').onclick=joinRoom;
 $('roomCodeInput').addEventListener('input',()=>{$('roomCodeInput').value=$('roomCodeInput').value.replace(/[^0-9]/g,'').slice(0,4)});
 $('roomCodeInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('bJoinRoom').click()});
