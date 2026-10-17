@@ -135,6 +135,32 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 @media(orientation:landscape) and (max-height:520px){.loader-card{display:grid;grid-template-columns:auto minmax(150px,min(43vw,38vh));grid-template-rows:auto auto;align-content:center;justify-content:center;column-gap:clamp(18px,5vw,54px);row-gap:8px}.loader-brand,.loader-caption,#loaderResult{grid-column:1;align-self:end}.loader-caption{align-self:start}.loader-board{grid-column:2;grid-row:1 / span 3;width:min(43vw,74vh,340px);width:min(43vw,74dvh,340px)}}
 @media(prefers-reduced-motion:reduce){#gameLoader,.loader-cell{transition:none}.loader-cell.winner,#loaderResult.win{animation:none}.loader-dots:after{animation:none;content:"..."}}
 
+
+/* During a live online match, keep the board and draw/resign controls only. */
+body.online-match-active{min-height:100vh;min-height:100dvh;padding:10px 10px 92px;align-items:center}
+body.online-match-active main{display:flex;width:min(94vw,calc(100dvh - 145px));max-width:780px;gap:0;margin:auto;align-items:center;justify-content:center}
+body.online-match-active main>.paper{width:100%;padding:6px}
+body.online-match-active main>aside{display:none!important}
+#matchActions{position:fixed;z-index:30;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;width:min(94vw,380px);padding:9px 10px;background:rgba(253,253,250,.97);border:1px solid var(--ln);border-radius:12px;box-shadow:0 8px 26px rgba(27,36,48,.18);backdrop-filter:blur(10px)}
+#matchActions[hidden]{display:none!important}
+.match-action-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%}
+#matchActions button{width:100%;margin:0;min-width:0;padding:10px 14px;font-weight:700}
+#bOfferDraw{background:#e7efff;border-color:#9cb7ff;color:#1c3fb7}
+#bRes{background:#fff0f0;border-color:#edb4b4;color:#a51d1d}
+#drawActionStatus{width:100%;min-height:0;font-size:12px;text-align:center;color:var(--mut)}
+#drawActionStatus:empty{display:none}
+#drawOfferModal{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(14,22,35,.42)}
+#drawOfferModal[hidden]{display:none!important}
+.draw-offer-card{width:min(100%,330px);padding:22px;background:var(--paper);border:1px solid var(--ln);border-radius:12px;box-shadow:0 18px 50px rgba(0,0,0,.22);text-align:center}
+.draw-offer-symbol{font-size:36px;font-weight:800;color:var(--blue);line-height:1.1}
+.draw-offer-card h2{margin:8px 0;color:var(--ink);font-size:18px}
+.draw-offer-card p{margin:0 0 12px;color:var(--mut);font-size:13px}
+.draw-decision{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.draw-decision button{margin:0;min-width:0;padding:10px 8px;font-size:13px}
+#bAcceptDraw{background:#1c3fb7;color:#fff;border-color:#1c3fb7}
+#bDeclineDraw{background:#edf1f4;border-color:var(--ln)}
+@media(max-width:520px){body.online-match-active{padding:8px 8px 100px}body.online-match-active main{width:min(96vw,calc(100dvh - 150px))}#matchActions{width:calc(100vw - 24px);bottom:max(10px,env(safe-area-inset-bottom))}}
+
 </style>
 </head>
 <body>
@@ -177,7 +203,7 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
       <div id="extraControls" hidden>
         <div id="network" class="note">Đang kết nối Render để ghép trận người thật…</div>
       </div>
-      <button id="bRes" hidden>Đầu hàng</button>
+      
     </section>
     <section>
       <h2>Ván hiện tại</h2>
@@ -231,6 +257,24 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
     <div class="note">Bảng xếp hạng lấy từ Render khi đã kết nối. Dữ liệu mẫu trên máy chủ sẽ bị xóa khi máy chủ khởi động lại.</div>
   </aside>
 </main>
+<div id="matchActions" hidden>
+  <div class="match-action-row">
+    <button id="bOfferDraw" type="button">Xin hòa</button>
+    <button id="bRes" type="button">Đầu hàng</button>
+  </div>
+  <div id="drawActionStatus" role="status" aria-live="polite"></div>
+</div>
+<div id="drawOfferModal" hidden role="dialog" aria-modal="true" aria-labelledby="drawOfferTitle">
+  <div class="draw-offer-card">
+    <div class="draw-offer-symbol">½</div>
+    <h2 id="drawOfferTitle">Đối thủ xin hòa</h2>
+    <p id="drawOfferText">Đối thủ muốn kết thúc ván đấu với kết quả hòa. Bạn có đồng ý không?</p>
+    <div class="draw-decision">
+      <button id="bAcceptDraw" type="button">Chấp nhận hòa</button>
+      <button id="bDeclineDraw" type="button">Từ chối</button>
+    </div>
+  </div>
+</div>
 <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
 <script>
 /* Adapter tương thích một phần với Firebase Realtime Database API, chạy qua Socket.IO/Render. */
@@ -445,7 +489,9 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
     },
     adminOverview: () => rpc('admin:overview', {}),
     adminBan: (uid,banned,reason) => rpc('admin:ban', {uid,banned,reason}),
-    finishRanked: payload => rpc('ranked:finish', payload)
+    finishRanked: payload => rpc('ranked:finish', payload),
+    offerDraw: payload => rpc('draw:offer', payload),
+    respondDraw: payload => rpc('draw:respond', payload)
   };
   window.caroRenderSocket = socket;
   window.caroRenderRooms = { create: payload => rpc('room:create', payload), join: payload => rpc('room:join', payload) };
@@ -501,7 +547,23 @@ function ui(){
   $('bBot').disabled=!me.name||!!(G&&!G.over)||finding;
   $('botEloRange').disabled=!!(G&&!G.over)||finding;
   $('botEloInput').disabled=!!(G&&!G.over)||finding;
-  $('bRes').hidden=!(G&&!G.over);
+  const onlinePlaying=!!(G&&G.mode==='online'&&!G.over&&G.roomStatus==='play'&&Array.isArray(G.players)&&G.players.length===2);
+  document.body.classList.toggle('online-match-active',onlinePlaying);
+  $('matchActions').hidden=!onlinePlaying;
+  $('bRes').hidden=!onlinePlaying;
+  $('bOfferDraw').hidden=!onlinePlaying;
+  const offer=onlinePlaying&&G.drawOffer?G.drawOffer:null;
+  const incomingOffer=!!(offer&&offer.uid!==me.uid);
+  $('drawOfferModal').hidden=!incomingOffer;
+  if(incomingOffer)$('drawOfferText').textContent=(offer.name||'Đối thủ')+' xin hòa. Bạn có đồng ý kết thúc ván với kết quả hòa không?';
+  const myOffer=!!(offer&&offer.uid===me.uid);
+  $('bOfferDraw').disabled=!onlinePlaying||!!offer;
+  $('bOfferDraw').textContent=myOffer?'Đang chờ đối thủ…':'Xin hòa';
+  let drawStatus='';
+  if(myOffer)drawStatus='Đã gửi lời xin hòa, đang chờ đối thủ phản hồi.';
+  else if(G&&G.drawResponse&&!G.drawResponse.accepted&&G.drawResponse.offerUid===me.uid)drawStatus='Đối thủ đã từ chối lời xin hòa.';
+  else if(G&&G.drawResponse&&!G.drawResponse.accepted&&G.drawResponse.uid===me.uid)drawStatus='Bạn đã từ chối lời xin hòa.';
+  $('drawActionStatus').textContent=drawStatus;
   $('bLogout').hidden=!localStorage.getItem('caroSessionToken');
   $('adminSection').hidden=!me.isAdmin;
   renderLeaderboard();
@@ -931,7 +993,7 @@ async function openGame(gid){
   const ref=db.ref('games/'+gid),snap=await ref.once('value'),v=snap.val();
   if(!v||!Array.isArray(v.p))throw new Error('Không tìm thấy ván đấu.');
   const mine=v.p.findIndex(q=>q.uid===me.uid);if(mine<0)throw new Error('Ván đấu không thuộc tài khoản này.');
-  G={mode:'online',gid,ref,mine,board:new Map(),turn:Number(v.turn)||0,n:0,over:0,startedAt:Number(v.createdAt)||now(),turnStartedAt:now(),dl:v.dl||now()+TURN,names:v.p.map(q=>`${q.name} (${q.elo})`),players:v.p.map(q=>({uid:q.uid||'',name:q.name||'Người chơi',elo:Number(q.elo)||1000})),myElo:Number(v.p[mine].elo)||me.elo,oppElo:Number(v.p[1-mine]?.elo)||1000,moves:[],last:null,line:null,msg:'',winner:null,review:[],roomStatus:v.status,roomCode:/^[0-9]{4}$/.test(gid)?gid:null};
+  G={mode:'online',gid,ref,mine,board:new Map(),turn:Number(v.turn)||0,n:0,over:0,startedAt:Number(v.createdAt)||now(),turnStartedAt:now(),dl:v.dl||now()+TURN,names:v.p.map(q=>`${q.name} (${q.elo})`),players:v.p.map(q=>({uid:q.uid||'',name:q.name||'Người chơi',elo:Number(q.elo)||1000})),myElo:Number(v.p[mine].elo)||me.elo,oppElo:Number(v.p[1-mine]?.elo)||1000,moves:[],last:null,line:null,msg:'',winner:null,review:[],roomStatus:v.status,roomCode:/^[0-9]{4}$/.test(gid)?gid:null,drawOffer:v.drawOffer||null,drawResponse:v.drawResponse||null};
   await db.ref('invite/'+me.uid).remove().catch(()=>{});setActive(true);resetCamera();ui();draw();stat();
   ref.on('value',onGame,e=>handleBackendFailure(e,'đồng bộ ván đấu'));
 }
@@ -941,7 +1003,7 @@ function onGame(s){
   const keys=Object.keys(v.moves||{}).sort((a,b)=>Number(a)-Number(b));
   const moves=keys.map(k=>v.moves[k]).filter(Boolean),board=new Map();moves.forEach((m,i)=>board.set(m.x+','+m.y,Number.isInteger(m.p)?m.p:i%2));
   const last=moves[moves.length-1];const newMine=Array.isArray(v.p)?v.p.findIndex(q=>q.uid===me.uid):G.mine;
-  Object.assign(G,{board,moves,n:moves.length,turn:Number(v.turn)||0,dl:Number(v.dl)||0,last:last?[last.x,last.y]:null,roomStatus:v.status,mine:newMine>=0?newMine:G.mine,names:Array.isArray(v.p)?v.p.map(q=>`${q.name} (${q.elo})`):G.names,players:Array.isArray(v.p)?v.p.map(q=>({uid:q.uid||'',name:q.name||'Người chơi',elo:Number(q.elo)||1000})):G.players});
+  Object.assign(G,{board,moves,n:moves.length,turn:Number(v.turn)||0,dl:Number(v.dl)||0,last:last?[last.x,last.y]:null,roomStatus:v.status,mine:newMine>=0?newMine:G.mine,names:Array.isArray(v.p)?v.p.map(q=>`${q.name} (${q.elo})`):G.names,players:Array.isArray(v.p)?v.p.map(q=>({uid:q.uid||'',name:q.name||'Người chơi',elo:Number(q.elo)||1000})):G.players,drawOffer:v.drawOffer||null,drawResponse:v.drawResponse||null});
   if(moves.length>previousMoveCount)G.turnStartedAt=now();
   G.myElo=Number(v.p&&v.p[G.mine]&&v.p[G.mine].elo)||G.myElo||me.elo;
   G.oppElo=Number(v.p&&v.p[1-G.mine]&&v.p[1-G.mine].elo)||G.oppElo||1000;
@@ -1018,6 +1080,36 @@ $('botEloRange').value=String(savedBotElo);$('botEloInput').value=String(savedBo
 $('botEloRange').addEventListener('input',()=>{const n=Number($('botEloRange').value);$('botEloInput').value=String(n);localStorage.setItem('caroBotElo',String(n));updateBotEloDisplay(n)});
 $('botEloInput').addEventListener('input',()=>{const raw=$('botEloInput').value;if(raw==='')return;const n=clamp(Math.round(Number(raw)),1,10000);$('botEloRange').value=String(n);localStorage.setItem('caroBotElo',String(n));updateBotEloDisplay(n)});
 $('botEloInput').addEventListener('change',()=>{const n=clamp(Math.round(Number($('botEloInput').value)||1),1,10000);$('botEloInput').value=String(n);$('botEloRange').value=String(n);localStorage.setItem('caroBotElo',String(n));updateBotEloDisplay(n)});
+$('bOfferDraw').onclick=async()=>{
+  if(!G||G.mode!=='online'||G.over||!window.caroAuth||typeof window.caroAuth.offerDraw!=='function')return;
+  $('bOfferDraw').disabled=true;
+  $('drawActionStatus').textContent='Đang gửi lời xin hòa…';
+  try{
+    await window.caroAuth.offerDraw({gid:G.gid});
+    $('drawActionStatus').textContent='Đã gửi lời xin hòa, đang chờ đối thủ phản hồi.';
+  }catch(error){
+    $('drawActionStatus').textContent=error.message||'Không gửi được lời xin hòa.';
+    $('bOfferDraw').disabled=false;
+  }
+};
+async function respondDraw(accept){
+  if(!G||G.mode!=='online'||G.over||!window.caroAuth||typeof window.caroAuth.respondDraw!=='function')return;
+  $('bAcceptDraw').disabled=true;$('bDeclineDraw').disabled=true;
+  try{
+    await window.caroAuth.respondDraw({gid:G.gid,accept});
+    $('drawOfferModal').hidden=true;
+    if(!accept)$('drawActionStatus').textContent='Bạn đã từ chối lời xin hòa.';
+  }catch(error){
+    $('drawOfferText').textContent=error.message||'Không thể phản hồi lời xin hòa.';
+  }finally{
+    $('bAcceptDraw').disabled=false;$('bDeclineDraw').disabled=false;
+  }
+}
+$('bAcceptDraw').onclick=()=>respondDraw(true);
+$('bDeclineDraw').onclick=()=>respondDraw(false);
+$('drawOfferModal').addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&G&&G.drawOffer&&G.drawOffer.uid!==me.uid)respondDraw(false);
+});
 $('bRes').onclick=resign;
 $('bHistorySearch').onclick=searchPlayerHistory;
 $('bAdminRefresh').onclick=loadAdminOverview;
