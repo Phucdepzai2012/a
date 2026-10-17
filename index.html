@@ -389,6 +389,31 @@ aside>.note{background:#fff;border:1px solid var(--ln);border-radius:8px;padding
 .tier-piece img{display:block;width:100%;aspect-ratio:1;object-fit:cover;border-radius:5px;background:#f8f2df}
 .tier-piece span{display:-webkit-box;overflow:hidden;min-height:25px;font-size:9px;font-weight:800;line-height:1.35;-webkit-box-orient:vertical;-webkit-line-clamp:2}
 .tier-piece small{display:block;overflow:hidden;color:#768497;font-size:8px;line-height:1.2;white-space:nowrap;text-overflow:ellipsis}
+
+/* Full-screen preview for tier-list positions */
+.tier-image-preview-overlay{position:fixed;inset:0;z-index:220;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(9,16,29,.78);backdrop-filter:blur(5px)}
+.tier-image-preview-overlay[hidden]{display:none!important}
+.tier-image-preview-card{width:min(92vw,780px);max-height:94dvh;overflow:auto;border:1px solid rgba(255,255,255,.7);border-radius:18px;background:#fff;box-shadow:0 24px 100px rgba(0,0,0,.38)}
+.tier-image-preview-head{display:flex;align-items:center;gap:14px;padding:16px 18px;border-bottom:1px solid #e2e8f0}
+.tier-image-preview-head>div{flex:1;min-width:0}
+.tier-image-preview-head h3{margin:0;color:#1b2430;font-size:clamp(16px,2.8vw,23px);line-height:1.25}
+.tier-image-preview-head p{margin:5px 0 0;color:#657488;font-size:12px;line-height:1.5}
+.tier-image-preview-close{display:flex;align-items:center;justify-content:center;flex:none;width:42px;height:42px;margin:0;padding:0;border:1px solid #d8e0ea;border-radius:12px;background:#f5f7fa;color:#29374a;font-size:29px;font-weight:500;line-height:1;cursor:pointer}
+.tier-image-preview-close:hover{background:#e9efff;border-color:#b7c9fa;color:#1c3fb7}
+.tier-image-preview-board{display:flex;align-items:center;justify-content:center;padding:clamp(10px,3vw,24px);background:linear-gradient(135deg,#f3f6fa,#e9eff5)}
+.tier-image-preview-board img{display:block;width:min(100%,700px);height:auto;max-height:72dvh;object-fit:contain;aspect-ratio:1;border:1px solid #bccbd8;border-radius:8px;background:#fbfcfd;box-shadow:0 8px 24px rgba(31,48,70,.16);image-rendering:auto}
+.tier-image-preview-foot{padding:10px 16px;color:#667589;font-size:11px;line-height:1.5;text-align:center}
+body.tier-image-preview-open{overflow:hidden}
+@media(max-width:620px){
+  .tier-image-preview-overlay{padding:8px}
+  .tier-image-preview-card{width:100%;max-height:96dvh;border-radius:13px}
+  .tier-image-preview-head{padding:11px 12px;gap:9px}
+  .tier-image-preview-close{width:36px;height:36px;border-radius:9px;font-size:25px}
+  .tier-image-preview-head p{font-size:10px}
+  .tier-image-preview-board{padding:8px}
+  .tier-image-preview-board img{width:100%;max-height:73dvh}
+}
+
 .tier-image-drop .tier-piece{width:82px;flex:0 0 82px}
 .tier-image-drop .tier-piece img{width:100%;aspect-ratio:1}
 .tier-image-drop .tier-piece span{font-size:8px;min-height:21px}
@@ -2443,9 +2468,10 @@ if(tierImageRoot){
   function tierImageSource(item){
     const size=250,left=30,top=30,board=190,cell=board/15;
     const canvas=document.createElement('canvas');
-    canvas.width=size;canvas.height=size;
+    canvas.width=size*3;canvas.height=size*3;
     const ctx=canvas.getContext('2d');
     if(!ctx)return '';
+    ctx.scale(3,3);
     ctx.fillStyle='#e8eef3';ctx.fillRect(0,0,size,size);
     ctx.fillStyle='#fbfcfd';ctx.fillRect(8,8,234,234);
     ctx.strokeStyle='#b7c8d6';ctx.lineWidth=1.2;ctx.strokeRect(8.5,8.5,233,233);
@@ -2531,7 +2557,47 @@ if(tierImageRoot){
     saveTierAssignments();
     renderTierImages();
   }
+  const tierPreview=document.createElement('div');
+  tierPreview.id='tierImagePreview';
+  tierPreview.className='tier-image-preview-overlay';
+  tierPreview.hidden=true;
+  tierPreview.setAttribute('role','dialog');
+  tierPreview.setAttribute('aria-modal','true');
+  tierPreview.setAttribute('aria-labelledby','tierImagePreviewTitle');
+  tierPreview.innerHTML='<div class="tier-image-preview-card"><header class="tier-image-preview-head"><div><h3 id="tierImagePreviewTitle">Xem thế cờ Caro</h3><p id="tierImagePreviewMeta">Sơ đồ bàn cờ 15 × 15</p></div><button id="tierImagePreviewClose" class="tier-image-preview-close" type="button" aria-label="Đóng ảnh lớn" title="Đóng">×</button></header><div class="tier-image-preview-board"><img id="tierImagePreviewImage" alt="Bàn cờ Caro phóng to"></div><div class="tier-image-preview-foot">Nhấn × hoặc bấm ra ngoài ảnh để đóng</div></div>';
+  document.body.appendChild(tierPreview);
+  let tierPreviewReturnFocus=null;
+  const tierPreviewImage=tierPreview.querySelector('#tierImagePreviewImage');
+  const tierPreviewTitle=tierPreview.querySelector('#tierImagePreviewTitle');
+  const tierPreviewMeta=tierPreview.querySelector('#tierImagePreviewMeta');
+  function openTierPreview(id,trigger){
+    const item=tierItems.find(candidate=>candidate.id===id);
+    if(!item)return;
+    tierPreviewReturnFocus=trigger||document.activeElement;
+    tierPreviewTitle.textContent=item.title;
+    tierPreviewMeta.textContent=item.tag+' · Sơ đồ bàn cờ Caro 15 × 15';
+    tierPreviewImage.src=tierImageCache.get(item.id)||'';
+    tierPreviewImage.alt='Thế cờ Caro: '+item.title;
+    tierPreview.hidden=false;
+    document.body.classList.add('tier-image-preview-open');
+    tierPreview.querySelector('#tierImagePreviewClose').focus();
+  }
+  function closeTierPreview(){
+    if(tierPreview.hidden)return;
+    tierPreview.hidden=true;
+    document.body.classList.remove('tier-image-preview-open');
+    if(tierPreviewReturnFocus&&typeof tierPreviewReturnFocus.focus==='function')tierPreviewReturnFocus.focus();
+  }
+  tierPreview.querySelector('#tierImagePreviewClose').addEventListener('click',closeTierPreview);
+  tierPreview.addEventListener('click',event=>{if(event.target===tierPreview)closeTierPreview()});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!tierPreview.hidden)closeTierPreview()});
   tierImageRoot.addEventListener('click',event=>{
+    const clickedImage=event.target.closest('[data-tier-piece] img');
+    if(clickedImage){
+      const piece=clickedImage.closest('[data-tier-piece]');
+      openTierPreview(piece.dataset.tierPiece,piece);
+      return;
+    }
     const piece=event.target.closest('[data-tier-piece]');
     if(piece){
       selectedTierPiece=piece.dataset.tierPiece;
