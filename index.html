@@ -111,22 +111,28 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 .loader-brand{margin:0;font:700 clamp(42px,7vw,68px)/.95 Caveat,cursive;color:var(--blue)}
 .loader-brand b{color:var(--red)}
 .loader-caption{font-size:clamp(13px,2vw,17px);color:var(--mut);margin:0}
-.loader-board{position:relative;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr));width:min(88vw,75vh,760px);width:min(88vw,75dvh,760px);aspect-ratio:7/5;padding:clamp(5px,1.1vw,10px);gap:clamp(3px,.8vw,7px);background:#e9eef1;border:1px solid #d5dde2;border-radius:12px;box-shadow:0 12px 35px rgba(27,36,48,.1)}
-.loader-cell{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;aspect-ratio:1;background:#fff;border:1px solid #d8e0e5;border-radius:clamp(4px,.7vw,9px);color:transparent;font-size:clamp(19px,4.8vw,51px);font-weight:700;line-height:1;opacity:.18;transform:scale(.9);transition:opacity .18s ease,transform .18s ease,background .2s ease,color .18s ease}
+.loader-board{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:min(80vw,52vh,430px);width:min(80vw,52dvh,430px);aspect-ratio:1;padding:0;gap:0;background:transparent;border:0;border-radius:0}
+.loader-cell{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;aspect-ratio:1;background:transparent;border:0;border-right:3px solid #b8c6d1;border-bottom:3px solid #b8c6d1;border-radius:0;color:transparent;font-size:clamp(36px,10vw,88px);font-weight:700;line-height:1;opacity:.08;transform:scale(.9);transition:opacity .18s ease,transform .18s ease,background .2s ease,color .18s ease}
+.loader-cell:nth-child(3n){border-right:0}
+.loader-cell:nth-child(n+7){border-bottom:0}
 .loader-cell.show{opacity:1;transform:scale(1)}
 .loader-cell.mark-x{color:var(--blue)}
 .loader-cell.mark-o{color:var(--red)}
 .loader-cell.winner{background:#dce8ff}
-#loaderWinLine{position:absolute;z-index:3;left:0;top:0;width:0;height:clamp(5px,.9vw,9px);border:2.5px solid #fff;border-radius:999px;background:var(--blue);box-shadow:0 0 0 1.5px var(--blue),0 2px 9px rgba(28,63,183,.35);transform:translateY(-50%) scaleX(0);transform-origin:left center;opacity:0;pointer-events:none}
-#loaderWinLine.show{opacity:1;transform:translateY(-50%) scaleX(1);transition:transform .52s cubic-bezier(.2,.8,.2,1),opacity .12s ease}
+#loaderWinLine{position:absolute;z-index:3;inset:0;width:100%;height:100%;overflow:visible;opacity:0;pointer-events:none}
+#loaderWinLine.show{opacity:1}
+#loaderWinLine path{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100;stroke-dashoffset:100}
+#loaderWinLine .win-outline{stroke:#fff;stroke-width:7.2;filter:drop-shadow(0 1px 1px rgba(28,63,183,.18))}
+#loaderWinLine .win-blue{stroke:var(--blue);stroke-width:3.8}
+#loaderWinLine.show path{animation:loaderDraw .58s cubic-bezier(.2,.8,.2,1) forwards}
 #loaderResult{display:block;min-height:24px;margin:0;font-size:clamp(13px,2.2vw,17px);font-weight:700;letter-spacing:.06em;color:var(--mut)}
 #loaderResult.win{color:var(--mut);animation:none}
 .loader-dots:after{display:inline-block;width:1.5em;text-align:left;animation:loaderDots 1s steps(4,end) infinite;content:""}
-@keyframes loaderWin{to{background:#c9dcff}}
+@keyframes loaderDraw{to{stroke-dashoffset:0}}
 @keyframes loaderPop{from{opacity:0;transform:translateY(4px) scale(.94)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes loaderDots{0%{content:""}25%{content:"."}50%{content:".."}75%,100%{content:"..."}}
-@media(max-width:520px){.loader-card{gap:clamp(8px,1.8vh,16px)}.loader-board{width:min(94vw,68vh,680px);width:min(94vw,68dvh,680px);gap:3px;padding:5px}.loader-cell{font-size:clamp(18px,5.5vw,38px)}}
-@media(orientation:landscape) and (max-height:520px){.loader-card{display:grid;grid-template-columns:auto minmax(240px,min(57vw,68vh));grid-template-rows:auto auto;align-content:center;justify-content:center;column-gap:clamp(18px,4vw,42px);row-gap:8px}.loader-brand,.loader-caption,#loaderResult{grid-column:1;align-self:end}.loader-caption{align-self:start}.loader-board{grid-column:2;grid-row:1 / span 3;width:min(76vw,128vh,900px);width:min(76vw,128dvh,900px);gap:4px}.loader-cell{font-size:clamp(19px,4vh,44px)}}
+@media(max-width:520px){.loader-card{gap:clamp(10px,2.5vh,20px)}.loader-board{width:min(82vw,48vh,360px);width:min(82vw,48dvh,360px)}.loader-cell{border-right-width:2px;border-bottom-width:2px;font-size:clamp(42px,17vw,76px)}#loaderWinLine .win-outline{stroke-width:8}#loaderWinLine .win-blue{stroke-width:4}}
+@media(orientation:landscape) and (max-height:520px){.loader-card{display:grid;grid-template-columns:auto minmax(150px,min(43vw,38vh));grid-template-rows:auto auto;align-content:center;justify-content:center;column-gap:clamp(18px,5vw,54px);row-gap:8px}.loader-brand,.loader-caption,#loaderResult{grid-column:1;align-self:end}.loader-caption{align-self:start}.loader-board{grid-column:2;grid-row:1 / span 3;width:min(43vw,74vh,340px);width:min(43vw,74dvh,340px)}}
 @media(prefers-reduced-motion:reduce){#gameLoader,.loader-cell{transition:none}.loader-cell.winner,#loaderResult.win{animation:none}.loader-dots:after{animation:none;content:"..."}}
 
 </style>
@@ -136,7 +142,7 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
   <div class="loader-card">
     <div class="loader-brand">Caro <b>5</b></div>
     <p class="loader-caption">Đang khởi động ván XO...</p>
-    <div id="loaderBoard" class="loader-board" aria-hidden="true"><span id="loaderWinLine"></span></div>
+    <div id="loaderBoard" class="loader-board" aria-hidden="true"><svg id="loaderWinLine" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="win-outline" d="M 16.7 16.7 C 29 12.3, 37 21.4, 50 16.7 S 71 12.2, 83.3 16.7"></path><path class="win-blue" d="M 16.7 16.7 C 29 12.3, 37 21.4, 50 16.7 S 71 12.2, 83.3 16.7"></path></svg></div>
     <strong id="loaderResult">X ĐANG ĐÁNH<span class="loader-dots"></span></strong>
   </div>
 </div>
@@ -1221,8 +1227,7 @@ setInterval(()=>{
   const winLine=document.getElementById('loaderWinLine');
   if(!overlay||!board||!result||!winLine)return;
   const cells=[];
-  /* Append cells before the strike line so the board remains easy to style. */
-  for(let i=0;i<35;i++){
+  for(let i=0;i<9;i++){
     const cell=document.createElement('span');
     cell.className='loader-cell';
     board.appendChild(cell);
@@ -1230,42 +1235,25 @@ setInterval(()=>{
   }
   board.appendChild(winLine);
 
-  /* Scattered X/O placements; the last X completes the three-X row. */
+  /* Classic 3x3 XO: a slightly hand-drawn victory stroke follows X's top row. */
   const moves=[
-    {cell:1,p:'x'},{cell:5,p:'o'},
-    {cell:16,p:'x'},{cell:8,p:'o'},
-    {cell:17,p:'x'},{cell:27,p:'o'},
-    {cell:28,p:'x'},{cell:3,p:'o'},
-    {cell:18,p:'x'}
+    {cell:0,p:'x'},{cell:4,p:'o'},
+    {cell:1,p:'x'},{cell:3,p:'o'},
+    {cell:2,p:'x'}
   ];
   let index=0;
   const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const interval=reduced?95:270;
+  const interval=reduced?150:410;
   result.innerHTML='ĐANG TẢI<span class="loader-dots"></span>';
-
-  function drawWinLine(){
-    const boardRect=board.getBoundingClientRect();
-    const first=cells[16].getBoundingClientRect();
-    const last=cells[18].getBoundingClientRect();
-    const x1=first.left+first.width/2-boardRect.left;
-    const x2=last.left+last.width/2-boardRect.left;
-    const y=first.top+first.height/2-boardRect.top;
-    winLine.style.left=x1+'px';
-    winLine.style.top=y+'px';
-    winLine.style.width=(x2-x1)+'px';
-    winLine.classList.add('show');
-  }
-
   const step=()=>{
     if(index>=moves.length)return;
     const move=moves[index++];
     const cell=cells[move.cell];
     cell.textContent=move.p==='x'?'X':'O';
     cell.classList.add('show',move.p==='x'?'mark-x':'mark-o');
-
     if(index===moves.length){
-      [16,17,18].forEach(i=>cells[i].classList.add('winner'));
-      drawWinLine();
+      [0,1,2].forEach(i=>cells[i].classList.add('winner'));
+      winLine.classList.add('show');
       result.innerHTML='ĐANG TẢI<span class="loader-dots"></span>';
       setTimeout(()=>overlay.classList.add('done'),reduced?450:1050);
       setTimeout(()=>overlay.hidden=true,reduced?750:1370);
@@ -1274,7 +1262,6 @@ setInterval(()=>{
     }
   };
   setTimeout(step,reduced?60:220);
-  window.addEventListener('resize',()=>{if(winLine.classList.contains('show'))drawWinLine()});
 })();
 </script>
 
