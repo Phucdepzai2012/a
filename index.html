@@ -111,7 +111,7 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 .loader-brand{margin:0;font:700 clamp(42px,7vw,68px)/.95 Caveat,cursive;color:var(--blue)}
 .loader-brand b{color:var(--red)}
 .loader-caption{font-size:clamp(13px,2vw,17px);color:var(--mut);margin:0}
-.loader-board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:min(80vw,52vh,430px);width:min(80vw,52dvh,430px);aspect-ratio:1;padding:0;gap:0;background:transparent;border:0;border-radius:0}
+.loader-board{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:min(80vw,52vh,430px);width:min(80vw,52dvh,430px);aspect-ratio:1;padding:0;gap:0;background:transparent;border:0;border-radius:0}
 .loader-cell{display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;aspect-ratio:1;background:transparent;border:0;border-right:3px solid #b8c6d1;border-bottom:3px solid #b8c6d1;border-radius:0;color:transparent;font-size:clamp(36px,10vw,88px);font-weight:700;line-height:1;opacity:.08;transform:scale(.9);transition:opacity .18s ease,transform .18s ease,background .2s ease,color .18s ease}
 .loader-cell:nth-child(3n){border-right:0}
 .loader-cell:nth-child(n+7){border-bottom:0}
@@ -1239,46 +1239,6 @@ setInterval(()=>{
   let index=0;
   const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const interval=reduced?150:410;
-  let audioContext=null;
-
-  function getAudio(){
-    try{
-      const AudioContextClass=window.AudioContext||window.webkitAudioContext;
-      if(!AudioContextClass)return null;
-      if(!audioContext)audioContext=new AudioContextClass();
-      if(audioContext.state==='suspended')audioContext.resume().catch(()=>{});
-      return audioContext.state==='running'?audioContext:null;
-    }catch(_){return null}
-  }
-  function tone(frequency,start,duration,volume,type='sine'){
-    const ctx=getAudio();
-    if(!ctx)return;
-    try{
-      const oscillator=ctx.createOscillator(),gain=ctx.createGain();
-      oscillator.type=type;oscillator.frequency.setValueAtTime(frequency,start);
-      gain.gain.setValueAtTime(0.0001,start);
-      gain.gain.exponentialRampToValueAtTime(volume,start+0.008);
-      gain.gain.exponentialRampToValueAtTime(0.0001,start+duration);
-      oscillator.connect(gain);gain.connect(ctx.destination);
-      oscillator.start(start);oscillator.stop(start+duration+0.015);
-    }catch(_){}
-  }
-  function playMoveSound(isX){
-    const ctx=getAudio();if(!ctx)return;
-    const now=ctx.currentTime;
-    tone(isX?660:510,now,0.075,isX?0.045:0.035,'triangle');
-    tone(isX?990:760,now+0.006,0.045,0.016,'sine');
-  }
-  function playWinChime(){
-    const ctx=getAudio();if(!ctx)return;
-    const now=ctx.currentTime+0.025;
-    [659.25,783.99,987.77].forEach((frequency,i)=>tone(frequency,now+i*0.105,0.24,0.045,'sine'));
-  }
-  /* Try to unlock audio where the browser requires a gesture; sound remains non-verbal. */
-  const unlockAudio=()=>{const ctx=getAudio();if(ctx&&ctx.state==='suspended')ctx.resume().catch(()=>{})};
-  window.addEventListener('pointerdown',unlockAudio,{passive:true});
-  window.addEventListener('keydown',unlockAudio);
-
   result.innerHTML='ĐANG TẢI<span class="loader-dots"></span>';
   const step=()=>{
     if(index>=moves.length)return;
@@ -1286,12 +1246,10 @@ setInterval(()=>{
     const cell=cells[move.cell];
     cell.textContent=move.p==='x'?'X':'O';
     cell.classList.add('show',move.p==='x'?'mark-x':'mark-o');
-    playMoveSound(move.p==='x');
 
     if(index===moves.length){
       [0,1,2].forEach(i=>cells[i].classList.add('winner'));
       winLine.classList.add('show');
-      playWinChime();
       /* Keep only the loading label; no spoken audio or winner text. */
       result.innerHTML='ĐANG TẢI<span class="loader-dots"></span>';
       setTimeout(()=>overlay.classList.add('done'),reduced?450:1050);
