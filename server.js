@@ -5,6 +5,7 @@
 const express = require('express');
 const http = require('http');
 const crypto = require('node:crypto');
+const { Pool } = require('pg');
 const { Server } = require('socket.io');
 
 const app = express();
@@ -15,7 +16,7 @@ const io = new Server(server, {
   pingTimeout: 20000,
 });
 
-// In-memory only: data resets when the Render instance restarts/redeploys.
+// Live cache. PostgreSQL is the durable source when DATABASE_URL is configured.
 const data = { players: {}, lobby: null, invite: {}, games: {}, history: {} };
 // Temporary in-memory account/session store. Passwords are stored only as scrypt hashes.
 const accountsByName = new Map();
@@ -25,10 +26,109 @@ const bannedUids = new Map();
 const loginFailures = new Map();
 const roomCreateEvents = new Map();
 const adminAudit = [];
+const databaseUrl = String(process.env.DATABASE_URL || '').trim();
+const pool = databaseUrl ? new Pool({ connectionString: databaseUrl, ssl: { rejectUnauthorized: false }, max: 5, connectionTimeoutMillis: 10000 }) : null;
+if (pool) pool.on('error', error => console.error('PostgreSQL pool error:', error.message));
+let persistenceReady = false;
+let persistQueue = Promise.resolve();
 const ADMIN_UID = '__caro_admin__';
 const ADMIN_USERNAME = String(process.env.CARO_ADMIN_USERNAME || 'admin').trim().slice(0, 14) || 'admin';
 const ADMIN_NAME_KEY = ADMIN_USERNAME.normalize('NFKC').toLocaleLowerCase('vi-VN');
 let version = 0;
+
+function persistentSnapshot() {
+  return {
+    data: clone(data),
+    accounts: [...accountsByUid.values()],
+    sessions: [...sessions.entries()],
+    bans: [...bannedUids.entries()],
+    roomCreateEvents: [...roomCreateEvents.entries()],
+    adminAudit: adminAudit.slice(-1000),
+    version
+  };
+}
+
+function restorePersistentSnapshot(raw) {
+  const saved = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  if (!saved || typeof saved !== 'object') throw new Error('Dữ liệu PostgreSQL không hợp lệ.');
+  const stored = saved.data && typeof saved.data === 'object' ? saved.data : {};
+  Object.assign(data, {
+    players: stored.players && typeof stored.players === 'object' ? stored.players : {},
+    lobby: stored.lobby == null ? null : stored.lobby,
+    invite: stored.invite && typeof stored.invite === 'object' ? stored.invite : {},
+    games: stored.games && typeof stored.games === 'object' ? stored.games : {},
+    history: stored.history && typeof stored.history === 'object' ? stored.history : {}
+  });
+  accountsByName.clear();
+  accountsByUid.clear();
+  for (const item of Array.isArray(saved.accounts) ? saved.accounts : []) {
+    if (!item || typeof item.uid !== 'string' || typeof item.name !== 'string') continue;
+    const account = { ...item };
+    account.key = String(account.key || account.name).trim().replace(/\s+/g, ' ').normalize('NFKC').toLocaleLowerCase('vi-VN');
+    accountsByUid.set(account.uid, account);
+    accountsByName.set(account.key, account.uid);
+  }
+  sessions.clear();
+  for (const item of Array.isArray(saved.sessions) ? saved.sessions : []) {
+    if (Array.isArray(item) && item.length === 2 && typeof item[0] === 'string' && typeof item[1] === 'string') {
+      if (item[1] === ADMIN_UID || accountsByUid.has(item[1])) sessions.set(item[0], item[1]);
+    }
+  }
+  bannedUids.clear();
+  for (const item of Array.isArray(saved.bans) ? saved.bans : []) {
+    if (Array.isArray(item) && item.length === 2 && typeof item[0] === 'string' && accountsByUid.has(item[0])) bannedUids.set(item[0], item[1]);
+  }
+  roomCreateEvents.clear();
+  for (const item of Array.isArray(saved.roomCreateEvents) ? saved.roomCreateEvents : []) {
+    if (Array.isArray(item) && typeof item[0] === 'string' && Array.isArray(item[1])) roomCreateEvents.set(item[0], item[1].filter(Number.isFinite));
+  }
+  adminAudit.splice(0, adminAudit.length, ...(Array.isArray(saved.adminAudit) ? saved.adminAudit.slice(-1000) : []));
+  version = Math.max(0, Number(saved.version) || 0);
+}
+
+async function initializePersistence() {
+  if (!pool) {
+    console.warn('DATABASE_URL is not configured. Storage is temporary and will reset when the service restarts.');
+    return;
+  }
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS caro_state (
+      state_key TEXT PRIMARY KEY,
+      payload JSONB NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+  const result = await pool.query('SELECT payload FROM caro_state WHERE state_key = $1', ['main']);
+  if (result.rows.length) {
+    restorePersistentSnapshot(result.rows[0].payload);
+    console.log('Loaded persistent Caro data from PostgreSQL.');
+  } else {
+    await pool.query(
+      'INSERT INTO caro_state (state_key, payload) VALUES ($1, $2::jsonb) ON CONFLICT (state_key) DO NOTHING',
+      ['main', JSON.stringify(persistentSnapshot())]
+    );
+    console.log('Initialized empty persistent Caro database.');
+  }
+  persistenceReady = true;
+}
+
+function persistState() {
+  if (!pool || !persistenceReady) return Promise.resolve(false);
+  const payload = JSON.stringify(persistentSnapshot());
+  persistQueue = persistQueue.catch(() => {}).then(async () => {
+    await pool.query(
+      'INSERT INTO caro_state (state_key, payload, updated_at) VALUES ($1, $2::jsonb, NOW()) ON CONFLICT (state_key) DO UPDATE SET payload = EXCLUDED.payload, updated_at = NOW()',
+      ['main', payload]
+    );
+    return true;
+  });
+  persistQueue.catch(error => console.error('Could not save Caro state to PostgreSQL:', error.message));
+  return persistQueue;
+}
+
+function schedulePersist() {
+  persistState().catch(error => console.error('Persistent save failed:', error.message));
+}
 
 function parseAccountName(value) {
   const name = String(value || '').trim().replace(/\s+/g, ' ').normalize('NFKC');
@@ -149,7 +249,7 @@ function getAdminOverview() {
     }
   }
   alerts.sort((a,b)=>(b.games||0)-(a.games||0));
-  return {ok:true,configuredAdmin:!!process.env.CARO_ADMIN_PASSWORD,totalAccounts:users.length,bannedAccounts:bannedUids.size,users:users.slice(0,200),recentMatches:matches.slice(0,100),alerts:alerts.slice(0,50),audit:adminAudit.slice(-100).reverse(),volatileStorage:true};
+  return {ok:true,configuredAdmin:!!process.env.CARO_ADMIN_PASSWORD,storageMode:persistenceReady?'postgres':'memory',persistentStorage:persistenceReady,totalAccounts:users.length,bannedAccounts:bannedUids.size,users:users.slice(0,200),recentMatches:matches.slice(0,100),alerts:alerts.slice(0,50),audit:adminAudit.slice(-100).reverse(),volatileStorage:!persistenceReady};
 }
 
 function validateGameRootPatch(gid, uid, patch) {
@@ -238,8 +338,8 @@ function assertWriteAccess(path, uid, value, mode='patch') {
   }
 }
 
-app.get('/', (_req, res) => res.status(200).json({ service: 'caro-realtime', status: 'ok' }));
-app.get('/healthz', (_req, res) => res.status(200).json({ status: 'ok' }));
+app.get('/', (_req, res) => res.status(200).json({ service: 'caro-realtime', status: 'ok', storage: persistenceReady ? 'postgres' : 'memory' }));
+app.get('/healthz', (_req, res) => res.status(200).json({ status: 'ok', persistentStorage: persistenceReady }));
 
 function cleanPath(path) {
   if (typeof path !== 'string') throw new Error('Đường dẫn không hợp lệ.');
@@ -313,6 +413,7 @@ function notifySubscribers() {
       client.emit('db:value', { subId, data: queryValue(sub.path, sub.query), version });
     }
   }
+  schedulePersist();
 }
 
 function reply(ack, result) {
@@ -322,7 +423,7 @@ function reply(ack, result) {
 io.on('connection', socket => {
   socket.data.subscriptions = new Map();
 
-  socket.on('auth:register', (payload, ack) => {
+  socket.on('auth:register', async (payload, ack) => {
     try {
       const { name, key } = parseAccountName(payload && payload.name);
       const password = String(payload && payload.password || '');
@@ -340,13 +441,15 @@ io.on('connection', socket => {
       data.players[uid] = { name, elo: 1000, w: 0, l: 0, d: 0 };
       version++;
       notifySubscribers();
-      reply(ack, makeAccountSession(uid));
+      const session = makeAccountSession(uid);
+      await persistState();
+      reply(ack, session);
     } catch (error) {
       reply(ack, { ok: false, error: error.message || 'Không thể đăng ký tài khoản.' });
     }
   });
 
-  socket.on('auth:login', (payload, ack) => {
+  socket.on('auth:login', async (payload, ack) => {
     let throttleKey=String(socket.handshake.address||'unknown')+'|invalid';
     try {
       const { key } = parseAccountName(payload && payload.name);
@@ -360,7 +463,9 @@ io.on('connection', socket => {
         const expectedHash=crypto.createHash('sha256').update(configuredPassword).digest();
         if(!password || !crypto.timingSafeEqual(suppliedHash,expectedHash)) throw new Error('Tên đăng nhập hoặc mật khẩu không đúng.');
         clearLoginFailures(throttleKey);
-        reply(ack, makeAdminSession());
+        const session = makeAdminSession();
+        await persistState();
+        reply(ack, session);
         return;
       }
       const uid = accountsByName.get(key);
@@ -374,7 +479,9 @@ io.on('connection', socket => {
         throw new Error('Tên đăng nhập hoặc mật khẩu không đúng.');
       }
       clearLoginFailures(throttleKey);
-      reply(ack, makeAccountSession(uid));
+      const session = makeAccountSession(uid);
+      await persistState();
+      reply(ack, session);
     } catch (error) {
       recordLoginFailure(throttleKey);
       reply(ack, { ok: false, error: error.message || 'Không thể đăng nhập.' });
@@ -396,10 +503,11 @@ io.on('connection', socket => {
     }
   });
 
-  socket.on('auth:logout', (payload, ack) => {
+  socket.on('auth:logout', async (payload, ack) => {
     const token = String(payload && payload.sessionToken || '');
     sessions.delete(token);
-    reply(ack, { ok: true });
+    try { await persistState(); reply(ack, { ok: true }); }
+    catch (error) { reply(ack, { ok: false, error: error.message || 'Không thể lưu trạng thái đăng xuất.' }); }
   });
 
   socket.on('admin:overview', (payload, ack) => {
@@ -407,7 +515,7 @@ io.on('connection', socket => {
     catch(error) { reply(ack, {ok:false,error:error.message||'Không thể đọc bảng quản trị.'}); }
   });
 
-  socket.on('admin:ban', (payload, ack) => {
+  socket.on('admin:ban', async (payload, ack) => {
     try {
       requireAdmin(payload);
       const uid=String(payload&&payload.uid||'').trim();
@@ -421,11 +529,12 @@ io.on('connection', socket => {
         bannedUids.delete(uid);
         adminAudit.push({at:Date.now(),action:'unban',targetUid:uid,targetName:accountsByUid.get(uid).name});
       }
+      await persistState();
       reply(ack,{ok:true,uid,banned:bannedUids.has(uid)});
     }catch(error){reply(ack,{ok:false,error:error.message||'Không thể khóa tài khoản.'})}
   });
 
-  socket.on('ranked:finish', (payload, ack) => {
+  socket.on('ranked:finish', async (payload, ack) => {
     try {
       const callerUid=requireSession(payload);
       const gid=String(payload&&payload.gid||'');
@@ -470,12 +579,13 @@ io.on('connection', socket => {
       }
       game.ratingResult={winnerUid,reason,at:Date.now(),playerResults};
       version++;notifySubscribers();
+      await persistState();
       const result=playerResults[callerUid];
       reply(ack,{ok:true,elo:result.elo,w:result.w,l:result.l,d:result.d,delta:result.elo-result.before,alreadyApplied:false});
     }catch(error){reply(ack,{ok:false,error:error.message||'Không thể cập nhật ELO xếp hạng.'})}
   });
 
-  socket.on('room:create', (payload, ack) => {
+  socket.on('room:create', async (payload, ack) => {
     try {
       const uid = String(payload && payload.uid || '').trim();
       const authenticatedUid = requireSession(payload);
@@ -496,11 +606,12 @@ io.on('connection', socket => {
       data.games[code] = { roomCode: code, p: [{ uid, name, elo }], moves: {}, turn: 0, status: 'waiting', dl: 0, createdAt };
       version++;
       notifySubscribers();
+      await persistState();
       reply(ack, { ok: true, code });
     } catch (error) { reply(ack, { ok: false, error: error.message || 'Không tạo được phòng.' }); }
   });
 
-  socket.on('room:join', (payload, ack) => {
+  socket.on('room:join', async (payload, ack) => {
     try {
       const code = String(payload && payload.code || '').trim();
       const uid = String(payload && payload.uid || '').trim();
@@ -519,6 +630,7 @@ io.on('connection', socket => {
       if (Math.random() < 0.5) game.p.reverse();
       game.status = 'play'; game.turn = 0; game.dl = Date.now() + 30000;
       version++; notifySubscribers();
+      await persistState();
       reply(ack, { ok: true, code });
     } catch (error) { reply(ack, { ok: false, error: error.message || 'Không thể vào phòng.' }); }
   });
@@ -555,7 +667,7 @@ io.on('connection', socket => {
     reply(ack, { ok: true });
   });
 
-  socket.on('db:write', (payload, ack) => {
+  socket.on('db:write', async (payload, ack) => {
     try {
       const op = String(payload && payload.op || '');
       const path = String(payload && payload.path || '');
@@ -578,13 +690,14 @@ io.on('connection', socket => {
       }
       version++;
       notifySubscribers();
+      await persistState();
       reply(ack, { ok: true, version });
     } catch (error) {
       reply(ack, { ok: false, error: error.message || 'Lỗi ghi dữ liệu.' });
     }
   });
 
-  socket.on('db:commit', (payload, ack) => {
+  socket.on('db:commit', async (payload, ack) => {
     try {
       const path = String(payload && payload.path || '');
       const uid = requireSession(payload);
@@ -597,6 +710,7 @@ io.on('connection', socket => {
       setAt(path, payload.value);
       version++;
       notifySubscribers();
+      await persistState();
       reply(ack, { ok: true, committed: true, version, data: getAt(path) });
     } catch (error) {
       reply(ack, { ok: false, error: error.message || 'Lỗi transaction.' });
@@ -605,6 +719,26 @@ io.on('connection', socket => {
 });
 
 const port = Number(process.env.PORT) || 10000;
-server.listen(port, '0.0.0.0', () => {
-  console.log(`Caro realtime server listening on 0.0.0.0:${port}`);
-});
+
+async function startServer() {
+  try {
+    await initializePersistence();
+    server.listen(port, '0.0.0.0', () => {
+      console.log(`Caro realtime server listening on 0.0.0.0:${port}`);
+    });
+  } catch (error) {
+    console.error('Could not initialize Caro PostgreSQL storage:', error.message);
+    if (pool) await pool.end().catch(() => {});
+    process.exitCode = 1;
+  }
+}
+
+async function shutdown() {
+  try { await persistState(); } catch (error) { console.error('Final state save failed:', error.message); }
+  if (pool) await pool.end().catch(() => {});
+  server.close(() => process.exit(0));
+}
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
+
+startServer();
