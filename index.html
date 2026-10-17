@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Caro 5 — Đấu xếp hạng</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--desk:#e4e9ec;--paper:#fdfdfa;--blue:#1c3fb7;--red:#d8322b;--ink:#1b2430;--mut:#667381;--ln:#c9d3da}
+*{box-sizing:border-box}
+body{margin:0;padding:16px;background:var(--desk);color:var(--ink);font:15px/1.45 'Be Vietnam Pro',system-ui,sans-serif;display:flex;justify-content:center}
+main{display:grid;grid-template-columns:minmax(0,640px) 280px;gap:24px;width:100%;max-width:960px;align-items:start}
+@media(max-width:860px){main{grid-template-columns:1fr}}
+.paper{background:var(--paper);padding:10px;border-radius:3px;box-shadow:0 1px 0 #fff inset,0 10px 30px -12px rgba(27,36,48,.45)}
+canvas{display:block;width:100%;aspect-ratio:1;cursor:crosshair;touch-action:none}
+h1{margin:0;font:700 44px/1 Caveat,cursive;color:var(--blue)}h1 b{color:var(--red)}
+h2{margin:22px 0 6px;font-size:13px;font-weight:600;color:var(--mut)}
+section{border-bottom:1px solid var(--ln);padding-bottom:14px}
+input,button{width:100%;font:inherit;padding:10px 12px;border-radius:6px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);margin-top:8px}
+button{cursor:pointer;font-weight:600}button.pri{background:var(--ink);color:var(--paper)}
+button:disabled{opacity:.4;cursor:not-allowed}button:not(:disabled):active{transform:translateY(1px)}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+#me{color:var(--mut);font-size:13px}#vs{font:700 22px/1.2 Caveat,cursive}#st{font-weight:600;margin-top:6px}#tm{color:var(--mut);font-size:13px;min-height:1.4em}
+.x{color:var(--blue)}.o{color:var(--red)}
+ol{margin:0;padding:0;list-style:none;counter-reset:r}
+li{display:flex;gap:8px;padding:5px 0;border-bottom:1px dashed var(--ln);counter-increment:r}
+li:before{content:counter(r);color:var(--mut);width:16px}
+li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{font-style:normal;color:var(--mut);font-size:12px;align-self:center}
+#ov{position:fixed;inset:0;background:rgba(228,233,236,.94);display:flex;align-items:center;justify-content:center;z-index:9;padding:16px}#ov[hidden]{display:none}
+#ov>div{background:var(--paper);padding:24px;border-radius:3px;max-width:340px;width:100%;box-shadow:0 10px 30px -12px rgba(27,36,48,.45)}
+#ov p{margin:8px 0 0;color:var(--mut);font-size:13px}#nmEr{color:var(--red);font-size:13px;min-height:1.4em;margin-top:6px}#me{font-weight:600;color:var(--ink)}
+#review[hidden]{display:none}
+.note{color:var(--mut);font-size:12px;margin-top:8px;line-height:1.45}
+.review-summary{font-size:13px;line-height:1.6;margin:8px 0;color:var(--ink)}
+#reviewList{max-height:360px;overflow:auto;counter-reset:none}
+#reviewList:before{display:none}
+#reviewList li{display:block;padding:0;border:0;counter-increment:none}
+#reviewList li:before{display:none}
+.review-row{display:flex;align-items:center;gap:6px;text-align:left;width:100%;margin:0;border:0;border-bottom:1px dashed var(--ln);border-radius:0;padding:8px 3px;background:transparent;font-size:12px;font-weight:400}
+.review-num{width:24px;flex:none;color:var(--mut)}.review-side{font-weight:700;flex:none}.review-coord{flex:1;color:var(--mut);white-space:nowrap}
+.tag{border-radius:4px;padding:3px 5px;font-size:10px;font-weight:700;white-space:nowrap;background:#e8edf1;color:#3b4650}
+.tag-genius{background:#d9f6e5;color:#087344}.tag-book{background:#e8e6ff;color:#4236a4}.tag-best{background:#dce8ff;color:#1c3fb7}.tag-great{background:#d9f6e5;color:#087344}.tag-good{background:#e5f4e9;color:#27683d}.tag-ok{background:#edf0f2;color:#59636b}.tag-inaccuracy{background:#fff0c7;color:#876000}.tag-mistake{background:#ffdfbd;color:#9b4b00}.tag-blunder{background:#ffd9d9;color:#a51d1d}.tag-maxblunder{background:#bd2020;color:#fff}.tag-missed{background:#f1d7ff;color:#71259b}
+.review-row:hover{background:#f0f3f5}
+.bot-settings{margin-top:8px;padding:10px;border:1px solid var(--ln);border-radius:6px;background:#f7f8f8}
+.bot-settings label{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;font-weight:600}
+.bot-settings label strong{color:var(--blue);white-space:nowrap}
+.bot-settings input[type=range]{display:block;width:100%;margin:8px 0 4px;padding:0;border:0;background:transparent;accent-color:var(--blue)}
+.bot-elo-row{display:grid;grid-template-columns:20px minmax(65px,1fr) auto;align-items:center;gap:8px;font-size:12px;color:var(--mut)}
+.bot-elo-row input{width:100%;margin:0;padding:6px 8px;font-size:14px}
+.bot-settings .note{margin-top:6px}
+@media(max-width:520px){body{padding:8px}main{gap:12px}.paper{padding:6px}.review-row{gap:4px}.tag{font-size:9px;padding:3px 4px}}
+</style>
+</head>
+<body>
+<div id="ov"><div><h1>Caro <b>5</b></h1><p>Đặt tên người chơi. Tên được lưu trong trình duyệt này.</p><input id="nm" maxlength="14" placeholder="Tên của bạn" autocomplete="off"><div id="nmEr"></div><button id="nmOk" class="pri">Vào chơi</button></div></div>
+<main>
+  <div class="paper"><canvas id="bd" aria-label="Bàn cờ Caro vô hạn"></canvas></div>
+  <aside>
+    <section>
+      <h1>Caro <b>5</b></h1>
+      <div id="me"></div>
+      <button id="bFind" class="pri">Ghép trận xếp hạng</button>
+      <button id="bBot">Luyện với máy (không tính điểm)</button>
+      <div id="botSettings" class="bot-settings">
+        <label for="botEloRange"><span>Sức mạnh của máy</span><strong id="botEloLabel">1500 ELO</strong></label>
+        <input id="botEloRange" type="range" min="1" max="3000" step="1" value="1500" aria-label="Điều chỉnh ELO máy từ 1 đến 3000">
+        <div class="bot-elo-row"><span>1</span><input id="botEloInput" type="number" min="1" max="3000" step="1" value="1500" aria-label="Nhập ELO máy"><span>3000 · MAX</span></div>
+        <div id="botEloDesc" class="note">Khá · ELO máy chỉ điều chỉnh độ khó, không đổi ELO của bạn ở chế độ luyện.</div>
+      </div>
+      <button id="bRes" hidden>Đầu hàng</button>
+      <button id="bCen">Về nước vừa đánh</button>
+      <div id="network" class="note">Đang kết nối Render để ghép trận người thật…</div>
+    </section>
+    <section>
+      <h2>Ván hiện tại</h2>
+      <div id="vs">—</div><div id="st">Đặt tên rồi chọn chế độ.</div><div id="tm"></div>
+    </section>
+    <section id="review" hidden>
+      <h2>Phân tích sau ván</h2>
+      <div id="reviewSummary" class="review-summary"></div>
+      <ol id="reviewList"></ol>
+      <div class="note">Đánh giá được ước lượng bằng thuật toán chiến thuật Caro trong trình duyệt, không phải engine chuyên nghiệp. “Sách giáo khoa” là nhãn cho nước khai cuộc được chấm tốt, không tra cứu cơ sở dữ liệu khai cuộc.</div>
+    </section>
+    <h2>Bảng xếp hạng</h2>
+    <ol id="lb"></ol>
+    <div class="note">Bảng xếp hạng lấy từ Render khi đã kết nối. Dữ liệu mẫu trên máy chủ sẽ bị xóa khi máy chủ khởi động lại.</div>
+  </aside>
+</main>
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+<script>
+/* Adapter tương thích một phần với Firebase Realtime Database API, chạy qua Socket.IO/Render. */
+(function () {
+  'use strict';
+  const SERVER_URL = 'https://a-sl8r.onrender.com';
+  if (typeof window.io !== 'function') {
+    console.error('Socket.IO client chưa được tải.');
+    window.firebase = undefined;
+    return;
+  }
+  const socket = window.io(SERVER_URL, {
+    transports: ['websocket', 'polling'], reconnection: true,
+    reconnectionAttempts: Infinity, reconnectionDelay: 1000,
+    reconnectionDelayMax: 8000, timeout: 12000
+  });
+  let localUid = '';
+  try {
+    localUid = localStorage.getItem('caroRenderUid') || '';
+    if (!localUid) {
+      localUid = 'u_' + (window.crypto && crypto.randomUUID ? crypto.randomUUID().replace(/-/g, '') : Math.random().toString(36).slice(2) + Date.now().toString(36));
+      localStorage.setItem('caroRenderUid', localUid);
+    }
+  } catch (_) { localUid = 'u_' + Math.random().toString(36).slice(2) + Date.now().toString(36); }
+  function waitForConnection() {
+    if (socket.connected) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      let done = false;
+      const timer = setTimeout(() => finish(new Error('Máy chủ Render chưa kết nối. Hãy kiểm tra trạng thái deploy của dịch vụ.')), 15000);
+      function finish(err) {
+        if (done) return; done = true; clearTimeout(timer);
+        socket.off('connect', onConnect); socket.off('connect_error', onError);
+        if (err) reject(err); else resolve();
+      }
+      function onConnect() { finish(); }
+      function onError(err) { finish(new Error('Không kết nối được Render: ' + (err && err.message || 'kết nối thất bại'))); }
+      socket.once('connect', onConnect); socket.once('connect_error', onError);
+    });
+  }
+  async function rpc(event, payload) {
+    await waitForConnection();
+    return new Promise((resolve, reject) => {
+      let done = false;
+      const timer = setTimeout(() => finish(new Error('Máy chủ phản hồi quá lâu.')), 15000);
+      function finish(err, result) {
+        if (done) return; done = true; clearTimeout(timer);
+        if (err) reject(err);
+        else if (!result || result.ok !== true) reject(new Error(result && result.error || 'Yêu cầu máy chủ thất bại.'));
+        else resolve(result);
+      }
+      socket.emit(event, payload, result => finish(null, result));
+    });
+  }
+  function copy(value) { if (value === undefined) return undefined; return JSON.parse(JSON.stringify(value)); }
+  function makeSnapshot(value, path, query) {
+    const key = String(path || '').split('/').filter(Boolean).pop() || null;
+    let val = value == null ? null : copy(value);
+    if (val && typeof val === 'object' && !Array.isArray(val)) {
+      let entries = Object.entries(val);
+      if (query && query.orderByChild) {
+        const field = query.orderByChild;
+        entries.sort((a, b) => {
+          const av = a[1] && a[1][field] != null ? a[1][field] : null;
+          const bv = b[1] && b[1][field] != null ? b[1][field] : null;
+          if (av === bv) return a[0].localeCompare(b[0]);
+          if (av == null) return -1; if (bv == null) return 1;
+          return typeof av === 'number' && typeof bv === 'number' ? av - bv : String(av).localeCompare(String(bv));
+        });
+      }
+      if (query && Number.isInteger(query.limitToFirst)) entries = entries.slice(0, query.limitToFirst);
+      if (query && Number.isInteger(query.limitToLast)) entries = entries.slice(Math.max(0, entries.length - query.limitToLast));
+      val = Object.fromEntries(entries);
+    }
+    return {
+      key, val: () => val == null ? null : copy(val),
+      exists: () => val !== null && val !== undefined,
+      forEach: callback => {
+        if (!val || typeof val !== 'object') return false;
+        for (const [childKey, childValue] of Object.entries(val)) {
+          const stop = callback(makeSnapshot(childValue, `${path}/${childKey}`, {}));
+          if (stop === true) return true;
+        }
+        return false;
+      }
+    };
+  }
+  let nextSubId = 0;
+  const subscriptions = new Map();
+  socket.on('db:value', message => {
+    const sub = subscriptions.get(message && message.subId); if (!sub) return;
+    const fingerprint = JSON.stringify(message.data === undefined ? null : message.data);
+    if (sub.lastFingerprint === fingerprint && sub.hasValue) return;
+    sub.lastFingerprint = fingerprint; sub.hasValue = true;
+    const snap = makeSnapshot(message.data, sub.path, sub.query);
+    for (const cb of [...sub.callbacks]) { try { cb(snap); } catch (error) { console.error('Lỗi callback đồng bộ Caro:', error); } }
+  });
+  socket.on('connect', () => {
+    for (const [subId, sub] of subscriptions) {
+      sub.hasValue = false;
+      socket.emit('db:subscribe', { subId, path: sub.path, query: sub.query }, result => {
+        if (!result || result.ok !== true) console.error(result && result.error || 'Không thể đăng ký đồng bộ.');
+      });
+    }
+  });
+  class Ref {
+    constructor(path, query = {}) { this.path = String(path || '').replace(/^\/+|\/+$/g, ''); this.query = {...query}; this.localSubIds = new Set(); }
+    limitToFirst(n) { return new Ref(this.path, {...this.query, limitToFirst: Math.max(0, Number(n) || 0)}); }
+    limitToLast(n) { return new Ref(this.path, {...this.query, limitToLast: Math.max(0, Number(n) || 0)}); }
+    orderByChild(field) { return new Ref(this.path, {...this.query, orderByChild: String(field)}); }
+    async once(eventName) {
+      if (eventName !== 'value') throw new Error('Adapter chỉ hỗ trợ sự kiện value.');
+      const result = await rpc('db:read', {path: this.path, query: this.query});
+      return makeSnapshot(result.data, this.path, this.query);
+    }
+    on(eventName, callback, errorCallback) {
+      if (eventName !== 'value' || typeof callback !== 'function') throw new Error('Sự kiện Firebase không được hỗ trợ.');
+      const subId = 's' + (++nextSubId);
+      const sub = {path: this.path, query: this.query, callbacks: new Set([callback]), hasValue: false, lastFingerprint: null};
+      subscriptions.set(subId, sub); this.localSubIds.add(subId);
+      if (socket.connected) socket.emit('db:subscribe', {subId, path: this.path, query: this.query}, result => {
+        if (!result || result.ok !== true) { const err = new Error(result && result.error || 'Không thể đăng ký đồng bộ.'); if (typeof errorCallback === 'function') errorCallback(err); else console.error(err); }
+      });
+      return callback;
+    }
+    off(eventName, callback) {
+      for (const subId of this.localSubIds) {
+        const sub = subscriptions.get(subId); if (!sub) continue;
+        if (callback) sub.callbacks.delete(callback); else sub.callbacks.clear();
+        if (!sub.callbacks.size) { subscriptions.delete(subId); if (socket.connected) socket.emit('db:unsubscribe', {subId}, () => {}); }
+      }
+      if (!callback) this.localSubIds.clear();
+    }
+    async set(value) { await rpc('db:write', {op: 'set', path: this.path, data: value}); }
+    async update(value) { await rpc('db:write', {op: 'update', path: this.path, data: value}); }
+    async remove() { await rpc('db:write', {op: 'remove', path: this.path}); }
+    async transaction(updateFunction) {
+      if (typeof updateFunction !== 'function') throw new Error('Transaction thiếu hàm cập nhật.');
+      for (let attempt = 0; attempt < 12; attempt++) {
+        const current = await rpc('db:read', {path: this.path, query: this.query});
+        const oldValue = current.data == null ? null : copy(current.data);
+        const newValue = updateFunction(oldValue);
+        if (newValue === undefined) return {committed: false, snapshot: makeSnapshot(oldValue, this.path, this.query)};
+        const result = await rpc('db:commit', {path: this.path, baseVersion: current.version, value: newValue});
+        if (result.committed) return {committed: true, snapshot: makeSnapshot(result.data, this.path, this.query)};
+      }
+      throw new Error('Transaction bị tranh chấp quá nhiều lần. Hãy thử lại.');
+    }
+    push() {
+      const key = '-R' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+      return {key, set: value => new Ref(`${this.path}/${key}`).set(value), update: value => new Ref(`${this.path}/${key}`).update(value)};
+    }
+  }
+  const firebaseApps = [];
+  function makeApp(config, name) {
+    const auth = {
+      currentUser: null,
+      async signInAnonymously() { await waitForConnection(); this.currentUser = {uid: localUid, isAnonymous: true}; return {user: this.currentUser}; }
+    };
+    const db = {ref: path => new Ref(path)};
+    return {name: name || '[DEFAULT]', options: config || {}, auth: () => auth, database: () => db};
+  }
+  window.firebase = {
+    apps: firebaseApps,
+    initializeApp(config, name) {
+      const existing = firebaseApps.find(app => app.name === (name || '[DEFAULT]'));
+      if (existing) return existing;
+      const app = makeApp(config, name); firebaseApps.push(app); return app;
+    }
+  };
+  window.caroRenderSocket = socket;
+})();
+</script>
+<script>
+'use strict';
+// Dữ liệu cấu hình cũ chỉ được giữ để không phải thay đổi logic hồ sơ hiện tại.
+// Kết nối thực tế hiện đi qua Socket.IO đến Render, không kết nối Firebase thật.
+const firebaseConfig = {
+  apiKey: "render-adapter",
+  authDomain: "a-sl8r.onrender.com",
+  databaseURL: "https://a-sl8r.onrender.com",
+  projectId: "caro-render",
+  storageBucket: "caro-render",
+  messagingSenderId: "caro-render",
+  appId: "caro-render-main",
+  measurementId: ""
+};
+const firebaseBackupConfig = {
+  apiKey: "render-adapter",
+  authDomain: "a-sl8r.onrender.com",
+  databaseURL: "https://a-sl8r.onrender.com",
+  projectId: "caro-render",
+  storageBucket: "caro-render",
+  messagingSenderId: "caro-render",
+  appId: "caro-render-backup",
+  measurementId: ""
+};
+const FIREBASE_CONFIGS = [
+  {name: 'Render chính', config: firebaseConfig},
+  {name: 'Render dự phòng', config: firebaseBackupConfig}
+];
+const N=15,TURN=30000,D=[[1,0],[0,1],[1,1],[1,-1]],$=id=>document.getElementById(id);
+const TIERS=[[1700,'Cao Thủ'],[1550,'Kim Cương'],[1400,'Bạch Kim'],[1250,'Vàng'],[1100,'Bạc'],[0,'Đồng']];
+const tier=e=>TIERS.find(t=>e>=t[0])[1];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+let profile={};try{profile=JSON.parse(localStorage.getItem('caroProfile')||'{}')}catch{}
+let me={uid:null,name:localStorage.getItem('caroName')||'',elo:Number(profile.elo)||1000,w:Number(profile.w)||0,l:Number(profile.l)||0,d:Number(profile.d)||0};
+let G=null,finding=false,findTimer=null,inviteRef=null,db=null,activeBackend=null,activeBackendIndex=-1,backendCandidates=[],serverOffset=0,switchingBackend=false,onlineLeaderboard=[],profileRef=null,leaderboardRef=null,serverOffsetRef=null,duplicateBackupConfig=false;
+const now=()=>Date.now()+serverOffset;
+const cv=$('bd'),cx=cv.getContext('2d');
+function saveProfile(){localStorage.setItem('caroName',me.name);localStorage.setItem('caroProfile',JSON.stringify({elo:me.elo,w:me.w,l:me.l,d:me.d}))}
+function ui(){
+  $('me').textContent=me.name?`${me.name} · ${tier(me.elo)} · ${me.elo} ELO · ${me.w}T ${me.l}B ${me.d}H`:'Hãy đặt tên để lưu thành tích';
+  $('vs').innerHTML=G?`<span class="x">X</span> ${esc(G.names[0])} <small>vs</small> <span class="o">O</span> ${esc(G.names[1])}`:'—';
+  $('bFind').disabled=!me.name||!!(G&&!G.over)||(!db&&!finding);
+  $('bBot').disabled=!me.name||!!(G&&!G.over)||finding;
+  $('botEloRange').disabled=!!(G&&!G.over)||finding;
+  $('botEloInput').disabled=!!(G&&!G.over)||finding;
+  $('bRes').hidden=!(G&&!G.over);
+  renderLeaderboard();
+}
+function stat(){
+  if(!G){if(!$('st').textContent||$('st').textContent==='Chọn chế độ để bắt đầu.')$('st').textContent='Chọn chế độ để bắt đầu.';return}
+  $('st').textContent=G.over?G.msg:G.turn===G.mine?`Đến lượt bạn (${G.mine===0?'X':'O'})`:'Đối thủ đang nghĩ…';
+}
+function renderLeaderboard(){
+  const rows=onlineLeaderboard.length?onlineLeaderboard:(me.name?[{name:me.name,elo:me.elo}]:[]);
+  $('lb').innerHTML=rows.length?rows.map(p=>`<li><span>${esc(p.name||'Người chơi')}</span><i>${tier(Number(p.elo)||1000)}</i><b>${Number(p.elo)||1000}</b></li>`).join(''):'<li><span>Chưa có người chơi</span><i>—</i><b>—</b></li>';
+}
+function setActive(active){
+  $('bFind').disabled=!me.name||active||(!db&&!finding);
+  $('bBot').disabled=!me.name||active||finding;
+  $('botEloRange').disabled=active||finding;
+  $('botEloInput').disabled=active||finding;
+  $('bRes').hidden=!active;
+}
+function profileData(){return {name:me.name,elo:me.elo,w:me.w,l:me.l,d:me.d}}
+function setNetwork(message){
+  const extra=duplicateBackupConfig?' · Lưu ý: hai cấu hình Render dùng cùng máy chủ, không phải database dự phòng độc lập.':'';
+  $('network').textContent=message+extra;
+}
+function backendKey(c){return `${c.projectId||''}|${String(c.databaseURL||'').replace(/\/$/,'')}`}
+function prepareBackendCandidates(){
+  const seen=new Set();backendCandidates=[];duplicateBackupConfig=false;
+  FIREBASE_CONFIGS.forEach((item,index)=>{const c=item.config;
+    if(!c.apiKey||!c.projectId||!c.appId||!c.databaseURL)return;
+    const key=backendKey(c);if(seen.has(key)){if(index>0)duplicateBackupConfig=true;return}
+    seen.add(key);backendCandidates.push({...item,index});
+  });
+}
+async function connectBackend(entry){
+  if(typeof firebase==='undefined')throw new Error('Không tải được adapter Socket.IO/Render.');
+  const appName=`caro-${entry.index}`;
+  let app=firebase.apps.find(a=>a.name===appName);if(!app)app=firebase.initializeApp(entry.config,appName);
+  const auth=app.auth();if(!auth.currentUser)await auth.signInAnonymously();
+  const backendDb=app.database();
+  await backendDb.ref('players').limitToFirst(1).once('value');
+  return {name:entry.name,index:entry.index,app,auth,db:backendDb,uid:auth.currentUser.uid};
+}
+function detachBackendListeners(){if(profileRef)profileRef.off();if(leaderboardRef)leaderboardRef.off();if(serverOffsetRef)serverOffsetRef.off();profileRef=null;leaderboardRef=null;serverOffsetRef=null}
+function bindBackendListeners(){
+  detachBackendListeners();if(!db||!me.uid)return;
+  serverOffsetRef=db.ref('.info/serverTimeOffset');serverOffsetRef.on('value',s=>serverOffset=s.val()||0);
+  profileRef=db.ref('players/'+me.uid);
+  profileRef.on('value',s=>{const v=s.val();if(!v)return;me.name=v.name||me.name;me.elo=Number(v.elo)||1000;me.w=Number(v.w)||0;me.l=Number(v.l)||0;me.d=Number(v.d)||0;saveProfile();if(me.name)hideOv();ui()},e=>handleBackendFailure(e,'hồ sơ người chơi'));
+  leaderboardRef=db.ref('players').orderByChild('elo').limitToLast(10);
+  leaderboardRef.on('value',s=>{const list=[];s.forEach(c=>list.push(c.val()));onlineLeaderboard=list.reverse();renderLeaderboard()},e=>handleBackendFailure(e,'bảng xếp hạng'));
+}
+async function activateBackend(entry){
+  const b=await connectBackend(entry);activeBackend=b;activeBackendIndex=backendCandidates.indexOf(entry);db=b.db;me.uid=b.uid;serverOffset=0;
+  const snap=await db.ref('players/'+me.uid).once('value');
+  if(snap.exists()){const v=snap.val();me.name=v.name||me.name;me.elo=Number(v.elo)||1000;me.w=Number(v.w)||0;me.l=Number(v.l)||0;me.d=Number(v.d)||0;saveProfile()}
+  else if(me.name){await db.ref('players/'+me.uid).update(profileData())}
+  bindBackendListeners();
+  if(me.name)hideOv();else showOv();
+  setNetwork(`Đã kết nối ${b.name} · có thể ghép trận người thật.`);ui();stat();
+}
+async function connectInitial(){
+  prepareBackendCandidates();
+  if(!backendCandidates.length){setNetwork('Chưa có cấu hình Render hợp lệ. Bạn vẫn có thể luyện với máy.');ui();return}
+  let errors=[];
+  for(const entry of backendCandidates){try{await activateBackend(entry);return}catch(e){errors.push(`${entry.name}: ${e.message||e}`)}}
+  db=null;activeBackend=null;activeBackendIndex=-1;
+  setNetwork('Không kết nối được Render. Hãy kiểm tra dịch vụ đã deploy và đang hoạt động. '+errors.join(' | '));ui();
+}
+async function handleBackendFailure(error,where='kết nối') {
+  if(switchingBackend)return false;
+  switchingBackend=true;
+  if(inviteRef){inviteRef.off();inviteRef=null}clearTimeout(findTimer);finding=false;
+  if(G&&G.ref){try{G.ref.off()}catch{}}
+  setNetwork(`Lỗi ${where}: ${error&&error.message?error.message:String(error)}. Hãy kiểm tra máy chủ Render.`);
+  if(G&&G.mode==='online'&&!G.over){G=null;ui();draw()}
+  switchingBackend=false;return false;
+}
+/* ---------- Luật và đồ họa bàn cờ: giữ nguyên kiểu vẽ bản gốc ---------- */
+function win(b,x,y){const p=b.get(x+','+y);for(const[dx,dy]of D){const L=[[x,y]];for(const s of[1,-1]){let i=x+dx*s,j=y+dy*s;while(b.get(i+','+j)===p){L.push([i,j]);i+=dx*s;j+=dy*s}}if(L.length>=5)return L}return null}
+function wouldWin(b,x,y,p){for(const[dx,dy]of D){let n=1;for(const s of[1,-1]){let i=x+dx*s,j=y+dy*s;while(b.get(i+','+j)===p){n++;i+=dx*s;j+=dy*s}}if(n>=5)return true}return false}
+const h=(x,y,k)=>{const s=Math.sin(x*12.9898+y*78.233+k*37.7)*43758.5453;return s-Math.floor(s)-.5};
+const cam={x:.5,y:.5,s:36};
+function draw(){
+  const W=cv.clientWidth,H=cv.clientHeight,d=window.devicePixelRatio||1;cv.width=Math.round(W*d);cv.height=Math.round(H*d);cx.setTransform(d,0,0,d,0,0);
+  const c=cam.s,ox=W/2-cam.x*c,oy=H/2-cam.y*c,i0=Math.floor(cam.x-W/2/c),i1=Math.ceil(cam.x+W/2/c),j0=Math.floor(cam.y-H/2/c),j1=Math.ceil(cam.y+H/2/c);
+  cx.strokeStyle='#9fc3dc';cx.lineWidth=1;cx.beginPath();
+  for(let i=i0;i<=i1;i++){const X=Math.round(ox+i*c)+.5;cx.moveTo(X,0);cx.lineTo(X,H)}
+  for(let j=j0;j<=j1;j++){const Y=Math.round(oy+j*c)+.5;cx.moveTo(0,Y);cx.lineTo(W,Y)}cx.stroke();
+  if(!G)return;
+  const cell=(x,y,f)=>{cx.fillStyle=f;cx.fillRect(ox+x*c+1,oy+y*c+1,c-1,c-1)};
+  if(G.last)cell(G.last[0],G.last[1],'rgba(255,214,10,.45)');
+  const winningPiece=G.line&&G.line.length?G.board.get(G.line[0][0]+','+G.line[0][1]):null;
+  const winningColor=winningPiece===0?'#1c3fb7':'#d8322b';
+  const winningTint=winningPiece===0?'rgba(28,63,183,.14)':'rgba(216,50,43,.14)';
+  if(G.line)G.line.forEach(([x,y])=>cell(x,y,winningTint));
+  cx.lineCap='round';cx.lineWidth=Math.max(2,c*.1);
+  G.board.forEach((v,k)=>{const[x,y]=k.split(',').map(Number);if(x<i0||x>i1||y<j0||y>j1)return;
+    const px=ox+(x+.5)*c,py=oy+(y+.5)*c,r=c*.3,q=c*.07;cx.beginPath();
+    if(v===0){cx.strokeStyle='#1c3fb7';
+      cx.moveTo(px-r+h(x,y,1)*q,py-r+h(x,y,2)*q);cx.quadraticCurveTo(px+h(x,y,3)*q,py+h(x,y,4)*q,px+r+h(x,y,5)*q,py+r+h(x,y,6)*q);
+      cx.moveTo(px+r+h(x,y,7)*q,py-r+h(x,y,8)*q);cx.quadraticCurveTo(px+h(x,y,9)*q,py+h(x,y,1)*q,px-r+h(x,y,2)*q,py+r+h(x,y,3)*q)}
+    else{cx.strokeStyle='#d8322b';cx.ellipse(px,py,r*(1+h(x,y,4)*.12),r*(1+h(x,y,5)*.12),h(x,y,6)*1.2,0,7)}
+    cx.stroke()});
+  if(G.line&&G.line.length>=5){
+    let a=G.line[0],b=G.line[0],far=-1;
+    for(const p of G.line)for(const q of G.line){const dd=(p[0]-q[0])**2+(p[1]-q[1])**2;if(dd>far){far=dd;a=p;b=q}}
+    const x1=ox+(a[0]+.5)*c,y1=oy+(a[1]+.5)*c,x2=ox+(b[0]+.5)*c,y2=oy+(b[1]+.5)*c;
+    cx.save();cx.lineCap='round';cx.beginPath();cx.moveTo(x1,y1);cx.lineTo(x2,y2);cx.strokeStyle='rgba(255,255,255,.96)';cx.lineWidth=Math.max(5,c*.22);cx.stroke();
+    cx.beginPath();cx.moveTo(x1,y1);cx.lineTo(x2,y2);cx.strokeStyle=winningColor;cx.lineWidth=Math.max(2.5,c*.10);cx.stroke();cx.restore();
+  }
+}
+/* ---------- Chấm điểm chiến thuật Caro ---------- */
+function candidates(b){
+  const out=new Set();if(!b.size)return [[0,0]];
+  b.forEach((v,k)=>{const[x,y]=k.split(',').map(Number);for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const xx=x+dx,yy=y+dy,key=xx+','+yy;if(!b.has(key))out.add(key)}});
+  return [...out].map(k=>k.split(',').map(Number));
+}
+function ev(b,x,y,p){let t=0;for(const[dx,dy]of D){let n=1,o=0;for(const s of[1,-1]){let i=x+dx*s,j=y+dy*s;while(b.get(i+','+j)===p){n++;i+=dx*s;j+=dy*s}if(!b.has(i+','+j))o++}
+  t+=n>=5?100000:n===4?(o===2?10000:o?1000:0):n===3?(o===2?500:o?60:0):n===2?(o===2?40:o?5:0):1}return t}
+function winningMoves(b,p){return candidates(b).filter(([x,y])=>wouldWin(b,x,y,p)).map(([x,y])=>x+','+y)}
+function scoreMove(b,x,y,p,oppWins){let s=ev(b,x,y,p)+ev(b,x,y,1-p)*.96;if(wouldWin(b,x,y,p))s+=100000000;if(oppWins&&oppWins.has(x+','+y))s+=10000000;return s}
+function botMove(b,p,noise=0,elo=1500){
+  const c=candidates(b),oppWins=new Set(winningMoves(b,1-p));
+  if(c.length>1&&Math.random()<botMistakeChance(elo)){const random=c[Math.floor(Math.random()*c.length)];return random}
+  let best=-Infinity,choices=[];
+  for(const[x,y]of c){const s=scoreMove(b,x,y,p,oppWins);if(s>best){best=s;choices=[[x,y,s]]}else if(s===best)choices.push([x,y,s])}
+  if(noise>0){const pool=c.map(([x,y])=>[x,y,scoreMove(b,x,y,p,oppWins)]).filter(a=>a[2]>=best-noise).sort((a,b)=>b[2]-a[2]).slice(0,12);if(pool.length){const k=pool[Math.floor(Math.random()*pool.length)];return[k[0],k[1]]}}
+  const q=choices[Math.floor(Math.random()*choices.length)]||[0,0];return[q[0],q[1]]
+}
+function botNoise(elo){return clamp((3000-elo)*2.4,0,7198)}
+function botMistakeChance(elo){const weakness=(3000-clamp(Number(elo)||1,1,3000))/2999;return .42*weakness*weakness}
+function botDifficultyText(elo){return elo<=300?'Rất dễ':elo<=700?'Dễ':elo<=1100?'Bình thường':elo<=1500?'Khá':elo<=2000?'Khó':elo<=2500?'Rất khó':'Cực khó · MAX'}
+function updateBotEloDisplay(elo){const n=clamp(Math.round(Number(elo)||1),1,3000);$('botEloLabel').textContent=`${n} ELO`;$('botEloDesc').textContent=`${botDifficultyText(n)} · ELO máy chỉ điều chỉnh độ khó, không đổi ELO của bạn ở chế độ luyện.`;return n}
+function startGame(mode){
+  if(!me.name){showOv();return}
+  if(G&&G.ref){try{G.ref.off()}catch{}}
+  finding=false;clearTimeout(findTimer);if(inviteRef){inviteRef.off();inviteRef=null}$('bFind').textContent='Ghép trận xếp hạng';
+  const ranked=mode==='ranked';
+  const botElo=ranked?clamp(Math.round(me.elo+(Math.random()-.5)*150),700,2200):clamp(Math.round(Number($('botEloInput').value)||1500),1,3000);
+  const botName=ranked?`Máy ${tier(botElo)} (${botElo})`:`Máy ${tier(botElo)} (${botElo} ELO)`;
+  const mine=Math.random()<.5?0:1;
+  G={mode,mine,botElo,noise:botNoise(botElo),board:new Map(),turn:0,n:0,over:0,names:mine===0?[me.name,botName]:[botName,me.name],moves:[],last:null,line:null,msg:'',winner:null,review:[]};
+  $('review').hidden=true;$('reviewSummary').textContent='';$('reviewList').innerHTML='';$('tm').textContent='';
+  cam.x=cam.y=.5;cam.s=36;setActive(true);ui();draw();stat();
+  if(G.turn!==G.mine)setTimeout(botTurn,350);
+}
+function applyMove(x,y,p){
+  if(!G||G.over||G.board.has(x+','+y))return false;
+  G.board.set(x+','+y,p);G.moves.push({x,y,p});G.last=[x,y];G.n++;
+  const line=win(G.board,x,y);if(line){G.line=line;finishGame(p,'win');return true}
+  G.turn=1-p;draw();stat();return true;
+}
+function playerMove(x,y){
+  if(!G||G.over||G.turn!==G.mine||G.board.has(x+','+y))return;
+  if(G.mode==='online'){submitOnlineMove(x,y);return}
+  if(!applyMove(x,y,G.mine))return;
+  if(!G.over&&G.turn!==G.mine)setTimeout(botTurn,260);
+}
+async function submitOnlineMove(x,y){
+  if(!G||G.mode!=='online'||G.over||G.turn!==G.mine||!G.ref)return;
+  const game=G,p=G.mine,key=x+','+y,checkBoard=new Map(G.board);checkBoard.set(key,p);
+  const line=win(checkBoard,x,y),update={};update[`moves/${G.n}`]={x,y,p,t:now()};
+  if(line){update.status='over';update.winner=p;update.why='win'}else{update.turn=1-p;update.dl=now()+TURN}
+  G.turn=-1;stat();
+  try{await game.ref.update(update)}catch(e){await handleBackendFailure(e,'ghi nước đi')}
+}
+function botTurn(){if(!G||G.over||G.turn===G.mine)return;const p=1-G.mine,[x,y]=botMove(G.board,p,G.noise,G.botElo);applyMove(x,y,p)}
+function finishGame(winner,why){
+  if(!G||G.over)return;G.over=1;G.winner=winner;
+  const score=winner===-1?.5:winner===G.mine?1:0;let rating='';
+  if(G.mode==='ranked'||G.mode==='online'){
+    const baseElo=Number(G.myElo)||me.elo||1000;
+    const opponentElo=Number(G.mode==='online'?G.oppElo:G.botElo)||1000;
+    const expected=1/(1+10**((opponentElo-baseElo)/400));const next=Math.max(100,Math.round(baseElo+32*(score-expected)));
+    const delta=next-baseElo;me.elo=next;if(score===1)me.w++;else if(score===0)me.l++;else me.d++;
+    saveProfile();rating=` · ${delta>=0?'+':''}${delta} ELO`;
+    if(G.mode==='online'&&db&&me.uid){db.ref('players/'+me.uid).update({elo:me.elo,w:me.w,l:me.l,d:me.d,name:me.name}).catch(e=>handleBackendFailure(e,'lưu điểm ELO'))}
+  }
+  G.msg=(winner===-1?'Hòa':score===1?'Bạn thắng!':'Bạn thua')+(why==='timeout'?' (hết giờ)':why==='resign'?' (đầu hàng)':'')+rating;
+  $('tm').textContent='';setActive(false);ui();draw();stat();showReview();
+}
+function resign(){
+  if(!G||G.over)return;
+  if(G.mode==='online'){G.ref.update({status:'over',winner:1-G.mine,why:'resign'}).catch(e=>handleBackendFailure(e,'đầu hàng'));return}
+  finishGame(1-G.mine,'resign');
+}
+async function cancelFind(showMessage=true){
+  clearTimeout(findTimer);finding=false;if(inviteRef){inviteRef.off();inviteRef=null}
+  if(db&&me.uid){try{await db.ref('lobby').transaction(c=>c&&c.uid===me.uid?null:undefined)}catch{}try{await db.ref('invite/'+me.uid).remove()}catch{}}
+  $('bFind').textContent='Ghép trận xếp hạng';$('bBot').disabled=!me.name;ui();
+  if(showMessage)$('st').textContent='Đã huỷ tìm trận.';
+}
+async function openGame(gid){
+  if(!db||!me.uid)throw new Error('Render chưa kết nối.');
+  if(G&&G.ref)G.ref.off();clearTimeout(findTimer);finding=false;if(inviteRef){inviteRef.off();inviteRef=null}
+  $('bFind').textContent='Ghép trận xếp hạng';
+  const ref=db.ref('games/'+gid),snap=await ref.once('value'),v=snap.val();
+  if(!v||!Array.isArray(v.p))throw new Error('Không tìm thấy ván đấu.');
+  const mine=v.p.findIndex(q=>q.uid===me.uid);if(mine<0)throw new Error('Ván đấu không thuộc tài khoản này.');
+  G={mode:'online',gid,ref,mine,board:new Map(),turn:Number(v.turn)||0,n:0,over:0,dl:v.dl||now()+TURN,names:v.p.map(q=>`${q.name} (${q.elo})`),myElo:Number(v.p[mine].elo)||me.elo,oppElo:Number(v.p[1-mine].elo)||1000,moves:[],last:null,line:null,msg:'',winner:null,review:[]};
+  await db.ref('invite/'+me.uid).remove().catch(()=>{});setActive(true);ui();draw();stat();cam.x=cam.y=.5;
+  ref.on('value',onGame,e=>handleBackendFailure(e,'đồng bộ ván đấu'));
+}
+function onGame(s){
+  const v=s.val();if(!v||!G||G.gid!==s.key)return;
+  const keys=Object.keys(v.moves||{}).sort((a,b)=>Number(a)-Number(b));
+  const moves=keys.map(k=>v.moves[k]).filter(Boolean),board=new Map();moves.forEach((m,i)=>board.set(m.x+','+m.y,Number.isInteger(m.p)?m.p:i%2));
+  const last=moves[moves.length-1];Object.assign(G,{board,moves,n:moves.length,turn:Number(v.turn)||0,dl:Number(v.dl)||0,last:last?[last.x,last.y]:null});
+  if(v.status==='over'&&!G.over){G.winner=Number.isInteger(v.winner)?v.winner:-1;G.line=v.why==='win'&&last?win(board,last.x,last.y):null;finishGame(G.winner,v.why);return}
+  draw();stat();
+}
+async function startMatchmaking(retry=false){
+  if(finding){await cancelFind();return}if(!me.name){showOv();return}
+  if(!db||!me.uid){$('st').textContent='Không thể ghép người thật: Render chưa kết nối. Hãy kiểm tra trạng thái máy chủ.';return}
+  finding=true;$('bFind').textContent='Huỷ tìm trận';$('bFind').disabled=false;$('bBot').disabled=true;$('st').textContent='Đang tìm người chơi thật…';
+  try{
+    await db.ref('invite/'+me.uid).remove();let opponent=null;const lobby=db.ref('lobby');
+    await lobby.transaction(current=>{opponent=null;if(current&&current.uid!==me.uid&&now()-Number(current.t||0)<60000){opponent=current;return null}return {uid:me.uid,name:me.name,elo:me.elo,t:now()}});
+    if(!finding)return;
+    if(opponent){
+      const gid=db.ref('games').push().key;const players=[{uid:me.uid,name:me.name,elo:me.elo},{uid:opponent.uid,name:opponent.name||'Đối thủ',elo:Number(opponent.elo)||1000}];if(Math.random()<.5)players.reverse();
+      await db.ref('games/'+gid).set({p:players,moves:{},turn:0,status:'play',dl:now()+TURN,createdAt:now()});
+      await db.ref('invite/'+opponent.uid).set(gid);await openGame(gid);
+    }else{
+      inviteRef=db.ref('invite/'+me.uid);
+      inviteRef.on('value',s=>{if(!s.val()||!finding)return;const gid=s.val();if(inviteRef){inviteRef.off();inviteRef=null}clearTimeout(findTimer);openGame(gid).catch(e=>handleBackendFailure(e,'mở ván đấu'))},e=>handleBackendFailure(e,'nhận lời mời'));
+      findTimer=setTimeout(async()=>{if(finding){await cancelFind(false);$('st').textContent='Chưa tìm thấy đối thủ. Hãy thử lại sau.'}},60000);
+    }
+  }catch(e){const switched=await handleBackendFailure(e,'ghép trận');if(switched){$('st').textContent='Đã chuyển máy chủ dự phòng. Nhấn Ghép trận để thử lại.';return}finding=false;ui();$('st').textContent='Ghép trận lỗi: '+(e.message||e)}
+}
+$('bFind').onclick=startMatchmaking;$('bBot').onclick=()=>startGame('bot');
+const savedBotElo=clamp(Math.round(Number(localStorage.getItem('caroBotElo'))||1500),1,3000);
+$('botEloRange').value=String(savedBotElo);$('botEloInput').value=String(savedBotElo);updateBotEloDisplay(savedBotElo);
+$('botEloRange').addEventListener('input',()=>{const n=Number($('botEloRange').value);$('botEloInput').value=String(n);localStorage.setItem('caroBotElo',String(n));updateBotEloDisplay(n)});
+$('botEloInput').addEventListener('input',()=>{const raw=$('botEloInput').value;if(raw==='')return;const n=clamp(Math.round(Number(raw)),1,3000);$('botEloRange').value=String(n);localStorage.setItem('caroBotElo',String(n));updateBotEloDisplay(n)});
+$('botEloInput').addEventListener('change',()=>{const n=clamp(Math.round(Number($('botEloInput').value)||1),1,3000);$('botEloInput').value=String(n);$('botEloRange').value=String(n);localStorage.setItem('caroBotElo',String(n));updateBotEloDisplay(n)});
+$('bRes').onclick=resign;
+$('bCen').onclick=()=>{const l=G&&G.last;cam.x=l?l[0]+.5:.5;cam.y=l?l[1]+.5:.5;draw()};
+/* ---------- Xem lại nước đi ---------- */
+const QUALITY={
+  'Thiên tài':['genius',100],'Sách giáo khoa':['book',100],'Nước thắng':['best',100],
+  'Nước đi tốt nhất':['best',100],'Xuất sắc':['great',98],'Nước đi tốt':['good',94],
+  'Chấp nhận được':['ok',85],'Không chính xác':['inaccuracy',70],'Sai lầm':['mistake',48],
+  'Sai lầm nghiêm trọng':['blunder',25],'Siêu sai lầm':['maxblunder',8],'Bỏ lỡ chiến thắng':['missed',5]
+};
+function analyzeGame(){
+  const board=new Map(),out=[];
+  for(let i=0;i<G.moves.length;i++){
+    const m=G.moves[i],p=m.p,key=m.x+','+m.y;const opts=candidates(board),ownWins=new Set(winningMoves(board,p)),oppWins=new Set(winningMoves(board,1-p));
+    if(!opts.some(([x,y])=>x===m.x&&y===m.y))opts.push([m.x,m.y]);
+    let best=-Infinity;for(const[x,y]of opts)best=Math.max(best,scoreMove(board,x,y,p,oppWins));
+    const played=scoreMove(board,m.x,m.y,p,oppWins),gap=Math.max(0,best-played);const after=new Map(board);after.set(key,p);
+    const opponentCanWin=winningMoves(after,1-p).length>0;const playedWins=wouldWin(board,m.x,m.y,p);let label;
+    if(playedWins){label=oppWins.size&&!ownWins.size?'Thiên tài':'Nước thắng'}
+    else if(ownWins.size&&!ownWins.has(key)){label='Bỏ lỡ chiến thắng'}
+    else if(opponentCanWin){label=oppWins.size?'Siêu sai lầm':'Sai lầm nghiêm trọng'}
+    else if(gap>10000){label='Sai lầm nghiêm trọng'}else if(gap>2500){label='Sai lầm'}else if(gap>500){label='Không chính xác'}else if(gap>120){label='Chấp nhận được'}else if(i<6&&gap<=20){label='Sách giáo khoa'}else if(gap>20){label='Nước đi tốt'}else{label='Nước đi tốt nhất'}
+    const q=QUALITY[label]||QUALITY['Chấp nhận được'];out.push({...m,index:i,label,cls:q[0],pct:q[1]});board.set(key,p);
+  }
+  return out;
+}
+function showReview(){
+  if(!G||!G.moves.length){$('review').hidden=true;return}G.review=analyzeGame();const x=G.review.filter(m=>m.p===0),o=G.review.filter(m=>m.p===1);
+  const acc=a=>a.length?Math.round(a.reduce((s,m)=>s+m.pct,0)/a.length):0;
+  const count=a=>a.filter(m=>['Sai lầm','Sai lầm nghiêm trọng','Siêu sai lầm','Bỏ lỡ chiến thắng'].includes(m.label)).length;
+  $('reviewSummary').innerHTML=`<b class="x">X (${esc(G.names[0])}):</b> ${acc(x)}% · ${count(x)} lỗi<br><b class="o">O (${esc(G.names[1])}):</b> ${acc(o)}% · ${count(o)} lỗi<br><span class="note">Chọn một nước để đưa bàn cờ tới vị trí đó.</span>`;
+  $('reviewList').innerHTML=G.review.map(m=>`<li><button class="review-row" data-index="${m.index}" title="Xem nước đi ${m.index+1}"><span class="review-num">${m.index+1}.</span><b class="review-side ${m.p===0?'x':'o'}">${m.p===0?'X':'O'}</b><span class="review-coord">(${m.x}, ${m.y})</span><span class="tag tag-${m.cls}">${m.label}</span></button></li>`).join('');$('review').hidden=false;
+}
+$('reviewList').addEventListener('click',e=>{
+  const btn=e.target.closest('[data-index]');if(!btn||!G||!G.review)return;const m=G.review[Number(btn.dataset.index)];if(!m)return;cam.x=m.x+.5;cam.y=m.y+.5;G.last=[m.x,m.y];draw();
+});
+/* ---------- Kéo, cuộn và chụm để di chuyển/zoom ---------- */
+const ptr=new Map();let moved=0,pinch=0;
+const dist=()=>{const[a,b]=[...ptr.values()];return Math.hypot(a[0]-b[0],a[1]-b[1])};
+function zoomAt(px,py,f){const r=cv.getBoundingClientRect(),W=r.width,H=r.height,old=cam.s,wx=cam.x+(px-W/2)/old,wy=cam.y+(py-H/2)/old;cam.s=Math.min(90,Math.max(12,old*f));cam.x=wx-(px-W/2)/cam.s;cam.y=wy-(py-H/2)/cam.s;draw()}
+cv.onpointerdown=e=>{cv.setPointerCapture(e.pointerId);ptr.set(e.pointerId,[e.clientX,e.clientY]);moved=0;if(ptr.size===2)pinch=dist()};
+cv.onpointermove=e=>{if(!ptr.has(e.pointerId))return;const p=ptr.get(e.pointerId),dx=e.clientX-p[0],dy=e.clientY-p[1];ptr.set(e.pointerId,[e.clientX,e.clientY]);
+  if(ptr.size===2){const d=dist(),r=cv.getBoundingClientRect(),[a,b]=[...ptr.values()];zoomAt((a[0]+b[0])/2-r.left,(a[1]+b[1])/2-r.top,d/(pinch||d));pinch=d;moved=99;return}
+  moved+=Math.abs(dx)+Math.abs(dy);if(moved>8){cam.x-=dx/cam.s;cam.y-=dy/cam.s;draw()}};
+cv.onpointerup=e=>{const one=ptr.size===1;ptr.delete(e.pointerId);if(!one||moved>8||!G||G.over||G.turn!==G.mine)return;
+  const r=cv.getBoundingClientRect(),x=Math.floor(cam.x+(e.clientX-r.left-r.width/2)/cam.s),y=Math.floor(cam.y+(e.clientY-r.top-r.height/2)/cam.s);if(!G.board.has(x+','+y))playerMove(x,y)};
+cv.onpointercancel=e=>ptr.delete(e.pointerId);
+cv.addEventListener('wheel',e=>{e.preventDefault();const r=cv.getBoundingClientRect();zoomAt(e.clientX-r.left,e.clientY-r.top,e.deltaY<0?1.12:.89)},{passive:false});
+/* ---------- Hồ sơ người chơi ---------- */
+const ov=$('ov'),showOv=()=>{ov.hidden=false;$('nm').focus()},hideOv=()=>{ov.hidden=true};
+$('nmOk').onclick=async()=>{
+  const n=$('nm').value.trim().replace(/\s+/g,' ');if(n.length<2){$('nmEr').textContent='Tên cần từ 2 đến 14 ký tự.';return}
+  me.name=n;saveProfile();hideOv();ui();stat();
+  if(db&&me.uid){try{await db.ref('players/'+me.uid).update(profileData())}catch(e){await handleBackendFailure(e,'lưu tên người chơi')}}
+};
+$('nm').onkeydown=e=>{if(e.key==='Enter')$('nmOk').click()};
+if(me.name){$('nm').value=me.name;hideOv()}else showOv();
+addEventListener('resize',draw);ui();stat();draw();connectInitial();
+setInterval(()=>{
+  if(!G||G.mode!=='online'||G.over||!G.dl)return;
+  const seconds=Math.max(0,Math.ceil((G.dl-now())/1000));$('tm').textContent=`${G.turn===G.mine?'Bạn':'Đối thủ'} còn ${seconds}s`;
+  if(now()>G.dl+1800){
+    const ref=G.ref,expectedTurn=G.turn,expectedDl=G.dl;
+    ref.transaction(v=>{if(!v||v.status!=='play'||Number(v.turn)!==expectedTurn||Number(v.dl)!==expectedDl||now()<=Number(v.dl)+1800)return;v.status='over';v.winner=1-expectedTurn;v.why='timeout';return v}).catch(e=>handleBackendFailure(e,'đồng hồ ván đấu'));
+  }
+},500);
+</script>
+</body>
+</html>

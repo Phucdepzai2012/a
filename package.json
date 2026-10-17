@@ -1,0 +1,17 @@
+{
+  "name": "caro-render-realtime",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Socket.IO realtime bridge for a Caro HTML client hosted on Render",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  }
+}
