@@ -164,7 +164,8 @@ body.online-match-active main>aside{display:none!important}
 #socialSection h3{font-size:12px;color:var(--mut);margin:14px 0 5px}
 .friend-search{display:grid;grid-template-columns:minmax(0,1fr) 82px;gap:7px;margin-top:8px}
 .friend-search input,.friend-search button{margin:0;min-width:0;padding:8px}
-.friend-search button{font-size:12px}
+ .friend-search button{font-size:12px}
+.friend-refresh{width:auto;margin-top:8px;padding:6px 8px;font-size:11px;background:#edf1f4;border-color:var(--ln)}
 .social-results{display:grid;gap:6px;margin-top:8px}
 .person-row{display:flex;align-items:center;gap:8px;padding:7px 2px;border-bottom:1px dashed var(--ln);min-width:0}
 .person-info{flex:1;min-width:0}
@@ -275,6 +276,7 @@ body.online-match-active main>aside{display:none!important}
         <input id="friendSearchInput" type="text" maxlength="30" placeholder="Tìm người chơi..." aria-label="Tìm người chơi để kết bạn">
         <button id="bFriendSearch" type="button">Tìm</button>
       </div>
+      <button id="bFriendRefresh" class="friend-refresh" type="button">Làm mới bạn bè</button>
       <div id="socialStatus" class="note" aria-live="polite">Tìm người chơi theo tên để gửi lời mời kết bạn.</div>
       <div id="friendSearchResults" class="social-results"></div>
       <h3>Yêu cầu kết bạn</h3>
@@ -406,6 +408,7 @@ body.online-match-active main>aside{display:none!important}
     reconnectionDelayMax: 8000, timeout: 12000
   });
   let localUid = '';
+  function storedSessionToken() { try { return localStorage.getItem('caroSessionToken') || ''; } catch (_) { return ''; } }
   try {
     localUid = localStorage.getItem('caroRenderUid') || '';
     if (!localUid) {
@@ -439,7 +442,7 @@ body.online-match-active main>aside{display:none!important}
         else if (!result || result.ok !== true) reject(new Error(result && result.error || 'Yêu cầu máy chủ thất bại.'));
         else resolve(result);
       }
-      const sessionToken = (() => { try { return localStorage.getItem('caroSessionToken') || ''; } catch (_) { return ''; } })();
+      const sessionToken = storedSessionToken();
       const requestPayload = payload && typeof payload === 'object' ? {...payload, sessionToken} : payload;
       socket.emit(event, requestPayload, result => finish(null, result));
     });
@@ -487,10 +490,13 @@ body.online-match-active main>aside{display:none!important}
     const snap = makeSnapshot(message.data, sub.path, sub.query);
     for (const cb of [...sub.callbacks]) { try { cb(snap); } catch (error) { console.error('Lỗi callback đồng bộ Caro:', error); } }
   });
+  socket.on('social:update', () => {
+    if (typeof window.caroSocialRefresh === 'function') window.caroSocialRefresh();
+  });
   socket.on('connect', () => {
     for (const [subId, sub] of subscriptions) {
       sub.hasValue = false;
-      socket.emit('db:subscribe', { subId, path: sub.path, query: sub.query }, result => {
+      socket.emit('db:subscribe', { subId, path: sub.path, query: sub.query, sessionToken: storedSessionToken() }, result => {
         if (!result || result.ok !== true) console.error(result && result.error || 'Không thể đăng ký đồng bộ.');
       });
     }
@@ -510,7 +516,7 @@ body.online-match-active main>aside{display:none!important}
       const subId = 's' + (++nextSubId);
       const sub = {path: this.path, query: this.query, callbacks: new Set([callback]), hasValue: false, lastFingerprint: null};
       subscriptions.set(subId, sub); this.localSubIds.add(subId);
-      if (socket.connected) socket.emit('db:subscribe', {subId, path: this.path, query: this.query}, result => {
+      if (socket.connected) socket.emit('db:subscribe', {subId, path: this.path, query: this.query, sessionToken: storedSessionToken()}, result => {
         if (!result || result.ok !== true) { const err = new Error(result && result.error || 'Không thể đăng ký đồng bộ.'); if (typeof errorCallback === 'function') errorCallback(err); else console.error(err); }
       });
       return callback;
@@ -745,6 +751,7 @@ async function refreshSocial(){
   renderPeople('friendList',list.friends,'friend','Bạn chưa có bạn bè. Hãy tìm người chơi bên trên.');
   renderPeople('friendOutgoing',list.outgoing,'outgoing','Chưa có lời mời nào đang chờ.');
 }
+window.caroSocialRefresh=()=>refreshSocial().catch(error=>{const status=$('socialStatus');if(status)status.textContent=error.message||'Không làm mới được danh sách bạn bè.'});
 async function searchFriends(){
   if(!window.caroAuth||!me.uid){$('socialStatus').textContent='Hãy đăng nhập để tìm bạn bè.';return}
   const query=$('friendSearchInput').value.trim();
@@ -1358,6 +1365,7 @@ $('matchChatForm').addEventListener('submit',async e=>{
   finally{$('bSendChat').disabled=false;input.focus()}
 });
 $('bFriendSearch').onclick=searchFriends;
+$('bFriendRefresh').onclick=()=>refreshSocial().then(()=>{$('socialStatus').textContent='Đã làm mới danh sách bạn bè.'}).catch(error=>{$('socialStatus').textContent=error.message||'Không làm mới được danh sách.'});
 $('friendSearchInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();searchFriends()}});
 $('socialSection').addEventListener('click',e=>{
   const map=[['friend-request','request'],['friend-accept','accept'],['friend-decline','decline'],['friend-remove','remove']];
