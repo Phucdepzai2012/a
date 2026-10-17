@@ -130,6 +130,12 @@ function schedulePersist() {
   persistState().catch(error => console.error('Persistent save failed:', error.message));
 }
 
+function requirePersistentStorage() {
+  if (!persistenceReady) {
+    throw new Error('Máy chủ chưa kết nối PostgreSQL nên không thể bảo đảm lưu tài khoản. Hãy cấu hình DATABASE_URL trên Render rồi deploy lại.');
+  }
+}
+
 function parseAccountName(value) {
   const name = String(value || '').trim().replace(/\s+/g, ' ').normalize('NFKC');
   if (name.length < 3 || name.length > 14) throw new Error('Tên đăng nhập phải dài từ 3 đến 14 ký tự.');
@@ -425,6 +431,7 @@ io.on('connection', socket => {
 
   socket.on('auth:register', async (payload, ack) => {
     try {
+      requirePersistentStorage();
       const { name, key } = parseAccountName(payload && payload.name);
       const password = String(payload && payload.password || '');
       if (password.length < 8 || Buffer.byteLength(password, 'utf8') > 128) {
@@ -452,6 +459,7 @@ io.on('connection', socket => {
   socket.on('auth:login', async (payload, ack) => {
     let throttleKey=String(socket.handshake.address||'unknown')+'|invalid';
     try {
+      requirePersistentStorage();
       const { key } = parseAccountName(payload && payload.name);
       throttleKey=String(socket.handshake.address||'unknown')+'|'+key;
       assertLoginAllowed(throttleKey);
@@ -490,6 +498,7 @@ io.on('connection', socket => {
 
   socket.on('auth:session', (payload, ack) => {
     try {
+      requirePersistentStorage();
       const uid = requireSession(payload);
       const profile = data.players[uid] || {};
       const account = uid === ADMIN_UID ? {name:ADMIN_USERNAME} : accountsByUid.get(uid);
