@@ -384,6 +384,69 @@ body.study-modal-open{overflow:hidden}
 }
 @media(prefers-reduced-motion:reduce){.study-overlay{backdrop-filter:none}}
 
+
+/* Expanded Caro lesson library: searchable diagrams and real-player references. */
+.study-tab-count{display:inline-flex;align-items:center;justify-content:center;min-width:18px;margin-left:4px;padding:2px 5px;border-radius:6px;background:#f0f3f7;color:#718094;font-size:9px}
+.lesson-tools{display:grid;gap:9px;margin:0 0 10px}
+.lesson-search{display:flex;align-items:center;gap:8px;padding:0 11px;border:1px solid #dce4ec;border-radius:9px;background:#fff;color:#718094}
+.lesson-search>span{font-size:19px}
+.lesson-search input{min-width:0;width:100%;margin:0;padding:10px 0;border:0;outline:none;background:transparent;box-shadow:none;font-size:12px}
+.lesson-filters{display:flex;gap:5px;overflow-x:auto;padding-bottom:2px}
+.lesson-filters button{width:auto;flex:none;margin:0;padding:6px 10px;border:1px solid #e0e6ed;background:#fff;border-radius:20px;font-size:10px;color:#637285;white-space:nowrap}
+.lesson-filters button.active{background:#1c3fb7;color:#fff;border-color:#1c3fb7}
+.lesson-count{margin:0 0 8px;color:#718094;font-size:10px;font-weight:700}
+.lesson-layout{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:10px;align-items:start}
+.lesson-list{display:grid;gap:5px;max-height:490px;overflow-y:auto;padding:1px 3px 1px 1px;overscroll-behavior:contain}
+.lesson-list-item{display:flex;align-items:flex-start;gap:8px;width:100%;margin:0;padding:9px 8px;border:1px solid #e0e6ed;border-radius:9px;background:#fff;text-align:left}
+.lesson-list-item.selected{border-color:#a9bffa;background:#eef3ff;box-shadow:inset 3px 0 #1c3fb7}
+.lesson-list-number{flex:none;color:#8491a1;font-size:10px;font-weight:800;padding-top:1px}
+.lesson-list-text{display:block;flex:1;min-width:0}
+.lesson-list-text strong,.lesson-list-text small{display:block}
+.lesson-list-text strong{font-size:11px;line-height:1.45;color:#2b3643}
+.lesson-list-text small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:3px;color:#728091;font-size:10px;line-height:1.45;font-weight:400}
+.lesson-list-arrow{font-size:18px;line-height:1;color:#9aa8b8}
+.lesson-detail{position:sticky;top:0;min-width:0;padding:13px;border:1px solid #dfe6ed;background:#fff;border-radius:12px}
+.lesson-detail-top{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:7px}
+.lesson-id{font-size:9px;font-weight:900;letter-spacing:.08em;color:#7a8797}
+.lesson-chip{padding:3px 7px;border-radius:20px;background:#eaf0ff;color:#1c3fb7;font-size:9px;font-weight:800;white-space:nowrap}
+.lesson-chip.defense{background:#e8f6ee;color:#187045}
+.lesson-chip.tactic{background:#fff0c7;color:#815a00}
+.lesson-chip.balance{background:#edf1f4;color:#586677}
+.lesson-detail h4{margin:0;color:#202b36;font-size:15px;line-height:1.4}
+.lesson-summary{margin:7px 0 10px;color:#687788;font-size:11px;line-height:1.65}
+.lesson-board-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));aspect-ratio:1;width:min(100%,210px);margin:0 auto;border-top:1px solid #becbd9;border-left:1px solid #becbd9;background:#fbfdff}
+.lesson-board-cell{display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;border-right:1px solid #ced8e2;border-bottom:1px solid #ced8e2;color:#d6dfe7;font-size:clamp(10px,1.5vw,16px);font-weight:800;line-height:1}
+.lesson-board-cell.mark-x{color:#1c3fb7;background:#edf2ff}
+.lesson-board-cell.mark-o{color:#d8322b;background:#fff0ef}
+.lesson-board-cell.mark-win{color:#825900;background:#ffe9a3;box-shadow:inset 0 0 0 2px #e6b946}
+.lesson-board-legend{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:9px;margin:7px 0 11px;color:#788596;font-size:9px}
+.legend-x{color:#1c3fb7}.legend-o{color:#d8322b}
+.lesson-detail-block{margin-top:9px;padding-top:8px;border-top:1px solid #ecf0f4}
+.lesson-detail-block>strong{display:block;font-size:10px;font-weight:900;color:#364454}
+.lesson-detail-block p{margin:4px 0 0;color:#687788;font-size:10px;line-height:1.65}
+.lesson-detail-block small{display:block;margin-top:5px;color:#8390a0;font-size:9px;line-height:1.5}
+.lesson-tip{padding:9px;margin-left:-2px;border:0;border-radius:8px;background:#f4f7fb}
+.lesson-none{padding:14px;color:#788596;font-size:11px}
+.study-rules-note{margin-bottom:14px;padding:12px 13px;border:1px solid #d8e2f1;border-radius:10px;background:#f1f5fc;color:#536479;font-size:11px;line-height:1.7}
+.study-rules-note strong{color:#273e64}
+.study-rules-note a,.player-study-card>a{color:#1c3fb7;font-weight:800;text-decoration:none}
+.study-rules-note a:hover,.player-study-card>a:hover{text-decoration:underline}
+.player-library{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.player-study-card{padding:14px;border:1px solid #dfe6ed;border-radius:12px;background:#fff}
+.player-study-top{display:flex;align-items:center;gap:10px}
+.player-rank{display:flex;flex:none;align-items:center;justify-content:center;min-width:54px;min-height:44px;padding:5px;border-radius:10px;background:#e8efff;color:#1c3fb7;font-size:11px;font-weight:900;text-align:center}
+.player-study-top h4{margin:0;color:#243140;font-size:14px}
+.player-study-top p{margin:3px 0 0;color:#728091;font-size:10px;line-height:1.45}
+.player-stat{display:grid;gap:3px;margin-top:10px;padding:9px 10px;border-radius:8px;background:#f3f6fa}
+.player-stat strong{font-size:11px;color:#34455a}
+.player-stat span{font-size:10px;color:#778596;line-height:1.55}
+.player-study-copy{margin:10px 0;color:#5f6f81;font-size:11px;line-height:1.65}
+.player-study-copy b{color:#303f51}
+.player-study-card>a{font-size:10px}
+.player-study-variant .player-rank{background:#fff0c7;color:#875b00}
+@media(max-width:760px){.lesson-layout{grid-template-columns:minmax(0,1fr);gap:9px}.lesson-list{grid-template-columns:repeat(2,minmax(0,1fr));max-height:300px}.lesson-detail{position:static}.lesson-board-grid{width:min(100%,190px)}.player-library{grid-template-columns:1fr}}
+@media(max-width:480px){.lesson-list{grid-template-columns:minmax(0,1fr);max-height:260px}.lesson-list-item{padding:8px}.lesson-detail{padding:11px}.lesson-detail h4{font-size:14px}}
+
 </style>
 </head>
 <body>
@@ -530,17 +593,18 @@ body.study-modal-open{overflow:hidden}
       <button id="bCloseStudy" class="study-close" type="button" aria-label="Đóng sổ tay">×</button>
     </header>
     <nav class="study-tabs" role="tablist" aria-label="Các phần học Caro">
-      <button type="button" role="tab" data-study-tab="opening" aria-selected="true" class="active">Khai cuộc</button>
-      <button type="button" role="tab" data-study-tab="middlegame" aria-selected="false">Trung cuộc</button>
-      <button type="button" role="tab" data-study-tab="endgame" aria-selected="false">Tàn cuộc</button>
+      <button type="button" role="tab" data-study-tab="opening" aria-selected="true" class="active">Khai cuộc <span class="study-tab-count">14</span></button>
+      <button type="button" role="tab" data-study-tab="middlegame" aria-selected="false">Trung cuộc <span class="study-tab-count">14</span></button>
+      <button type="button" role="tab" data-study-tab="endgame" aria-selected="false">Tàn cuộc <span class="study-tab-count">14</span></button>
+      <button type="button" role="tab" data-study-tab="players" aria-selected="false">Tuyển thủ</button>
       <button type="button" role="tab" data-study-tab="tiers" aria-selected="false">Tier list</button>
     </nav>
     <div class="study-content">
       <section class="study-panel" data-study-panel="opening" role="tabpanel">
         <div class="study-intro">
           <span class="study-kicker">01 · BUILD A GOOD POSITION</span>
-          <h3>Khai cuộc — dựng nền thế cờ</h3>
-          <p>Mục tiêu không phải đặt thật nhiều quân, mà tạo một cụm quân liên kết, có thể phát triển theo nhiều hướng.</p>
+          <h3>Khai cuộc — 14 cách dựng thế</h3>
+          <p>Thư viện chiến lược cho Caro tự do. Mỗi bài có sơ đồ và mục tiêu; không có khai cuộc nào bảo đảm thắng.</p>
         </div>
         <div class="study-feature-grid">
           <article class="study-cardlet">
@@ -565,12 +629,26 @@ body.study-modal-open{overflow:hidden}
           <div class="study-mini-board" data-study-board="opening" aria-label="Ví dụ cụm quân ở gần trung tâm"></div>
         </div>
         <div class="study-check"><strong>Checklist mỗi lượt</strong><span>① Có nước thắng ngay không?</span><span>② Đối thủ có nước thắng ngay không?</span><span>③ Nước nào vừa tạo kết nối vừa giữ được hai hướng phát triển?</span></div>
+      <div class="study-library-root" data-library-root="opening">
+  <div class="lesson-tools">
+    <label class="lesson-search"><span aria-hidden="true">⌕</span><input type="search" data-lesson-search="opening" placeholder="Tìm bài học, thế cờ..." aria-label="Tìm bài học"></label>
+    <div class="lesson-filters" role="group" aria-label="Lọc bài học">
+      <button type="button" data-lesson-filter="all" class="active">Tất cả</button>
+      <button type="button" data-lesson-filter="attack">Tấn công</button>
+      <button type="button" data-lesson-filter="defense">Phòng thủ</button>
+      <button type="button" data-lesson-filter="tactic">Chiến thuật</button>
+    </div>
+  </div>
+  <div class="lesson-count" data-lesson-count="opening">Đang tải thư viện...</div>
+  <div class="lesson-layout"><div class="lesson-list" data-lesson-list="opening" aria-label="Danh sách bài học"></div>
+  <article class="lesson-detail" data-lesson-detail="opening" aria-live="polite"><p>Chọn một bài học để xem sơ đồ và kế hoạch.</p></article></div>
+</div>
       </section>
       <section class="study-panel" data-study-panel="middlegame" role="tabpanel" hidden>
         <div class="study-intro">
           <span class="study-kicker">02 · CREATE THREATS</span>
-          <h3>Trung cuộc — ép đối thủ trả lời</h3>
-          <p>Khi bàn cờ đã đông quân, lợi thế thuộc về người tạo ra các đe dọa liên tiếp mà đối thủ khó hóa giải cùng lúc.</p>
+          <h3>Trung cuộc — 14 đòn chiến thuật</h3>
+          <p>Nhận diện đe dọa, tạo đòn kép, ép phản ứng và phá thế đối thủ.</p>
         </div>
         <div class="study-feature-grid">
           <article class="study-cardlet">
@@ -595,12 +673,26 @@ body.study-modal-open{overflow:hidden}
           <div class="study-mini-board" data-study-board="middlegame" aria-label="Ví dụ cấu trúc nhiều hướng"></div>
         </div>
         <div class="study-callout"><strong>Quy tắc vàng:</strong> ưu tiên nước tạo đe dọa bắt buộc đối thủ phản ứng. Đừng mở rộng một hàng yếu nếu đối thủ có đòn trực tiếp.</div>
+      <div class="study-library-root" data-library-root="middlegame">
+  <div class="lesson-tools">
+    <label class="lesson-search"><span aria-hidden="true">⌕</span><input type="search" data-lesson-search="middlegame" placeholder="Tìm bài học, thế cờ..." aria-label="Tìm bài học"></label>
+    <div class="lesson-filters" role="group" aria-label="Lọc bài học">
+      <button type="button" data-lesson-filter="all" class="active">Tất cả</button>
+      <button type="button" data-lesson-filter="attack">Tấn công</button>
+      <button type="button" data-lesson-filter="defense">Phòng thủ</button>
+      <button type="button" data-lesson-filter="tactic">Chiến thuật</button>
+    </div>
+  </div>
+  <div class="lesson-count" data-lesson-count="middlegame">Đang tải thư viện...</div>
+  <div class="lesson-layout"><div class="lesson-list" data-lesson-list="middlegame" aria-label="Danh sách bài học"></div>
+  <article class="lesson-detail" data-lesson-detail="middlegame" aria-live="polite"><p>Chọn một bài học để xem sơ đồ và kế hoạch.</p></article></div>
+</div>
       </section>
       <section class="study-panel" data-study-panel="endgame" role="tabpanel" hidden>
         <div class="study-intro">
           <span class="study-kicker">03 · CALCULATE PRECISELY</span>
-          <h3>Tàn cuộc — một ô cũng quyết định</h3>
-          <p>Khi đã có các hàng ba hoặc bốn quân, hãy tính những điểm thắng cụ thể trước khi đặt quân.</p>
+          <h3>Tàn cuộc — 14 cách tính nước quyết định</h3>
+          <p>Luyện quét bốn hướng, đếm điểm thắng, xử lý bốn mở và tìm chuỗi nước bắt buộc.</p>
         </div>
         <div class="study-feature-grid">
           <article class="study-cardlet">
@@ -625,10 +717,36 @@ body.study-modal-open{overflow:hidden}
           <div class="study-mini-board" data-study-board="endgame" aria-label="Ví dụ điểm thắng kế tiếp"></div>
         </div>
         <div class="study-callout"><strong>Thứ tự tính toán:</strong> nước thắng của mình → chặn nước thắng đối thủ → tạo đòn kép → phá đòn kép → phát triển thế cờ.</div>
+      <div class="study-library-root" data-library-root="endgame">
+  <div class="lesson-tools">
+    <label class="lesson-search"><span aria-hidden="true">⌕</span><input type="search" data-lesson-search="endgame" placeholder="Tìm bài học, thế cờ..." aria-label="Tìm bài học"></label>
+    <div class="lesson-filters" role="group" aria-label="Lọc bài học">
+      <button type="button" data-lesson-filter="all" class="active">Tất cả</button>
+      <button type="button" data-lesson-filter="attack">Tấn công</button>
+      <button type="button" data-lesson-filter="defense">Phòng thủ</button>
+      <button type="button" data-lesson-filter="tactic">Chiến thuật</button>
+    </div>
+  </div>
+  <div class="lesson-count" data-lesson-count="endgame">Đang tải thư viện...</div>
+  <div class="lesson-layout"><div class="lesson-list" data-lesson-list="endgame" aria-label="Danh sách bài học"></div>
+  <article class="lesson-detail" data-lesson-detail="endgame" aria-live="polite"><p>Chọn một bài học để xem sơ đồ và kế hoạch.</p></article></div>
+</div>
       </section>
+      <section class="study-panel" data-study-panel="players" role="tabpanel" hidden>
+ <div class="study-intro"><span class="study-kicker">04 · WORLD-CLASS REFERENCES</span><h3>Học qua tuyển thủ thật</h3><p>Các nhà vô địch, dữ liệu khai cuộc có nguồn và gợi ý để tự xem lại ván thi đấu. Không tự gán tính cách chiến thuật nếu dữ liệu chỉ ghi số lần dùng khai cuộc.</p></div>
+ <div class="study-rules-note"><strong>Phân biệt luật:</strong> game này hiện thắng khi nối từ 5 quân trở lên, chưa có luật cấm 3-3/4-4. Một số giải Gomoku dùng luật khai cuộc cân bằng; Renju có thêm nước cấm. Học cách đọc thế cờ được, nhưng không sao chép máy móc mọi biến. <a href="https://www.renju.net/gwc/" target="_blank" rel="noopener">Danh sách vô địch thế giới ↗</a> · <a href="https://gomoku.renju.net/gomokurules/" target="_blank" rel="noopener">Quy tắc Gomoku quốc tế ↗</a></div>
+ <div class="player-library">
+  <article class="player-study-card"><div class="player-study-top"><span class="player-rank">2× WC</span><div><h4>Pavel Laube</h4><p>Vô địch Gomoku thế giới 2023 và 2025</p></div></div><div class="player-stat"><strong>疎星 · Shu Xing (d3)</strong><span>37/172 ván trong mẫu thống kê hiển thị (28,2%); tỉ lệ điểm của khai cuộc này là 60,8% trong mẫu.</span></div><p class="player-study-copy"><b>Cách học:</b> mở các ván đã ghi lại với d3, dừng sau vài nước và đoán nước phát triển tiếp theo. Tần suất khai cuộc không tự nó chứng minh một phong cách tấn công hay phòng thủ cố định.</p><a href="https://www.renju.net/people/150051/" target="_blank" rel="noopener">Hồ sơ và ván đấu trên RenjuNet ↗</a></article>
+  <article class="player-study-card"><div class="player-study-top"><span class="player-rank">2× WC</span><div><h4>Attila Demján</h4><p>Vô địch Gomoku thế giới 2011 và 2013</p></div></div><div class="player-stat"><strong>疎星 · Shu Xing (d3)</strong><span>12 lần trong mẫu thống kê hiển thị (28,6%); tỉ lệ điểm 75% trong chính mẫu đó.</span></div><p class="player-study-copy"><b>Cách học:</b> chọn một ván trong hồ sơ, dừng tại các nước tạo ba mở/bốn mở và tự đoán trước khi xem tiếp. Đừng xem tỉ lệ điểm trong mẫu nhỏ là bảo đảm thắng.</p><a href="https://www.renju.net/people/170004/" target="_blank" rel="noopener">Hồ sơ và ván đấu trên RenjuNet ↗</a></article>
+  <article class="player-study-card"><div class="player-study-top"><span class="player-rank">WC 2017</span><div><h4>Zoltán László</h4><p>Vô địch Gomoku thế giới 2017</p></div></div><div class="player-stat"><strong>疎星 d3 · 彗星 i13</strong><span>Trong mẫu 18 ván được hiển thị ở một thống kê hồ sơ: d3 xuất hiện 5 lần; i13 xuất hiện 4 lần.</span></div><p class="player-study-copy"><b>Cách học:</b> so sánh hai dạng bố trí và tìm giao điểm hỗ trợ nhiều hướng. Mẫu nhỏ có thể thay đổi khi cơ sở dữ liệu được cập nhật.</p><a href="https://www.renju.net/people/170026/" target="_blank" rel="noopener">Hồ sơ và ván đấu trên RenjuNet ↗</a></article>
+  <article class="player-study-card"><div class="player-study-top"><span class="player-rank">WC 2015</span><div><h4>Rudolf Dupszki</h4><p>Vô địch Gomoku thế giới 2015 · á quân 2017</p></div></div><div class="player-stat"><strong>Học qua ván thực tế</strong><span>Hồ sơ RenjuNet liên kết tới các ván giải để tự quan sát chiến thuật.</span></div><p class="player-study-copy"><b>Cách học:</b> trong mỗi ván, ghi lại nước tạo đe dọa đầu tiên, nước buộc đối thủ phòng thủ và nước làm thay đổi thế cờ.</p><a href="https://www.renju.net/people/170027/" target="_blank" rel="noopener">Hồ sơ và ván đấu trên RenjuNet ↗</a></article>
+  <article class="player-study-card"><div class="player-study-top"><span class="player-rank">WC 2019</span><div><h4>Martin Muzika</h4><p>Vô địch Gomoku thế giới 2019</p></div></div><div class="player-stat"><strong>Tự phân tích ván giải</strong><span>Danh sách giải chính thức xác nhận chức vô địch; không gán nhãn phong cách khi chưa phân tích ván cụ thể.</span></div><p class="player-study-copy"><b>Cách học:</b> xem ván được lưu trữ và tự phân loại nước đi thành tấn công, phòng thủ hoặc đòn kép.</p><a href="https://www.renju.net/gwc/" target="_blank" rel="noopener">Danh sách giải thế giới ↗</a></article>
+  <article class="player-study-card player-study-variant"><div class="player-study-top"><span class="player-rank">RENJU</span><div><h4>Heo Jeong-bin</h4><p>Á quân World Championship 2025 ở nhánh Renju</p></div></div><div class="player-stat"><strong>Tham khảo có điều kiện</strong><span>Renju có luật cấm riêng, khác với Caro tự do của game này.</span></div><p class="player-study-copy"><b>Cách học:</b> xem cách đọc thế cờ và chuỗi chiến thuật, nhưng bỏ qua các kết luận phụ thuộc vào luật cấm Renju.</p><a href="https://www.renju.net/people/130207/" target="_blank" rel="noopener">Hồ sơ RenjuNet ↗</a></article>
+ </div>
+</section>
       <section class="study-panel" data-study-panel="tiers" role="tabpanel" hidden>
         <div class="study-intro">
-          <span class="study-kicker">04 · QUICK REFERENCE</span>
+          <span class="study-kicker">05 · QUICK REFERENCE</span>
           <h3>Tier list chiến thuật Caro</h3>
           <p>Xếp hạng độ ưu tiên chiến thuật trong tình huống thông thường. Tình thế thực tế vẫn quan trọng hơn điểm tier.</p>
         </div>
@@ -2205,5 +2323,39 @@ setInterval(()=>{
 })();
 </script>
 
+<script>
+(function(){
+const rawCatalog=[{"id":"center","title":"Triển khai trung tâm","label":"attack","tag":"Linh hoạt","summary":"Mở quanh vùng giữa để giữ nhiều hướng nối quân và không tự khóa cấu trúc.","sequence":"Đặt quân đầu gần trung tâm; quân sau vừa hỗ trợ quân trước vừa mở đường ngang/chéo.","tip":"Nếu đối thủ tạo đe dọa trực tiếp ở vùng khác, ưu tiên xử lý nguy cơ trước khi tiếp tục mở rộng.","marks":"3,3:X 4,3:O 3,4:X 4,4:O 2,3:X"},{"id":"diagonal","title":"Mở chéo","label":"attack","tag":"Đa hướng","summary":"Tạo các quân hỗ trợ nhau theo đường chéo để một nước có thể nối sang nhiều hướng.","sequence":"Giữ khoảng cách đủ gần để nối, đồng thời tránh xếp tất cả quân thành một đường dễ bị chặn.","tip":"Tìm ô giao giữa đường chéo và đường ngang/dọc; đó thường là điểm phát triển quan trọng.","marks":"2,2:X 3,3:X 4,4:X 3,2:O 4,3:O"},{"id":"two-lanes","title":"Hai đường phát triển","label":"attack","tag":"Hai mũi","summary":"Xây hai nhánh tấn công thay vì chăm chăm kéo dài một hàng duy nhất.","sequence":"Đặt quân ở vị trí có thể mở rộng cả ngang lẫn chéo; mỗi nước nên đe dọa ít nhất một đường.","tip":"Không tạo nhánh thứ hai nếu phải bỏ mặc đối thủ sắp nối đủ năm.","marks":"2,3:X 3,3:X 4,3:O 3,4:X 4,4:X 2,4:O"},{"id":"support","title":"Cụm quân hỗ trợ","label":"balance","tag":"Liên kết","summary":"Những quân gần nhau sẽ giúp tạo đe dọa nhanh hơn quân rải rác khắp bàn.","sequence":"Nối nhóm quân hiện có và giữ ít nhất hai phương án phát triển tiếp.","tip":"Quân gần nhau không tự động là tốt; hãy đếm khoảng trống và đầu mở của hàng.","marks":"2,2:X 3,2:O 3,3:X 4,3:X 4,4:O 2,3:X"},{"id":"offset","title":"Nối lệch một ô","label":"attack","tag":"Thế gãy","summary":"Một khoảng trống giữa các quân có thể tạo thế gãy khó đọc và mở ra nước nối bất ngờ.","sequence":"Kiểm tra xem lấp ô trống có tạo bốn mở hay đòn kép không trước khi chơi.","tip":"Không nhầm thế gãy với một hàng đã thắng; hãy tính những điểm hoàn thiện cụ thể.","marks":"1,3:X 2,3:X 4,3:X 5,3:O 3,2:O"},{"id":"side-center","title":"Cánh gần trung tâm","label":"balance","tag":"Mở cánh","summary":"Đi cánh nhưng vẫn gần cụm chính giúp mở thêm đường mà không mất kết nối.","sequence":"Dùng cánh để mở hướng ngang/chéo mới rồi quay về kết nối với nhóm quân trung tâm.","tip":"Đi quá xa khiến quân không hỗ trợ nhau và cho đối thủ chiếm vùng giao nhau.","marks":"2,3:X 3,3:O 4,4:X 5,4:X 3,4:O"},{"id":"defensive-start","title":"Khai cuộc khi bị ép","label":"defense","tag":"Chắc thế","summary":"Đáp lại hướng phát triển của đối thủ bằng quân cản điểm nối quan trọng, không nhất thiết đối xứng.","sequence":"Tìm hướng có khả năng tạo bốn mở của đối thủ rồi đặt quân vào ô cắt tốt nhất.","tip":"Không chặn một hàng yếu nếu đối thủ đang tạo đòn trực tiếp ở hướng khác.","marks":"2,3:X 3,3:O 4,3:O 5,3:O 3,2:X"},{"id":"fork-setup","title":"Chuẩn bị đòn kép","label":"attack","tag":"Gài hai nhánh","summary":"Khai triển quân tại giao điểm để một nước tiếp theo tạo được hai đe dọa khác nhau.","sequence":"Dựng trước một nhánh ba mở, đồng thời giữ nhánh khác có khả năng thành ba mở.","tip":"Đòn kép phải thật sự tạo hai điểm buộc phản ứng; hai hàng yếu không phải đòn kép.","marks":"2,3:X 3,3:X 4,3:O 3,2:X 3,4:X 2,2:O"},{"id":"safe-shape","title":"Giữ đầu thoáng","label":"balance","tag":"Linh hoạt","summary":"Một hàng có nhiều đầu phát triển giữ được nhịp và tránh tự chặn cơ hội nối quân.","sequence":"Trước khi nối quân, kiểm tra ô hai bên hàng đó có còn trống không.","tip":"Đầu thoáng chỉ có giá trị nếu bạn có cách phát triển trước khi đối thủ chặn.","marks":"1,3:X 2,3:X 3,3:O 4,3:X 5,3:O"},{"id":"respond","title":"Phản ứng theo đối thủ","label":"defense","tag":"Đọc thế","summary":"Phát triển gần khu vực đối thủ đang tạo áp lực để giữ khả năng chặn hoặc phản công.","sequence":"Xem hàng dài nhất của đối thủ, số đầu trống và ô nối năm tiềm năng.","tip":"Đừng chỉ nhìn quân gần nhất; nước nguy hiểm có thể nằm trên đường chéo.","marks":"2,2:O 3,3:O 4,4:O 3,2:X 4,2:X"},{"id":"stagger","title":"Mở rộng bậc thang","label":"attack","tag":"Chéo–ngang","summary":"Bố trí quân so le tạo nhiều giao điểm thay vì nối thành một hàng đơn giản.","sequence":"Mỗi bước so le nên hỗ trợ một đường chính và một đường phụ.","tip":"Nếu khoảng cách quá xa, các nhánh không thể kết hợp thành đòn thật.","marks":"2,2:X 3,3:X 4,2:X 3,4:O 4,3:O"},{"id":"blockpoint","title":"Chiếm ô giao chiến","label":"defense","tag":"Cắt tuyến","summary":"Một điểm có thể đồng thời chặn hướng nối quân đối thủ và mở lối cho bạn.","sequence":"Tìm ô giao giữa hai hàng nguy hiểm, đặt quân ở đó nếu nó thật sự giảm đe dọa.","tip":"So sánh với nước thắng ngay; không hy sinh chiến thắng để phòng thủ vị trí.","marks":"2,3:O 3,3:O 4,3:O 3,2:X 3,4:X"},{"id":"tempo","title":"Giành nhịp","label":"attack","tag":"Nước bắt buộc","summary":"Một nước tốt khiến đối thủ buộc phải trả lời, giúp bạn duy trì quyền chủ động.","sequence":"Ưu tiên đe dọa bốn hoặc ba mở thực sự; sau khi đối thủ chặn, chuyển sang nhánh thứ hai.","tip":"Đừng gọi một nước là ép buộc nếu đối thủ có thể bỏ qua để thắng ở nơi khác.","marks":"2,3:X 3,3:X 4,3:X 4,2:O 3,4:O"},{"id":"read-opponent","title":"Nhận diện thói quen","label":"balance","tag":"Điều chỉnh","summary":"Mở đầu là lúc nhận biết đối thủ thích nối dài, tạo thế gãy hay tấn công hai nhánh.","sequence":"Sau vài lượt, ghi lại hướng đe dọa thường dùng và chọn ô gây khó cho kế hoạch đó.","tip":"Đừng dự đoán theo cảm giác; căn cứ vào thế cờ hiện tại và các nước đã chơi.","marks":"2,2:X 4,2:O 3,3:X 4,4:O 2,4:X"},{"id":"open-three","title":"Ba mở","label":"attack","tag":"Đe dọa","summary":"Ba quân liên tiếp và hai đầu trống có thể phát triển thành bốn mở nếu không bị xử lý.","sequence":"Đếm cả hai đầu, ô trống gần kề và xem đối thủ có đe dọa thắng ngay không.","tip":"Ba mở không phải lúc nào cũng là nước tốt nhất nếu đối thủ có nước thắng cưỡng bức.","marks":"2,3:X 3,3:X 4,3:X"},{"id":"broken-three","title":"Ba gãy","label":"attack","tag":"Khó đọc","summary":"Mẫu X X · X có thể hoàn thiện thành bốn và khiến đối thủ dễ bỏ sót điểm nối.","sequence":"Tìm ô trống giữa các quân rồi tính xem lấp vào tạo được những hướng nào.","tip":"Không phải mọi khoảng trống đều tạo được ba gãy mạnh; kiểm tra đầu bị chặn.","marks":"1,3:X 2,3:X 4,3:X 5,2:O"},{"id":"open-four","title":"Bốn mở","label":"attack","tag":"Cực nguy hiểm","summary":"Bốn quân cùng hàng với hai đầu trống có hai điểm hoàn thiện thành năm ở lượt kế.","sequence":"Phát hiện và tạo bốn mở khi có thể; nếu đối thủ có bốn mở, cân nhắc nước thắng phản công vì chặn một đầu thường không đủ.","tip":"Game hiện tại chấp nhận nối từ năm quân trở lên; biến thể giải chính thức có thể khác.","marks":"1,3:X 2,3:X 3,3:X 4,3:X"},{"id":"closed-four","title":"Bốn chặn một đầu","label":"attack","tag":"Ép phản ứng","summary":"Bốn quân liên tiếp có một đầu bị chặn vẫn thường buộc đối thủ phải chặn đầu còn mở.","sequence":"Đếm ô thắng còn lại và xem có nhánh phụ nào tạo đòn kép sau khi bị chặn.","tip":"Đối thủ có thể thắng ở hướng khác nên không được tự động nối bốn mà bỏ kiểm tra toàn bàn.","marks":"1,3:O 2,3:X 3,3:X 4,3:X 5,3:X"},{"id":"fork-43","title":"Đòn kép 4–3","label":"tactic","tag":"Tạo hai mối đe dọa","summary":"Một nước vừa tạo bốn vừa tạo ba mở thường khiến đối thủ phải chọn thứ để đối phó.","sequence":"Mô phỏng nước đi dự kiến, tìm một đường bốn và một đường ba mở độc lập.","tip":"Xác minh hai đe dọa khác nhau và không bị một nước duy nhất hóa giải cả hai.","marks":"2,3:X 3,3:X 4,3:X 5,3:X 3,2:X 3,4:O"},{"id":"fork-33","title":"Đòn kép 3–3","label":"tactic","tag":"Hai hướng","summary":"Một nước tạo đồng thời hai ba mở tạo áp lực ở hai đường.","sequence":"Khoanh hai đường phát triển; với mỗi đường, tính điểm thành bốn mở sau đó.","tip":"Trong Renju, một số nước 3-3 của quân đen bị cấm; game này hiện là Caro tự do nên luật khác.","marks":"2,3:X 3,3:X 4,3:X 3,2:X 3,4:X"},{"id":"vcf","title":"VCF — chuỗi bốn","label":"tactic","tag":"Tính cưỡng bức","summary":"VCF (Victory by Continuous Fours) là chuỗi nước tạo bốn liên tục khiến đối thủ thường phải phòng thủ.","sequence":"Với mỗi nước bốn, liệt kê phản ứng bắt buộc rồi tìm bốn kế tiếp; dừng khi chuỗi không còn cưỡng bức.","tip":"Không phải chuỗi bốn nào cũng thắng; nếu đối thủ có nước phản công thắng, đường tính không hợp lệ.","marks":"1,3:X 2,3:X 3,3:X 4,3:X 3,2:O 4,4:O"},{"id":"vct","title":"VCT — chuỗi đe dọa","label":"tactic","tag":"Áp lực liên tiếp","summary":"VCT (Victory by Continuous Threats) nối các đe dọa như ba mở và bốn để dồn đối thủ vào thế bị động.","sequence":"Từ mỗi nước, ghi đáp án phòng thủ tốt nhất của đối thủ và phản ứng tiếp theo của bạn.","tip":"Nếu có nhánh nào không còn tạo đe dọa, cần đánh giá lại thay vì cố theo chuỗi.","marks":"2,3:X 3,3:X 4,3:O 3,2:X 3,4:X 4,2:O"},{"id":"counterfork","title":"Phá đòn kép","label":"defense","tag":"Ngăn từ gốc","summary":"Khi thấy đối thủ sắp tạo hai mối đe dọa, chặn ô giao hoặc phá một nhánh trước khi đòn kép hình thành.","sequence":"Đừng đợi đến khi hai đe dọa xuất hiện; xác định nước trước đó tạo giao điểm nguy hiểm.","tip":"Một nước chặn có vẻ hợp lý nhưng vô ích nếu đối thủ đã có đòn thắng cưỡng bức.","marks":"2,3:O 3,3:O 4,3:O 3,2:X 3,4:X 4,2:X"},{"id":"counterattack","title":"Phản công có mục tiêu","label":"attack","tag":"Đổi nhịp","summary":"Khi đối thủ tấn công, đôi lúc nước tốt nhất là tạo đe dọa thắng mạnh hơn buộc họ đổi kế hoạch.","sequence":"So sánh tốc độ hai đe dọa: ai có thể thắng trước sau các phản ứng tốt nhất?","tip":"Không phản công nếu đối thủ đã có nước thắng không thể chặn hoặc bạn không tạo được đe dọa bắt buộc.","marks":"1,3:O 2,3:O 3,3:O 2,2:X 3,2:X 4,2:X"},{"id":"block-open-three","title":"Chặn ba mở đúng chỗ","label":"defense","tag":"Chọn ô chặn","summary":"Một nước chặn tốt vừa giảm số hướng phát triển của đối thủ vừa tạo kết nối cho bạn.","sequence":"Kiểm tra cả hai đầu của ba mở; chọn đầu làm hỏng thế mạnh hơn và giữ được kế hoạch phản công.","tip":"Đừng chặn vào ô không nằm trên đường đe dọa thực tế.","marks":"2,3:O 3,3:O 4,3:O 1,3:X"},{"id":"tempo-trade","title":"Đổi nhịp hợp lý","label":"tactic","tag":"Tính lượt","summary":"Có lúc nên dùng một nước ép buộc để giành nhịp rồi đổi sang đường tấn công khác.","sequence":"Tính hai lượt tiếp theo cho cả hai bên, không chỉ nước đáp trả ngay trước mắt.","tip":"Nếu nước ép buộc không khiến đối thủ phải phản ứng, bạn có thể đã lãng phí lượt.","marks":"2,3:X 3,3:X 4,3:X 4,2:O 3,4:O 4,4:X"},{"id":"fork-defense","title":"Đỡ hai mối đe dọa","label":"defense","tag":"Tìm nước trung gian","summary":"Khi bị đe dọa ở hai hướng, tìm nước trung gian vừa chặn một đường vừa tạo đe dọa buộc đối thủ phản ứng.","sequence":"Liệt kê các ô chặn và thử xem ô nào tạo phản công mạnh nhất.","tip":"Nếu không có nước trung gian, hãy tìm đòn thắng ngay hoặc chọn phương án giảm thiệt hại tốt nhất.","marks":"2,3:O 3,3:O 4,3:O 3,2:O 3,4:O 2,2:X"},{"id":"move-order","title":"Thứ tự nước đi","label":"tactic","tag":"Tính trước","summary":"Hai nước cùng tạo thế nhưng thứ tự khác nhau có thể khiến một nước thành ép buộc, nước kia thì không.","sequence":"Thử đổi thứ tự hai ý định: tạo bốn trước hay tạo ba mở trước, rồi so đáp trả mạnh nhất.","tip":"Không chỉ đếm quân trong hàng; luôn xem ai đi tiếp và có nước thắng lập tức hay không.","marks":"1,3:X 2,3:X 4,3:X 3,2:O 3,4:X"},{"id":"win-now","title":"Thắng ngay","label":"tactic","tag":"Ưu tiên số một","summary":"Trước mọi kế hoạch, kiểm tra tất cả ô trống có thể nối đủ năm ngay lượt này.","sequence":"Quét ngang, dọc, chéo xuôi và chéo ngược; xác nhận ô không bị chiếm.","tip":"Đừng bỏ qua một nước thắng rõ ràng để theo đuổi đòn kép đẹp hơn.","marks":"1,3:X 2,3:X 3,3:X 4,3:X 5,3:W"},{"id":"block-win","title":"Chặn nước thắng","label":"defense","tag":"Không để đối thủ nối năm","summary":"Nếu đối thủ chỉ còn một điểm nối năm, chặn đúng điểm đó trừ khi bạn có nước thắng ngay trước.","sequence":"Tìm toàn bộ điểm hoàn thiện của đối thủ trên bốn hướng trước khi đi.","tip":"Nếu đối thủ có bốn mở với hai điểm thắng, một nước chặn không đủ; kiểm tra phản công thắng ngay.","marks":"1,3:O 2,3:O 3,3:O 4,3:O 5,3:W"},{"id":"scan-four","title":"Quét đủ bốn hướng","label":"tactic","tag":"Không bỏ sót đường chéo","summary":"Các điểm thắng có thể nằm ở đường chéo nhỏ, không dễ nhìn khi bàn đã đông quân.","sequence":"Từ quân mới nhất, kiểm tra ngang, dọc, chéo lên và chéo xuống.","tip":"Chỉ kiểm tra một hàng ngang là lý do thường gặp khiến bỏ lỡ chiến thuật.","marks":"2,2:X 3,3:X 4,4:X 5,5:X 6,6:W"},{"id":"double-end","title":"Xử lý hai đầu bốn mở","label":"defense","tag":"Tìm đòn thắng trước","summary":"Bốn mở có thể có hai điểm nối thắng; chặn một đầu thường để lại đầu kia.","sequence":"Trước khi phòng thủ, xem có nước thắng của mình hoặc đòn phản công cưỡng bức ngay không.","tip":"Không thể chặn cả hai đầu bằng một nước thì đừng lãng phí lượt nếu phản công là cơ hội duy nhất.","marks":"1,3:W 2,3:O 3,3:O 4,3:O 5,3:O 6,3:W"},{"id":"force-line","title":"Chuỗi nước bắt buộc","label":"tactic","tag":"Tính như cây quyết định","summary":"Một biến thắng phải chịu được đáp trả tốt nhất của đối thủ, không chỉ một đáp trả dễ đoán.","sequence":"Viết biến theo dạng nước mình → đáp trả tốt nhất → nước ép tiếp theo; bỏ các nhánh không bắt buộc.","tip":"Nếu đối thủ có hơn một đáp án hợp lệ, kiểm tra tất cả trước khi kết luận đã thắng.","marks":"1,3:X 2,3:X 3,3:X 4,3:X 4,2:O"},{"id":"vcf-end","title":"Kết thúc bằng VCF","label":"tactic","tag":"Chuỗi bốn","summary":"Từ một nước bốn, kiểm tra xem còn tạo được bốn cưỡng bức tiếp theo ở lượt sau không.","sequence":"Tính liên tiếp các điểm chặn; nếu đối thủ buộc chặn, tiếp tục tìm bốn kế tiếp.","tip":"Một chuỗi tạo bốn nhưng cho phép phản công thắng thì không phải đường thắng an toàn.","marks":"1,2:X 2,2:X 3,2:X 4,2:X 2,3:O 3,4:O"},{"id":"vct-end","title":"Kết thúc bằng VCT","label":"tactic","tag":"Đe dọa liên tiếp","summary":"VCT tận dụng các nước ba mở/bốn để giữ quyền chủ động đến khi có điểm thắng.","sequence":"Tìm đe dọa kế tiếp sau mọi phương án phòng thủ tốt nhất.","tip":"Không đánh giá chuỗi theo số lượng đe dọa, mà theo việc đối thủ còn nước phòng thủ hay không.","marks":"2,3:X 3,3:X 4,3:X 3,2:X 3,4:X 4,2:O"},{"id":"trade-off","title":"Đổi quân cờ chiến thuật","label":"balance","tag":"Chặn nhánh phụ","summary":"Đôi khi một nhánh nhỏ đáng hy sinh nếu đổi lại giữ được điểm thắng chính hoặc tạo phản công.","sequence":"Đếm số lượt để hai bên thắng nếu cứ tiếp tục tấn công, rồi so với nước chặn an toàn.","tip":"Không hy sinh một hàng có thể thắng ngay chỉ để giữ vị trí đẹp.","marks":"2,3:O 3,3:O 4,3:O 1,3:X 2,2:X 3,2:X"},{"id":"secure-win","title":"Đừng nới lỏng khi hơn thế","label":"balance","tag":"Giữ nước bắt buộc","summary":"Khi có ưu thế, tiếp tục chọn nước ép buộc để đối thủ không có thời gian dựng đòn phản công.","sequence":"Sau mỗi nước tấn công, vẫn kiểm tra nước thắng của đối thủ ở toàn bàn.","tip":"Đừng chọn nước đẹp nhưng không đe dọa nếu nó trao lại nhịp cho đối thủ.","marks":"1,3:X 2,3:X 3,3:X 4,3:X 4,2:O 3,4:O"},{"id":"save-position","title":"Phòng thủ khi đang yếu","label":"defense","tag":"Ưu tiên ô nguy hiểm","summary":"Khi ít quân hơn trong vùng chiến đấu, cần chặn đúng mắt xích tạo đòn thay vì đuổi theo điểm số.","sequence":"Tìm nhánh có thể nối thành năm nhanh nhất của đối thủ và phá điểm khởi phát.","tip":"Phòng thủ một đường không đủ nếu đối thủ đã có hai điểm thắng độc lập.","marks":"2,3:O 3,3:O 4,3:O 3,2:X 4,2:X"},{"id":"draw-scan","title":"Rà soát trước khi kết thúc","label":"balance","tag":"Kiểm tra toàn bàn","summary":"Trước nước cuối, xác minh không có nước thắng bị bỏ sót và mọi điểm chặn đã được tính.","sequence":"Quét các quân mới nhất, rồi rà những hàng bốn còn mở từ cả hai phía.","tip":"Một mắt xích bị bỏ sót có thể biến thế hòa thành thua hoặc làm mất cơ hội thắng.","marks":"1,1:X 2,2:X 3,3:X 4,4:X 5,5:W"},{"id":"clock","title":"Quản lý thời gian","label":"balance","tag":"Có thứ tự suy nghĩ","summary":"Trong thời gian ít, dùng thứ tự ưu tiên để tránh mất thời gian vào nước phụ.","sequence":"Kiểm tra: thắng ngay → chặn thua ngay → đòn kép → đe dọa bắt buộc → cải thiện vị trí.","tip":"Đừng vội chọn chỉ vì hết giờ đang đến gần; vài giây kiểm tra nước thắng thường đáng giá.","marks":"2,3:X 3,3:X 4,3:X 5,3:W"},{"id":"fork-scan","title":"Tìm mọi điểm thắng","label":"tactic","tag":"Nhiều điểm hoàn thiện","summary":"Một thế bốn hoặc gãy có thể có hơn một điểm hoàn thiện; phải tính tất cả trước khi phòng thủ.","sequence":"Với mỗi đường có ít nhất ba quân, xác định các ô tạo thành năm trong tối đa hai nước.","tip":"Đừng cho rằng chỉ có một điểm chặn nếu còn các mẫu gãy hoặc đường chéo giao nhau.","marks":"1,3:X 2,3:X 3,3:X 4,3:W 3,2:X 3,4:W"},{"id":"final-check","title":"Kiểm tra nước cuối","label":"defense","tag":"Không để phản công","summary":"Trước khi đặt quân quyết định, giả lập phản ứng mạnh nhất của đối thủ và đảm bảo kế hoạch vẫn đứng vững.","sequence":"Tính ít nhất hai ply: nước mình và đáp trả tốt nhất; với đòn kép cần kiểm tra cả hai nhánh.","tip":"Nếu không chắc có thể buộc thắng, chọn phương án giảm nguy cơ thua tức thì.","marks":"2,3:X 3,3:X 4,3:X 4,2:O 3,4:O 5,3:W"}];
+const catalogs={opening:rawCatalog.slice(0,14),middlegame:rawCatalog.slice(14,28),endgame:rawCatalog.slice(28,42)};
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function marks(text){return String(text||'').split(/\\s+/).map(v=>{const m=v.match(/^(\\d+),(\\d+):([XOW])$/);return m?{x:+m[1],y:+m[2],p:m[3]}:null}).filter(Boolean);}
+function board(items){
+const map=new Map(items.map(m=>[m.x+','+m.y,m.p]));let out='<div class="lesson-board-grid" role="img" aria-label="Sơ đồ Caro 7 nhân 7">';
+for(let y=0;y<7;y++)for(let x=0;x<7;x++){const p=map.get(x+','+y);out+='<span class="lesson-board-cell'+(p==='X'?' mark-x':p==='O'?' mark-o':p==='W'?' mark-win':'')+'">'+(p==='X'?'X':p==='O'?'O':p==='W'?'★':'·')+'</span>';}
+return out+'</div><div class="lesson-board-legend"><span><b class="legend-x">X</b> quân X</span><span><b class="legend-o">O</b> quân O</span><span>★ ô mục tiêu</span></div>';
+}
+function coords(items){return items.map(m=>(m.p==='W'?'Mục tiêu':m.p)+' '+String.fromCharCode(65+m.x)+(m.y+1)).join(' · ');}
+Object.entries(catalogs).forEach(([kind,items])=>{
+const root=document.querySelector('[data-library-root="'+kind+'"]');if(!root)return;
+const data=items.map(a=>({id:a.id,title:a.title,kind:a.label,tag:a.tag,summary:a.summary,sequence:a.sequence,tip:a.tip,marks:a.marks}));
+let filter='all',selected=data[0]&&data[0].id;
+const list=root.querySelector('[data-lesson-list]'),detail=root.querySelector('[data-lesson-detail]'),search=root.querySelector('[data-lesson-search]'),count=root.querySelector('[data-lesson-count]');
+function visible(){const q=search.value.trim().toLocaleLowerCase('vi-VN');return data.filter(a=>(filter==='all'||a.kind===filter)&&(!q||[a.title,a.tag,a.summary,a.sequence,a.tip].join(' ').toLocaleLowerCase('vi-VN').includes(q)));}
+function render(){
+const entries=visible();count.textContent=entries.length+' / '+data.length+' bài học';
+if(!entries.some(a=>a.id===selected))selected=entries[0]&&entries[0].id;
+list.innerHTML=entries.map((a,i)=>'<button type="button" class="lesson-list-item'+(a.id===selected?' selected':'')+'" data-lesson-id="'+esc(a.id)+'"><span class="lesson-list-number">'+String(i+1).padStart(2,'0')+'</span><span class="lesson-list-text"><strong>'+esc(a.title)+'</strong><small>'+esc(a.summary)+'</small></span><span class="lesson-list-arrow">›</span></button>').join('')||'<p class="lesson-none">Không có bài phù hợp.</p>';
+const a=entries.find(a=>a.id===selected);
+if(!a){detail.innerHTML='<p>Thử từ khóa hoặc bộ lọc khác.</p>';return;}
+const m=marks(a.marks);
+detail.innerHTML='<div class="lesson-detail-top"><span class="lesson-id">'+kind.toUpperCase()+' · '+String(data.indexOf(a)+1).padStart(2,'0')+'</span><span class="lesson-chip '+esc(a.kind)+'">'+esc(a.tag)+'</span></div><h4>'+esc(a.title)+'</h4><p class="lesson-summary">'+esc(a.summary)+'</p>'+board(m)+'<div class="lesson-detail-block"><strong>Ý tưởng chính</strong><p>'+esc(a.sequence)+'</p></div><div class="lesson-detail-block lesson-tip"><strong>Điều cần nhớ</strong><p>'+esc(a.tip)+'</p></div><div class="lesson-detail-block"><strong>Quân minh họa</strong><p>'+esc(coords(m))+'</p><small>Sơ đồ mô phỏng một mẫu chiến thuật, không khẳng định đây là biến thắng bắt buộc đã được engine phân tích.</small></div>';
+}
+root.querySelectorAll('[data-lesson-filter]').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.lessonFilter;root.querySelectorAll('[data-lesson-filter]').forEach(x=>x.classList.toggle('active',x===b));render();}));
+search.addEventListener('input',render);
+list.addEventListener('click',e=>{const b=e.target.closest('[data-lesson-id]');if(!b)return;selected=b.dataset.lessonId;render();if(matchMedia('(max-width: 760px)').matches)detail.scrollIntoView({behavior:'smooth',block:'nearest'});});
+render();
+});
+})();
+</script>
 </body>
 </html>
