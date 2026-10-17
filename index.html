@@ -98,7 +98,7 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 <body>
 <div id="ov"><div><h1>Caro <b>5</b></h1><p id="authHint">Đăng nhập để đồng bộ ELO và lịch sử đấu của bạn.</p><input id="nm" maxlength="14" placeholder="Tên đăng nhập (3–14 ký tự)" autocomplete="username"><div class="password-row"><input id="pw" type="password" minlength="8" maxlength="128" placeholder="Mật khẩu (ít nhất 8 ký tự)" autocomplete="current-password"><button id="togglePw" type="button" aria-label="Hiện mật khẩu" title="Hiện mật khẩu">👁️</button></div><div id="pwConfirmRow" class="password-row" hidden><input id="pwConfirm" type="password" minlength="8" maxlength="128" placeholder="Nhập lại mật khẩu" autocomplete="new-password"><button id="togglePwConfirm" type="button" aria-label="Hiện mật khẩu xác nhận" title="Hiện mật khẩu xác nhận">👁️</button></div><div id="nmEr" role="status" aria-live="polite"></div><button id="nmOk" class="pri">Đăng nhập</button><button id="bSwitchAuth" class="auth-switch" type="button">Chưa có tài khoản? Đăng ký</button></div></div>
 <main>
-  <div class="paper"><canvas id="bd" aria-label="Bàn cờ Caro vô hạn"></canvas></div>
+  <div class="paper"><canvas id="bd" aria-label="Bàn cờ Caro 15 x 15"></canvas></div>
   <aside>
     <section>
       <h1>Caro <b>5</b></h1>
@@ -412,7 +412,7 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 let profile={};try{profile=JSON.parse(localStorage.getItem('caroProfileSeason2')||'{}')}catch{}
 let me={uid:null,name:(localStorage.getItem('caroSessionToken')?localStorage.getItem('caroName'):'')||'',elo:Number(profile.elo)||1000,w:Number(profile.w)||0,l:Number(profile.l)||0,d:Number(profile.d)||0};
-let G=null,finding=false,findTimer=null,inviteRef=null,db=null,activeBackend=null,activeBackendIndex=-1,backendCandidates=[],serverOffset=0,switchingBackend=false,onlineLeaderboard=[],profileRef=null,leaderboardRef=null,serverOffsetRef=null,duplicateBackupConfig=false,currentHistoryUid=null,historyRecordsByKey=new Map();
+let G=null,finding=false,findTimer=null,inviteRef=null,db=null,activeBackend=null,activeBackendIndex=-1,backendCandidates=[],serverOffset=0,switchingBackend=false,onlineLeaderboard=[],profileRef=null,leaderboardRef=null,serverOffsetRef=null,duplicateBackupConfig=false,currentHistoryUid=null,historyRecordsByKey=new Map(),historyReplayReturnGame=null;
 const now=()=>Date.now()+serverOffset;
 const cv=$('bd'),cx=cv.getContext('2d');
 function resetCamera(){cam.x=cam.y=N/2;cam.s=Math.min(36,Math.max(12,(cv.clientWidth-16)/N));}
@@ -452,12 +452,12 @@ function durationLabel(ms){
 }
 function renderHistory(records,uid,name){
   currentHistoryUid=uid;
+  historyRecordsByKey.clear();
   $('historyTitle').textContent=`Lịch sử của ${name||'người chơi'} · ${records.length} trận`;
   if(!records.length){
     $('historyList').innerHTML='<li class="note">Chưa có trận đã kết thúc được lưu.</li>';
     return;
   }
-  historyRecordsByKey.clear();
   $('historyList').innerHTML=records.slice(0,30).map(r=>{
     const result=r.result==='win'?['THẮNG','win']:r.result==='loss'?['THUA','loss']:['HÒA','draw'];
     const before=Number(r.playerEloBefore),after=Number(r.playerEloAfter);
@@ -636,7 +636,7 @@ function draw(){
   cx.stroke();cx.strokeStyle='#789bb3';cx.lineWidth=1.5;cx.strokeRect(ox,oy,N*c,N*c);
   // Coordinate labels like a chessboard: columns A-O and rows 1-15.
   cx.save();
-  cx.fillStyle='rgba(253,253,250,.82)';
+  cx.fillStyle='#667381';
   cx.font=`700 ${Math.max(8,Math.min(12,c*.24))}px 'Be Vietnam Pro',system-ui,sans-serif`;
   cx.textAlign='center';cx.textBaseline='middle';
   for(let i=0;i<N;i++){
@@ -922,7 +922,12 @@ $('historyReplayMoves').addEventListener('click',e=>{
 });
 $('bCloseHistoryReplay').onclick=()=>{
   $('historyReplayPanel').hidden=true;
-  if(G&&G.mode==='replay'){G=null;draw();ui();stat()}
+  if(G&&G.mode==='replay'){
+    G=historyReplayReturnGame;
+    historyReplayReturnGame=null;
+    draw();ui();stat();
+    if(G&&G.mode==='online'&&G.ref)G.ref.once('value').then(onGame).catch(error=>handleBackendFailure(error,'khôi phục ván đấu'));
+  }
 };
 $('bCen').onclick=()=>{const l=G&&G.last;if(l){cam.x=l[0]+.5;cam.y=l[1]+.5}else resetCamera();draw()};
 /* ---------- Xem lại nước đi ---------- */
@@ -965,6 +970,7 @@ function showReplayPly(record,index){
 function openSavedReplay(record){
   const moves=Array.isArray(record.moves)?record.moves:[];
   if(!moves.length){$('historyStatus').textContent='Ván này chưa lưu các nước đi nên chưa thể xem lại.';return}
+  if(!G||G.mode!=='replay')historyReplayReturnGame=G;
   $('historyReplayPanel').hidden=false;
   $('historyReplayTitle').textContent=`Xem lại: ${record.playerName||me.name} vs ${record.opponentName||'Đối thủ'}`;
   $('historyReplayInfo').textContent=`${historyDate(record.timestamp)} · ${esc(record.gameType||'Caro')} · Tổng thời gian: ${Number(record.durationMs)>0?durationLabel(record.durationMs):'—'}`;
