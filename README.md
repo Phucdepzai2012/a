@@ -14,7 +14,7 @@
 - Start Command: `npm start`
 - Health Check Path: `/healthz`
 
-Sau deploy, kiểm tra `https://a-sl8r.onrender.com/healthz`. Mong đợi HTTP 200 với JSON `{"status":"ok"}`.
+Sau deploy, kiểm tra `https://a-sl8r.onrender.com/healthz`. HTTP 200 có trường `status: "ok"`; khi đã nối PostgreSQL, trường `persistentStorage` phải là `true`.
 
 ## Đưa HTML lên GitHub Pages
 
