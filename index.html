@@ -41,6 +41,13 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 .tag{border-radius:4px;padding:3px 5px;font-size:10px;font-weight:700;white-space:nowrap;background:#e8edf1;color:#3b4650}
 .tag-genius{background:#d9f6e5;color:#087344}.tag-book{background:#e8e6ff;color:#4236a4}.tag-best{background:#dce8ff;color:#1c3fb7}.tag-great{background:#d9f6e5;color:#087344}.tag-good{background:#e5f4e9;color:#27683d}.tag-ok{background:#edf0f2;color:#59636b}.tag-inaccuracy{background:#fff0c7;color:#876000}.tag-mistake{background:#ffdfbd;color:#9b4b00}.tag-blunder{background:#ffd9d9;color:#a51d1d}.tag-maxblunder{background:#bd2020;color:#fff}.tag-missed{background:#f1d7ff;color:#71259b}
 .review-row:hover{background:#f0f3f5}
+.bot-settings{margin-top:8px;padding:10px;border:1px solid var(--ln);border-radius:6px;background:#f7f8f8}
+.bot-settings label{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;font-weight:600}
+.bot-settings label strong{color:var(--blue);white-space:nowrap}
+.bot-settings input[type=range]{display:block;width:100%;margin:8px 0 4px;padding:0;border:0;background:transparent;accent-color:var(--blue)}
+.bot-elo-row{display:grid;grid-template-columns:20px minmax(65px,1fr) auto;align-items:center;gap:8px;font-size:12px;color:var(--mut)}
+.bot-elo-row input{width:100%;margin:0;padding:6px 8px;font-size:14px}
+.bot-settings .note{margin-top:6px}
 @media(max-width:520px){body{padding:8px}main{gap:12px}.paper{padding:6px}.review-row{gap:4px}.tag{font-size:9px;padding:3px 4px}}
 </style>
 </head>
@@ -54,6 +61,12 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
       <div id="me"></div>
       <button id="bFind" class="pri">Ghép trận xếp hạng</button>
       <button id="bBot">Luyện với máy (không tính điểm)</button>
+      <div id="botSettings" class="bot-settings">
+        <label for="botEloRange"><span>Sức mạnh của máy</span><strong id="botEloLabel">1500 ELO</strong></label>
+        <input id="botEloRange" type="range" min="1" max="3000" step="1" value="1500" aria-label="Điều chỉnh ELO máy từ 1 đến 3000">
+        <div class="bot-elo-row"><span>1</span><input id="botEloInput" type="number" min="1" max="3000" step="1" value="1500" aria-label="Nhập ELO máy"><span>3000 · MAX</span></div>
+        <div id="botEloDesc" class="note">Khá · ELO máy chỉ điều chỉnh độ khó, không đổi ELO của bạn ở chế độ luyện.</div>
+      </div>
       <button id="bRes" hidden>Đầu hàng</button>
       <button id="bCen">Về nước vừa đánh</button>
       <div id="network" class="note">Đang kết nối Firebase để ghép trận người thật…</div>
@@ -78,11 +91,33 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
 'use strict';
-// Firebase chính và dự phòng. Lưu ý: hai config người dùng cung cấp hiện cùng project/database,
-// vì vậy Firebase 2 chỉ trở thành dự phòng thật sau khi thay bằng config của một project khác.
-const FIREBASE_CONFIGS=[
-  {name:'Firebase chính',config:{apiKey:'AIzaSyCDQsJ_NrGK5ouRLS7vFr55OBZQ0nKhHSk',authDomain:'vietnam-life-game.firebaseapp.com',databaseURL:'https://vietnam-life-game-default-rtdb.asia-southeast1.firebasedatabase.app',projectId:'vietnam-life-game',storageBucket:'vietnam-life-game.firebasestorage.app',messagingSenderId:'134954120781',appId:'1:134954120781:web:dcd0fd0d1f4ce904140e04',measurementId:'G-LG8BF2J66J'}},
-  {name:'Firebase dự phòng',config:{apiKey:'AIzaSyCDQsJ_NrGK5ouRLS7vFr55OBZQ0nKhHSk',authDomain:'vietnam-life-game.firebaseapp.com',databaseURL:'https://vietnam-life-game-default-rtdb.asia-southeast1.firebasedatabase.app',projectId:'vietnam-life-game',storageBucket:'vietnam-life-game.firebasestorage.app',messagingSenderId:'134954120781',appId:'1:134954120781:web:6358af0d1f4ce904140e04',measurementId:'G-LG8BF2J66J'}}
+// Firebase config đã được nhúng trực tiếp vào file HTML để chạy trên GitHub Pages.
+// Firebase chính: cấu hình người dùng gửi đầu tiên.
+const firebaseConfig = {
+  apiKey: "AIzaSyCDQsJ_NrGK5ouRLS7vFr55OBZQ0nKhHSk",
+  authDomain: "vietnam-life-game.firebaseapp.com",
+  databaseURL: "https://vietnam-life-game-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "vietnam-life-game",
+  storageBucket: "vietnam-life-game.firebasestorage.app",
+  messagingSenderId: "134954120781",
+  appId: "1:134954120781:web:dcd0fd0d1f4ce904140e04",
+  measurementId: "G-LG8BF2J66J"
+};
+// Cấu hình web app thứ hai người dùng gửi. App này vẫn thuộc CÙNG project/database,
+// vì vậy không tạo thêm hạn mức và không thể làm database dự phòng khi database chính lỗi.
+const firebaseBackupConfig = {
+  apiKey: "AIzaSyCDQsJ_NrGK5ouRLS7vFr55OBZQ0nKhHSk",
+  authDomain: "vietnam-life-game.firebaseapp.com",
+  databaseURL: "https://vietnam-life-game-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "vietnam-life-game",
+  storageBucket: "vietnam-life-game.firebasestorage.app",
+  messagingSenderId: "134954120781",
+  appId: "1:134954120781:web:6358af0d1f4ce904140e04",
+  measurementId: "G-LG8BF2J66J"
+};
+const FIREBASE_CONFIGS = [
+  { name: 'Firebase chính', config: firebaseConfig },
+  { name: 'Firebase dự phòng', config: firebaseBackupConfig }
 ];
 const N=15,TURN=30000,D=[[1,0],[0,1],[1,1],[1,-1]],$=id=>document.getElementById(id);
 const TIERS=[[1700,'Cao Thủ'],[1550,'Kim Cương'],[1400,'Bạch Kim'],[1250,'Vàng'],[1100,'Bạc'],[0,'Đồng']];
@@ -100,6 +135,8 @@ function ui(){
   $('vs').innerHTML=G?`<span class="x">X</span> ${esc(G.names[0])} <small>vs</small> <span class="o">O</span> ${esc(G.names[1])}`:'—';
   $('bFind').disabled=!me.name||!!(G&&!G.over)||(!db&&!finding);
   $('bBot').disabled=!me.name||!!(G&&!G.over)||finding;
+  $('botEloRange').disabled=!!(G&&!G.over)||finding;
+  $('botEloInput').disabled=!!(G&&!G.over)||finding;
   $('bRes').hidden=!(G&&!G.over);
   renderLeaderboard();
 }
@@ -114,6 +151,8 @@ function renderLeaderboard(){
 function setActive(active){
   $('bFind').disabled=!me.name||active||(!db&&!finding);
   $('bBot').disabled=!me.name||active||finding;
+  $('botEloRange').disabled=active||finding;
+  $('botEloInput').disabled=active||finding;
   $('bRes').hidden=!active;
 }
 function profileData(){return {name:me.name,elo:me.elo,w:me.w,l:me.l,d:me.d}}
@@ -200,7 +239,10 @@ function draw(){
   if(!G)return;
   const cell=(x,y,f)=>{cx.fillStyle=f;cx.fillRect(ox+x*c+1,oy+y*c+1,c-1,c-1)};
   if(G.last)cell(G.last[0],G.last[1],'rgba(255,214,10,.45)');
-  if(G.line)G.line.forEach(([x,y])=>cell(x,y,'rgba(216,50,43,.16)'));
+  const winningPiece=G.line&&G.line.length?G.board.get(G.line[0][0]+','+G.line[0][1]):null;
+  const winningColor=winningPiece===0?'#1c3fb7':'#d8322b';
+  const winningTint=winningPiece===0?'rgba(28,63,183,.14)':'rgba(216,50,43,.14)';
+  if(G.line)G.line.forEach(([x,y])=>cell(x,y,winningTint));
   cx.lineCap='round';cx.lineWidth=Math.max(2,c*.1);
   G.board.forEach((v,k)=>{const[x,y]=k.split(',').map(Number);if(x<i0||x>i1||y<j0||y>j1)return;
     const px=ox+(x+.5)*c,py=oy+(y+.5)*c,r=c*.3,q=c*.07;cx.beginPath();
@@ -209,6 +251,21 @@ function draw(){
       cx.moveTo(px+r+h(x,y,7)*q,py-r+h(x,y,8)*q);cx.quadraticCurveTo(px+h(x,y,9)*q,py+h(x,y,1)*q,px-r+h(x,y,2)*q,py+r+h(x,y,3)*q)}
     else{cx.strokeStyle='#d8322b';cx.ellipse(px,py,r*(1+h(x,y,4)*.12),r*(1+h(x,y,5)*.12),h(x,y,6)*1.2,0,7)}
     cx.stroke()});
+  // Đường chiến thắng: kẻ thẳng qua tâm các quân trong hàng 5+.
+  // Tìm hai đầu xa nhất để hỗ trợ cả đường ngang, dọc và hai đường chéo.
+  if(G.line&&G.line.length>=5){
+    let a=G.line[0],b=G.line[0],far=-1;
+    for(const p of G.line)for(const q of G.line){
+      const dd=(p[0]-q[0])**2+(p[1]-q[1])**2;
+      if(dd>far){far=dd;a=p;b=q}
+    }
+    const x1=ox+(a[0]+.5)*c,y1=oy+(a[1]+.5)*c;
+    const x2=ox+(b[0]+.5)*c,y2=oy+(b[1]+.5)*c;
+    cx.save();cx.lineCap='round';cx.beginPath();cx.moveTo(x1,y1);cx.lineTo(x2,y2);
+    cx.strokeStyle='rgba(255,255,255,.96)';cx.lineWidth=Math.max(5,c*.22);cx.stroke();
+    cx.beginPath();cx.moveTo(x1,y1);cx.lineTo(x2,y2);
+    cx.strokeStyle=winningColor;cx.lineWidth=Math.max(2.5,c*.10);cx.stroke();cx.restore();
+  }
 }
 
 /* ---------- Chấm điểm chiến thuật Caro ---------- */
@@ -222,23 +279,29 @@ function ev(b,x,y,p){let t=0;for(const[dx,dy]of D){let n=1,o=0;for(const s of[1,
   t+=n>=5?100000:n===4?(o===2?10000:o?1000:0):n===3?(o===2?500:o?60:0):n===2?(o===2?40:o?5:0):1}return t}
 function winningMoves(b,p){return candidates(b).filter(([x,y])=>wouldWin(b,x,y,p)).map(([x,y])=>x+','+y)}
 function scoreMove(b,x,y,p,oppWins){let s=ev(b,x,y,p)+ev(b,x,y,1-p)*.96;if(wouldWin(b,x,y,p))s+=100000000;if(oppWins&&oppWins.has(x+','+y))s+=10000000;return s}
-function botMove(b,p,noise=0){
-  const c=candidates(b),oppWins=new Set(winningMoves(b,1-p));let best=-Infinity,choices=[];
+function botMove(b,p,noise=0,elo=1500){
+  const c=candidates(b),oppWins=new Set(winningMoves(b,1-p));
+  // ELO thấp có xác suất chọn nước ngẫu nhiên cao hơn; ELO MAX luôn dùng tìm kiếm điểm chiến thuật.
+  if(c.length>1&&Math.random()<botMistakeChance(elo)){const random=c[Math.floor(Math.random()*c.length)];return random}
+  let best=-Infinity,choices=[];
   for(const[x,y]of c){const s=scoreMove(b,x,y,p,oppWins);if(s>best){best=s;choices=[[x,y,s]]}else if(s===best)choices.push([x,y,s])}
   // Khi luyện, máy có thể chọn nước kém hơn; nước thắng trực tiếp và chặn đòn buộc vẫn được ưu tiên.
   if(noise>0){const pool=c.map(([x,y])=>[x,y,scoreMove(b,x,y,p,oppWins)]).filter(a=>a[2]>=best-noise).sort((a,b)=>b[2]-a[2]).slice(0,12);if(pool.length){const k=pool[Math.floor(Math.random()*pool.length)];return[k[0],k[1]]}}
   const q=choices[Math.floor(Math.random()*choices.length)]||[0,0];return[q[0],q[1]]
 }
-function botNoise(elo){return clamp(2600-(elo-700)*2.05,0,2600)}
+function botNoise(elo){return clamp((3000-elo)*2.4,0,7198)}
+function botMistakeChance(elo){const weakness=(3000-clamp(Number(elo)||1,1,3000))/2999;return .42*weakness*weakness}
+function botDifficultyText(elo){return elo<=300?'Rất dễ':elo<=700?'Dễ':elo<=1100?'Bình thường':elo<=1500?'Khá':elo<=2000?'Khó':elo<=2500?'Rất khó':'Cực khó · MAX'}
+function updateBotEloDisplay(elo){const n=clamp(Math.round(Number(elo)||1),1,3000);$('botEloLabel').textContent=`${n} ELO`;$('botEloDesc').textContent=`${botDifficultyText(n)} · ELO máy chỉ điều chỉnh độ khó, không đổi ELO của bạn ở chế độ luyện.`;return n}
 function startGame(mode){
   if(!me.name){showOv();return}
   if(G&&G.ref){try{G.ref.off()}catch{}}
   finding=false;clearTimeout(findTimer);if(inviteRef){inviteRef.off();inviteRef=null} $('bFind').textContent='Ghép trận xếp hạng';
   const ranked=mode==='ranked';
-  const botElo=ranked?clamp(Math.round(me.elo+(Math.random()-.5)*150),700,2200):900;
-  const botName=ranked?`Máy ${tier(botElo)} (${botElo})`:'Máy luyện tập';
+  const botElo=ranked?clamp(Math.round(me.elo+(Math.random()-.5)*150),700,2200):clamp(Math.round(Number($('botEloInput').value)||1500),1,3000);
+  const botName=ranked?`Máy ${tier(botElo)} (${botElo})`:`Máy ${tier(botElo)} (${botElo} ELO)`;
   const mine=Math.random()<.5?0:1;
-  G={mode,mine,botElo,noise:ranked?botNoise(botElo):2400,board:new Map(),turn:0,n:0,over:0,names:mine===0?[me.name,botName]:[botName,me.name],moves:[],last:null,line:null,msg:'',winner:null,review:[]};
+  G={mode,mine,botElo,noise:botNoise(botElo),board:new Map(),turn:0,n:0,over:0,names:mine===0?[me.name,botName]:[botName,me.name],moves:[],last:null,line:null,msg:'',winner:null,review:[]};
   $('review').hidden=true;$('reviewSummary').textContent='';$('reviewList').innerHTML='';$('tm').textContent='';
   cam.x=cam.y=.5;cam.s=36;setActive(true);ui();draw();stat();
   // X đi trước. Nếu máy cầm X, máy sẽ đi trước.
@@ -269,7 +332,7 @@ async function submitOnlineMove(x,y){
 }
 function botTurn(){
   if(!G||G.over||G.turn===G.mine)return;
-  const p=1-G.mine,[x,y]=botMove(G.board,p,G.noise);
+  const p=1-G.mine,[x,y]=botMove(G.board,p,G.noise,G.botElo);
   applyMove(x,y,p);
 }
 function finishGame(winner,why){
@@ -365,6 +428,11 @@ async function startMatchmaking(retry=false){
 }
 $('bFind').onclick=startMatchmaking;
 $('bBot').onclick=()=>startGame('bot');
+const savedBotElo=clamp(Math.round(Number(localStorage.getItem('caroBotElo'))||1500),1,3000);
+$('botEloRange').value=String(savedBotElo);$('botEloInput').value=String(savedBotElo);updateBotEloDisplay(savedBotElo);
+$('botEloRange').addEventListener('input',()=>{const n=Number($('botEloRange').value);$('botEloInput').value=String(n);localStorage.setItem('caroBotElo',String(n));updateBotEloDisplay(n)});
+$('botEloInput').addEventListener('input',()=>{const raw=$('botEloInput').value;if(raw==='')return;const n=clamp(Math.round(Number(raw)),1,3000);$('botEloRange').value=String(n);localStorage.setItem('caroBotElo',String(n));updateBotEloDisplay(n)});
+$('botEloInput').addEventListener('change',()=>{const n=clamp(Math.round(Number($('botEloInput').value)||1),1,3000);$('botEloInput').value=String(n);$('botEloRange').value=String(n);localStorage.setItem('caroBotElo',String(n));updateBotEloDisplay(n)});
 $('bRes').onclick=resign;
 $('bCen').onclick=()=>{const l=G&&G.last;cam.x=l?l[0]+.5:.5;cam.y=l?l[1]+.5:.5;draw()};
 
