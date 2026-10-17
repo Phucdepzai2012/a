@@ -22,6 +22,8 @@ const accountsByName = new Map();
 const accountsByUid = new Map();
 const sessions = new Map();
 const bannedUids = new Map();
+const roomCreateEvents = new Map();
+const adminAudit = [];
 const ADMIN_UID = '__caro_admin__';
 const ADMIN_USERNAME = String(process.env.CARO_ADMIN_USERNAME || 'admin').trim().slice(0, 14) || 'admin';
 const ADMIN_NAME_KEY = ADMIN_USERNAME.normalize('NFKC').toLocaleLowerCase('vi-VN');
@@ -120,8 +122,17 @@ function getAdminOverview() {
   const alerts=[...pairs.values()].filter(pair=>pair.games>=4).map(pair=>({
     type:'repeat_ranked_pair',uids:pair.uids,games:pair.games,lastAt:pair.lastAt,
     message:`${pair.names.join(' / ')} đã có ${pair.games} trận xếp hạng trong 24 giờ qua; cần kiểm tra thủ công.`
-  })).sort((a,b)=>b.games-a.games).slice(0,50);
-  return {ok:true,configuredAdmin:!!process.env.CARO_ADMIN_PASSWORD,totalAccounts:users.length,bannedAccounts:bannedUids.size,users:users.slice(0,200),recentMatches:matches.slice(0,100),alerts,volatileStorage:true};
+  }));
+  for(const [uid,times] of roomCreateEvents.entries()){
+    const recent=times.filter(t=>t>Date.now()-5*60*1000);
+    roomCreateEvents.set(uid,recent);
+    if(recent.length>=10){
+      const account=accountsByUid.get(uid);
+      alerts.push({type:'room_spam',uids:[uid],games:recent.length,lastAt:Math.max(...recent),message:`${account&&account.name||uid} đã tạo ${recent.length} phòng trong 5 phút; cần kiểm tra thủ công.`});
+    }
+  }
+  alerts.sort((a,b)=>(b.games||0)-(a.games||0));
+  return {ok:true,configuredAdmin:!!process.env.CARO_ADMIN_PASSWORD,totalAccounts:users.length,bannedAccounts:bannedUids.size,users:users.slice(0,200),recentMatches:matches.slice(0,100),alerts:alerts.slice(0,50),audit:adminAudit.slice(-100).reverse(),volatileStorage:true};
 }
 
 function assertWriteAccess(path, uid, value) {
@@ -265,6 +276,7 @@ io.on('connection', socket => {
       const uid = accountsByName.get(key);
       const account = uid && accountsByUid.get(uid);
       if (!account || Buffer.byteLength(password, 'utf8') > 128) throw new Error('Tên đăng nhập hoặc mật khẩu không đúng.');
+      if (bannedUids.has(uid)) throw new Error('Tài khoản đã bị khóa quản trị. Hãy liên hệ quản trị viên.');
       const salt = Buffer.from(account.salt, 'hex');
       const storedHash = Buffer.from(account.passwordHash, 'hex');
       const suppliedHash = crypto.scryptSync(password, salt, storedHash.length);
@@ -312,7 +324,11 @@ io.on('connection', socket => {
       if(shouldBan){
         const reason=String(payload&&payload.reason||'Vi phạm quy định').trim().slice(0,200)||'Vi phạm quy định';
         bannedUids.set(uid,{reason,at:Date.now()});
-      }else bannedUids.delete(uid);
+        adminAudit.push({at:Date.now(),action:'ban',targetUid:uid,targetName:accountsByUid.get(uid).name,reason});
+      }else{
+        bannedUids.delete(uid);
+        adminAudit.push({at:Date.now(),action:'unban',targetUid:uid,targetName:accountsByUid.get(uid).name});
+      }
       reply(ack,{ok:true,uid,banned:bannedUids.has(uid)});
     }catch(error){reply(ack,{ok:false,error:error.message||'Không thể khóa tài khoản.'})}
   });
@@ -331,16 +347,15 @@ io.on('connection', socket => {
       if(game.status!=='over'||Number(game.winner)!==winnerIndex)throw new Error('Máy chủ chưa xác nhận trạng thái kết thúc trận.');
       if(game.ratingResult){
         const profile=data.players[callerUid]||{};
-        reply(ack,{ok:true,elo:Number(profile.elo)||1000,w:Number(profile.w)||0,l:Number(profile.l)||0,d:Number(profile.d)||0,alreadyApplied:true});
+        const prior=game.ratingResult.playerResults[callerUid];
+        reply(ack,{ok:true,elo:Number(profile.elo)||1000,w:Number(profile.w)||0,l:Number(profile.l)||0,d:Number(profile.d)||0,delta:prior?prior.elo-prior.before:0,alreadyApplied:true});
         return;
       }
       const reason=String(payload&&payload.reason||game.why||'');
       if(reason==='win'){
         if(!hasFiveInMoves(game.moves,winnerIndex))throw new Error('Máy chủ chưa xác nhận đủ 5 quân liên tiếp.');
       }else if(reason==='resign'){
-        if(!game.resignedBy||game.p[winnerIndex===-1?callerIndex:1-winnerIndex]?.uid===game.resignedBy) {
-          if(game.resignedBy!==game.p[1-winnerIndex]?.uid)throw new Error('Kết quả đầu hàng không hợp lệ.');
-        }
+        if(winnerIndex===-1||!game.resignedBy||game.resignedBy!==game.p[1-winnerIndex]?.uid)throw new Error('Kết quả đầu hàng không hợp lệ.');
       }else if(reason==='timeout'){
         if(Date.now()<=Number(game.dl||0)+1800||winnerIndex!==1-Number(game.turn))throw new Error('Thời gian trận chưa hết hợp lệ.');
       }else if(reason!=='draw')throw new Error('Lý do kết thúc trận không hợp lệ.');
@@ -382,7 +397,10 @@ io.on('connection', socket => {
         if (!data.games[candidate]) { code = candidate; break; }
       }
       if (!code) throw new Error('Không tạo được mã phòng. Hãy thử lại.');
-      data.games[code] = { roomCode: code, p: [{ uid, name, elo }], moves: {}, turn: 0, status: 'waiting', dl: 0, createdAt: Date.now() };
+      const createdAt=Date.now(),recent=(roomCreateEvents.get(uid)||[]).filter(t=>t>createdAt-5*60*1000);
+      recent.push(createdAt);roomCreateEvents.set(uid,recent);
+      if(recent.length===10)adminAudit.push({at:createdAt,action:'room_spam_warning',targetUid:uid,targetName:name,count:recent.length,reason:'10 phòng được tạo trong vòng 5 phút'});
+      data.games[code] = { roomCode: code, p: [{ uid, name, elo }], moves: {}, turn: 0, status: 'waiting', dl: 0, createdAt };
       version++;
       notifySubscribers();
       reply(ack, { ok: true, code });
