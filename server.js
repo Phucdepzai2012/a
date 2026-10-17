@@ -17,13 +17,15 @@ const io = new Server(server, {
 });
 
 // Live cache. PostgreSQL is the durable source when DATABASE_URL is configured.
-const data = { players: {}, lobby: null, invite: {}, games: {}, history: {} };
+const data = { players: {}, lobby: null, invite: {}, games: {}, history: {}, social: { friends: {}, requests: {} } };
 // Temporary in-memory account/session store. Passwords are stored only as scrypt hashes.
 const accountsByName = new Map();
 const accountsByUid = new Map();
 const sessions = new Map();
 const bannedUids = new Map();
 const loginFailures = new Map();
+const chatRateLimits = new Map();
+const friendRequestRateLimits = new Map();
 const roomCreateEvents = new Map();
 const adminAudit = [];
 const databaseUrl = String(process.env.DATABASE_URL || '').trim();
@@ -57,8 +59,11 @@ function restorePersistentSnapshot(raw) {
     lobby: stored.lobby == null ? null : stored.lobby,
     invite: stored.invite && typeof stored.invite === 'object' ? stored.invite : {},
     games: stored.games && typeof stored.games === 'object' ? stored.games : {},
-    history: stored.history && typeof stored.history === 'object' ? stored.history : {}
+    history: stored.history && typeof stored.history === 'object' ? stored.history : {},
+    social: stored.social && typeof stored.social === 'object' ? stored.social : { friends: {}, requests: {} }
   });
+  if (!data.social.friends || typeof data.social.friends !== 'object') data.social.friends = {};
+  if (!data.social.requests || typeof data.social.requests !== 'object') data.social.requests = {};
   accountsByName.clear();
   accountsByUid.clear();
   for (const item of Array.isArray(saved.accounts) ? saved.accounts : []) {
@@ -151,7 +156,8 @@ function makeAccountSession(uid) {
   return {
     ok: true, token, uid, name: account.name, role: 'user',
     elo: Number(profile.elo) || 1000,
-    w: Number(profile.w) || 0, l: Number(profile.l) || 0, d: Number(profile.d) || 0
+    w: Number(profile.w) || 0, l: Number(profile.l) || 0, d: Number(profile.d) || 0,
+    avatar: String(profile.avatar || '')
   };
 }
 
@@ -174,6 +180,56 @@ function requireAdmin(payload) {
   const uid = requireSession(payload);
   if (uid !== ADMIN_UID) throw new Error('Bạn không có quyền quản trị.');
   return uid;
+}
+
+function publicProfile(uid) {
+  if (!uid || uid === ADMIN_UID || !accountsByUid.has(uid)) return null;
+  const profile = data.players[uid] || {};
+  return {
+    uid,
+    name: String(profile.name || accountsByUid.get(uid).name || 'Người chơi'),
+    avatar: String(profile.avatar || ''),
+    elo: Number(profile.elo) || 1000,
+    w: Number(profile.w) || 0,
+    l: Number(profile.l) || 0,
+    d: Number(profile.d) || 0
+  };
+}
+
+function socialStore() {
+  if (!data.social || typeof data.social !== 'object') data.social = { friends: {}, requests: {} };
+  if (!data.social.friends || typeof data.social.friends !== 'object') data.social.friends = {};
+  if (!data.social.requests || typeof data.social.requests !== 'object') data.social.requests = {};
+  return data.social;
+}
+
+function recordRateLimit(store, key, limit, windowMs, message) {
+  const now = Date.now();
+  const recent = (store.get(key) || []).filter(time => time > now - windowMs);
+  if (recent.length >= limit) throw new Error(message);
+  recent.push(now);
+  store.set(key, recent);
+  return now;
+}
+
+function friendListFor(uid) {
+  const social = socialStore();
+  const friendIds = Object.keys(social.friends[uid] || {});
+  const incomingIds = Object.keys(social.requests[uid] || {});
+  const outgoingIds = [];
+  for (const [recipientUid, requests] of Object.entries(social.requests)) {
+    if (requests && Object.prototype.hasOwnProperty.call(requests, uid) && recipientUid !== uid) outgoingIds.push(recipientUid);
+  }
+  const mapProfiles = ids => ids.map(publicProfile).filter(Boolean).sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+  return {
+    ok: true,
+    friends: mapProfiles(friendIds),
+    incoming: incomingIds.map(fromUid => {
+      const profile = publicProfile(fromUid);
+      return profile ? { ...profile, at: Number(social.requests[uid][fromUid].at) || 0 } : null;
+    }).filter(Boolean).sort((a, b) => b.at - a.at),
+    outgoing: mapProfiles(outgoingIds)
+  };
 }
 
 function assertLoginAllowed(key) {
@@ -505,7 +561,8 @@ io.on('connection', socket => {
       reply(ack, {
         ok: true, uid, name: account.name, role:uid===ADMIN_UID?'admin':'user',
         elo: Number(profile.elo) || 1000,
-        w: Number(profile.w) || 0, l: Number(profile.l) || 0, d: Number(profile.d) || 0
+        w: Number(profile.w) || 0, l: Number(profile.l) || 0, d: Number(profile.d) || 0,
+        avatar: String(profile.avatar || '')
       });
     } catch (error) {
       reply(ack, { ok: false, error: error.message || 'Phiên đăng nhập không hợp lệ.' });
@@ -517,6 +574,173 @@ io.on('connection', socket => {
     sessions.delete(token);
     try { await persistState(); reply(ack, { ok: true }); }
     catch (error) { reply(ack, { ok: false, error: error.message || 'Không thể lưu trạng thái đăng xuất.' }); }
+  });
+
+  socket.on('profile:update', async (payload, ack) => {
+    try {
+      const uid = requireSession(payload);
+      if (uid === ADMIN_UID) throw new Error('Không thể sửa ảnh của tài khoản quản trị.');
+      const avatar = String(payload && payload.avatar || '');
+      if (avatar && (!/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(avatar) || avatar.length > 100000 || Buffer.from(avatar.slice(avatar.indexOf(',') + 1), 'base64').length > 72 * 1024)) {
+        throw new Error('Ảnh phải là JPEG đã thu nhỏ dưới 72 KB. Hãy chọn ảnh khác.');
+      }
+      const profile = data.players[uid] || (data.players[uid] = { name: accountsByUid.get(uid).name, elo: 1000, w: 0, l: 0, d: 0 });
+      profile.avatar = avatar;
+      version++;
+      notifySubscribers();
+      await persistState();
+      reply(ack, { ok: true, avatar });
+    } catch (error) {
+      reply(ack, { ok: false, error: error.message || 'Không thể cập nhật ảnh đại diện.' });
+    }
+  });
+
+  socket.on('friends:search', (payload, ack) => {
+    try {
+      const uid = requireSession(payload);
+      const query = String(payload && payload.query || '').trim().replace(/\s+/g, ' ').toLocaleLowerCase('vi-VN');
+      if (query.length < 2) throw new Error('Nhập ít nhất 2 ký tự để tìm người chơi.');
+      const social = socialStore();
+      const results = [...accountsByUid.keys()]
+        .filter(targetUid => targetUid !== ADMIN_UID)
+        .map(targetUid => publicProfile(targetUid))
+        .filter(profile => profile && profile.name.toLocaleLowerCase('vi-VN').includes(query))
+        .sort((a, b) => {
+          const aExact = a.name.toLocaleLowerCase('vi-VN') === query ? 1 : 0;
+          const bExact = b.name.toLocaleLowerCase('vi-VN') === query ? 1 : 0;
+          return bExact - aExact || a.name.localeCompare(b.name, 'vi');
+        })
+        .slice(0, 12)
+        .map(profile => ({
+          ...profile,
+          relationship: profile.uid === uid ? 'self'
+            : social.friends[uid] && social.friends[uid][profile.uid] ? 'friend'
+            : social.requests[uid] && social.requests[uid][profile.uid] ? 'incoming'
+            : social.requests[profile.uid] && social.requests[profile.uid][uid] ? 'outgoing'
+            : 'none'
+        }));
+      reply(ack, { ok: true, results });
+    } catch (error) {
+      reply(ack, { ok: false, error: error.message || 'Không tìm được người chơi.' });
+    }
+  });
+
+  socket.on('friends:list', (payload, ack) => {
+    try {
+      const uid = requireSession(payload);
+      reply(ack, friendListFor(uid));
+    } catch (error) {
+      reply(ack, { ok: false, error: error.message || 'Không tải được danh sách bạn bè.' });
+    }
+  });
+
+  socket.on('friends:request', async (payload, ack) => {
+    try {
+      const uid = requireSession(payload);
+      const targetUid = String(payload && payload.targetUid || '');
+      if (!targetUid || targetUid === uid || targetUid === ADMIN_UID || !accountsByUid.has(targetUid)) throw new Error('Không tìm thấy tài khoản để kết bạn.');
+      recordRateLimit(friendRequestRateLimits, uid, 12, 60 * 1000, 'Bạn gửi lời mời quá nhanh. Hãy thử lại sau.');
+      const social = socialStore();
+      if (social.friends[uid] && social.friends[uid][targetUid]) throw new Error('Hai người đã là bạn bè.');
+      if (social.requests[uid] && social.requests[uid][targetUid]) throw new Error('Người này đã gửi lời mời cho bạn. Hãy chấp nhận trong danh sách yêu cầu.');
+      if (social.requests[targetUid] && social.requests[targetUid][uid]) {
+        reply(ack, { ok: true, alreadySent: true });
+        return;
+      }
+      const pending = social.requests[targetUid] || {};
+      if (Object.keys(pending).length >= 100) throw new Error('Người chơi này đang có quá nhiều lời mời chưa xử lý.');
+      if (!social.requests[targetUid]) social.requests[targetUid] = {};
+      social.requests[targetUid][uid] = { at: Date.now() };
+      version++;
+      await persistState();
+      reply(ack, { ok: true });
+    } catch (error) {
+      reply(ack, { ok: false, error: error.message || 'Không gửi được lời mời kết bạn.' });
+    }
+  });
+
+  socket.on('friends:respond', async (payload, ack) => {
+    try {
+      const uid = requireSession(payload);
+      const targetUid = String(payload && payload.targetUid || '');
+      const accept = payload && payload.accept === true;
+      const social = socialStore();
+      if (!targetUid || targetUid === uid || !social.requests[uid] || !social.requests[uid][targetUid]) throw new Error('Không tìm thấy lời mời kết bạn này.');
+      delete social.requests[uid][targetUid];
+      if (!Object.keys(social.requests[uid]).length) delete social.requests[uid];
+      if (accept) {
+        if (!social.friends[uid]) social.friends[uid] = {};
+        if (!social.friends[targetUid]) social.friends[targetUid] = {};
+        const since = Date.now();
+        social.friends[uid][targetUid] = { since };
+        social.friends[targetUid][uid] = { since };
+      }
+      if (social.requests[targetUid]) {
+        delete social.requests[targetUid][uid];
+        if (!Object.keys(social.requests[targetUid]).length) delete social.requests[targetUid];
+      }
+      version++;
+      await persistState();
+      reply(ack, { ok: true, accepted: accept });
+    } catch (error) {
+      reply(ack, { ok: false, error: error.message || 'Không xử lý được lời mời kết bạn.' });
+    }
+  });
+
+  socket.on('friends:remove', async (payload, ack) => {
+    try {
+      const uid = requireSession(payload);
+      const targetUid = String(payload && payload.targetUid || '');
+      const social = socialStore();
+      if (!targetUid || targetUid === uid || !(social.friends[uid] && social.friends[uid][targetUid])) throw new Error('Người chơi này không nằm trong danh sách bạn bè.');
+      delete social.friends[uid][targetUid];
+      delete social.friends[targetUid]?.[uid];
+      if (!Object.keys(social.friends[uid]).length) delete social.friends[uid];
+      if (social.friends[targetUid] && !Object.keys(social.friends[targetUid]).length) delete social.friends[targetUid];
+      version++;
+      await persistState();
+      reply(ack, { ok: true });
+    } catch (error) {
+      reply(ack, { ok: false, error: error.message || 'Không thể xóa bạn bè.' });
+    }
+  });
+
+  socket.on('chat:send', async (payload, ack) => {
+    try {
+      const uid = requireSession(payload);
+      const gid = String(payload && payload.gid || '');
+      const text = String(payload && payload.text || '').replace(/[\u0000-\u001f\u007f]/g, ' ').trim();
+      const game = data.games[gid];
+      if (!game || game.status !== 'play' || !Array.isArray(game.p) || game.p.length !== 2) throw new Error('Chat chỉ dùng trong ván đang diễn ra.');
+      const player = game.p.find(item => item && item.uid === uid);
+      if (!player) throw new Error('Bạn không thuộc trận đấu này.');
+      if (!text || text.length > 240) throw new Error('Tin nhắn phải dài từ 1 đến 240 ký tự.');
+      const rate = chatRateLimits.get(uid) || { times: [], lastAt: 0 };
+      const now = Date.now();
+      rate.times = rate.times.filter(time => time > now - 10 * 1000);
+      if (now - rate.lastAt < 500 || rate.times.length >= 8) throw new Error('Bạn gửi tin nhắn quá nhanh. Hãy chờ một chút.');
+      rate.lastAt = now;
+      rate.times.push(now);
+      chatRateLimits.set(uid, rate);
+      const profile = data.players[uid] || {};
+      const message = {
+        id: crypto.randomBytes(8).toString('hex'),
+        uid,
+        name: String(player.name || (accountsByUid.get(uid) && accountsByUid.get(uid).name) || 'Người chơi'),
+        avatar: String(profile.avatar || ''),
+        text,
+        at: now
+      };
+      if (!Array.isArray(game.chat)) game.chat = [];
+      game.chat.push(message);
+      if (game.chat.length > 100) game.chat.splice(0, game.chat.length - 100);
+      version++;
+      notifySubscribers();
+      await persistState();
+      reply(ack, { ok: true, message });
+    } catch (error) {
+      reply(ack, { ok: false, error: error.message || 'Không gửi được tin nhắn.' });
+    }
   });
 
   socket.on('draw:offer', async (payload, ack) => {
