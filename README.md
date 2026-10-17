@@ -31,7 +31,7 @@ Backend tự tạo bảng PostgreSQL `caro_state` và lưu tài khoản, hồ s�
 3. Thêm biến `DATABASE_URL`, dán toàn bộ connection string vào giá trị rồi lưu. Giữ connection string bí mật; không đưa vào `index.html` hoặc GitHub.
 4. Đợi Render deploy xong rồi mở `https://a-sl8r.onrender.com/healthz`. Cần thấy `"persistentStorage": true`; ở `https://a-sl8r.onrender.com/`, trường `storage` cần là `"postgres"`.
 
-Nếu chưa cấu hình `DATABASE_URL`, backend vẫn chạy ở chế độ RAM để không làm hỏng trang, nhưng tài khoản và phiên đăng nhập vẫn có thể mất khi restart. Không coi là đã lưu bền vững cho tới khi kiểm tra được `persistentStorage: true`.
+Nếu chưa cấu hình `DATABASE_URL`, backend vẫn chạy để hiện trạng thái kiểm tra nhưng chức năng đăng ký/đăng nhập sẽ báo rõ rằng chưa có PostgreSQL; backend không còn giả vờ tạo tài khoản có vẻ đã lưu nhưng thực tế chỉ nằm trong RAM. Chỉ coi là đã lưu bền vững khi `https://a-sl8r.onrender.com/healthz` trả về `persistentStorage: true` và trang gốc trả `storage: "postgres"`.
 
 ## Giới hạn cần biết
 
