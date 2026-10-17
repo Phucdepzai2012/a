@@ -196,6 +196,7 @@ function assertWriteAccess(path, uid, value, mode='patch') {
     if (parts.length < 2 || parts[1] !== uid) {
       throw new Error('Bạn chỉ được sửa hồ sơ và lịch sử của chính mình.');
     }
+    if(parts[0]==='players'&&parts.length===2&&mode==='remove')throw new Error('Không được xóa hồ sơ trực tiếp.');
     if (parts[0] === 'players' && parts.length === 2 && value && typeof value === 'object') {
       const fields=Object.keys(value).map(field=>field.split('/')[0]);
       if (['elo','w','l','d'].some(field => fields.includes(field))) {
@@ -215,7 +216,7 @@ function assertWriteAccess(path, uid, value, mode='patch') {
     if(mode==='set')throw new Error('Không được ghi đè trận đã tạo.');
     if(mode==='update'){validateGameRootPatch(gid,uid,value);return}
     if(mode==='transaction'){validateGameTransaction(gid,uid,value);return}
-    if(!game||!Array.isArray(game.p)||!game.p.some(player=>player&&player.uid===uid))throw new Error('Bạn không thuộc trận đấu này.');
+    throw new Error('Thao tác trên trận đấu không được phép.');
   }
   if (parts[0] === 'lobby' && value != null && value.uid && value.uid !== uid) {
     throw new Error('Không thể tạo hàng chờ thay cho tài khoản khác.');
