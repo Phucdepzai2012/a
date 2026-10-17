@@ -682,8 +682,8 @@ function ui(){
   $('bOfferDraw').hidden=!onlinePlaying;
   $('bOpenChat').hidden=!onlinePlaying;
   $('matchChatPanel').hidden=!onlinePlaying||!chatPanelOpen;
-  $('socialSection').hidden=!!me.isAdmin;
-  $('bProfile').disabled=!me.uid||me.isAdmin;
+  $('socialSection').hidden=!!me.isAdmin||!localStorage.getItem('caroSessionToken');
+  $('bProfile').disabled=!localStorage.getItem('caroSessionToken')||me.isAdmin;
   const offer=onlinePlaying&&G.drawOffer?G.drawOffer:null;
   const incomingOffer=!!(offer&&offer.uid!==me.uid);
   $('drawOfferModal').hidden=!incomingOffer;
@@ -745,7 +745,7 @@ function renderPeople(targetId,people,mode,emptyText){
   target.innerHTML=people.map(person=>renderPersonRow(person,mode)).join('');
 }
 async function refreshSocial(){
-  if(me.isAdmin||!me.uid||!window.caroAuth||typeof window.caroAuth.friendsList!=='function')return;
+  if(me.isAdmin||!localStorage.getItem('caroSessionToken')||!me.uid||!window.caroAuth||typeof window.caroAuth.friendsList!=='function')return;
   const list=await window.caroAuth.friendsList();
   renderPeople('friendRequests',list.incoming,'incoming','Chưa có lời mời kết bạn.');
   renderPeople('friendList',list.friends,'friend','Bạn chưa có bạn bè. Hãy tìm người chơi bên trên.');
