@@ -102,9 +102,40 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 .room-join-row input,.room-join-row button{margin:0;min-width:0}
 @media(max-width:520px){.room-join-row{grid-template-columns:minmax(0,1fr) 92px}}
 @media(max-width:520px){body{padding:8px}main{gap:12px}.paper{padding:6px}.review-row{gap:4px}.tag{font-size:9px;padding:3px 4px}}
+
+/* Intro loading animation: a short Caro game ending with X's five-in-a-row. */
+#gameLoader{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(228,233,236,.97);transition:opacity .28s ease,visibility .28s ease}
+#gameLoader.done{opacity:0;visibility:hidden;pointer-events:none}
+#gameLoader[hidden]{display:none}
+.loader-card{width:min(300px,100%);padding:22px 20px 18px;background:var(--paper);border:1px solid var(--ln);border-radius:12px;text-align:center;box-shadow:0 12px 35px rgba(27,36,48,.12)}
+.loader-brand{font:700 38px/1 Caveat,cursive;color:var(--blue);margin:0 0 7px}
+.loader-brand b{color:var(--red)}
+.loader-caption{font-size:12px;color:var(--mut);margin:0 0 15px}
+.loader-board{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;width:100%;aspect-ratio:7/5;padding:6px;background:#e9eef1;border:1px solid #d5dde2;border-radius:8px}
+.loader-cell{display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;background:#fff;border:1px solid #d8e0e5;border-radius:4px;color:transparent;font-size:clamp(15px,5vw,23px);font-weight:700;opacity:.45;transform:scale(.92);transition:opacity .15s ease,transform .15s ease,background .2s ease,box-shadow .2s ease}
+.loader-cell.show{opacity:1;transform:scale(1)}
+.loader-cell.mark-x{color:var(--blue);text-shadow:0 0 1px rgba(28,63,183,.15)}
+.loader-cell.mark-o{color:var(--red);text-shadow:0 0 1px rgba(216,50,43,.15)}
+.loader-cell.winner{background:#dce8ff;border-color:var(--blue);box-shadow:0 0 0 1px #fff inset;animation:loaderWin .42s ease-in-out alternate 3}
+#loaderResult{display:block;min-height:22px;margin-top:13px;font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--mut)}
+#loaderResult.win{color:var(--blue);animation:loaderPop .32s ease-out}
+.loader-dots:after{display:inline-block;width:1.5em;text-align:left;animation:loaderDots 1s steps(4,end) infinite;content:""}
+@keyframes loaderWin{to{transform:scale(1.06);background:#c9dcff}}
+@keyframes loaderPop{from{opacity:0;transform:translateY(4px) scale(.94)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes loaderDots{0%{content:""}25%{content:"."}50%{content:".."}75%,100%{content:"..."}}
+@media(prefers-reduced-motion:reduce){#gameLoader,.loader-cell{transition:none}.loader-cell.winner,#loaderResult.win{animation:none}.loader-dots:after{animation:none;content:"..."}}
+
 </style>
 </head>
 <body>
+<div id="gameLoader" role="status" aria-live="polite">
+  <div class="loader-card">
+    <div class="loader-brand">Caro <b>5</b></div>
+    <p class="loader-caption">Chuẩn bị bàn cờ...</p>
+    <div id="loaderBoard" class="loader-board" aria-hidden="true"></div>
+    <strong id="loaderResult">ĐANG TẢI<span class="loader-dots"></span></strong>
+  </div>
+</div>
 <div id="ov"><div><h1>Caro <b>5</b></h1><p id="authHint">Đăng nhập để đồng bộ ELO và lịch sử đấu của bạn.</p><input id="nm" maxlength="14" placeholder="Tên đăng nhập (3–14 ký tự)" autocomplete="username"><div class="password-row"><input id="pw" type="password" minlength="8" maxlength="128" placeholder="Mật khẩu (ít nhất 8 ký tự)" autocomplete="current-password"><button id="togglePw" type="button" aria-label="Hiện mật khẩu" title="Hiện mật khẩu">👁️</button></div><div id="pwConfirmRow" class="password-row" hidden><input id="pwConfirm" type="password" minlength="8" maxlength="128" placeholder="Nhập lại mật khẩu" autocomplete="new-password"><button id="togglePwConfirm" type="button" aria-label="Hiện mật khẩu xác nhận" title="Hiện mật khẩu xác nhận">👁️</button></div><div id="nmEr" role="status" aria-live="polite"></div><button id="nmOk" class="pri">Đăng nhập</button><button id="bSwitchAuth" class="auth-switch" type="button">Chưa có tài khoản? Đăng ký</button></div></div>
 <main>
   <div class="paper"><canvas id="bd" aria-label="Bàn cờ Caro 15 x 15"></canvas></div>
@@ -1178,5 +1209,49 @@ setInterval(()=>{
   }
 },500);
 </script>
+<script>
+(function(){
+  const overlay=document.getElementById('gameLoader');
+  const board=document.getElementById('loaderBoard');
+  const result=document.getElementById('loaderResult');
+  if(!overlay||!board||!result)return;
+  const cells=[];
+  for(let i=0;i<35;i++){
+    const cell=document.createElement('span');
+    cell.className='loader-cell';
+    board.appendChild(cell);
+    cells.push(cell);
+  }
+  const moves=[
+    {x:1,y:2,p:'x'},{x:0,y:1,p:'o'},
+    {x:2,y:2,p:'x'},{x:3,y:1,p:'o'},
+    {x:3,y:2,p:'x'},{x:6,y:3,p:'o'},
+    {x:4,y:2,p:'x'},{x:0,y:3,p:'o'},
+    {x:5,y:2,p:'x'}
+  ];
+  let index=0;
+  const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const interval=reduced?55:175;
+  result.innerHTML='ĐANG TẢI<span class="loader-dots"></span>';
+  const step=()=>{
+    if(index>=moves.length)return;
+    const move=moves[index++];
+    const cell=cells[move.y*7+move.x];
+    cell.textContent=move.p==='x'?'X':'O';
+    cell.classList.add('show',move.p==='x'?'mark-x':'mark-o');
+    if(index===moves.length){
+      [1,2,3,4,5].forEach(x=>cells[2*7+x].classList.add('winner'));
+      result.textContent='X THẮNG!';
+      result.classList.add('win');
+      setTimeout(()=>overlay.classList.add('done'),reduced?220:560);
+      setTimeout(()=>overlay.hidden=true,reduced?520:900);
+    }else{
+      setTimeout(step,interval);
+    }
+  };
+  setTimeout(step,reduced?50:180);
+})();
+</script>
+
 </body>
 </html>
