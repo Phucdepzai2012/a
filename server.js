@@ -265,7 +265,7 @@ function validateGameRootPatch(gid, uid, patch) {
   if(playerIndex<0)throw new Error('Bạn không thuộc trận đấu này.');
   if(game.status!=='play')throw new Error('Trận đấu đã kết thúc hoặc không còn hoạt động.');
   if(!patch||typeof patch!=='object'||Array.isArray(patch))throw new Error('Dữ liệu nước đi không hợp lệ.');
-  if(['p','roomCode','createdAt','ratingResult'].some(field=>Object.prototype.hasOwnProperty.call(patch,field)))throw new Error('Không được sửa thông tin cố định của trận đấu.');
+  if(['p','roomCode','createdAt','ratingResult','drawOffer','drawResponse','drawAgreedAt'].some(field=>Object.prototype.hasOwnProperty.call(patch,field)))throw new Error('Không được sửa thông tin cố định hoặc trạng thái hòa của trận đấu.');
 
   const moveKeys=Object.keys(patch).filter(key=>key.startsWith('moves/'));
   if(Object.keys(patch).some(key=>key.startsWith('moves/')&&!/^moves\/\d+$/.test(key)))throw new Error('Chỉ được ghi từng nước đi theo thứ tự.');
