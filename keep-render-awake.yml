@@ -1,0 +1,30 @@
+name: Keep Render Awake
+
+on:
+  schedule:
+    # Send a lightweight request every 10 minutes.
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping-render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Ping Render health endpoint
+        shell: bash
+        run: |
+          URL="https://a-sl8r.onrender.com/healthz"
+          for attempt in $(seq 1 10); do
+            echo "Health check attempt $attempt/10"
+            if curl --fail --silent --show-error --max-time 15 "$URL"; then
+              echo
+              echo "Render health endpoint returned a successful response."
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Render did not return a successful response after retries."
+          exit 1
