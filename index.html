@@ -155,6 +155,60 @@ body.online-match-active main>aside{display:none!important}
 #bRes{background:#fff0f0;border-color:#edb4b4;color:#a51d1d}
 #drawActionStatus{width:100%;min-height:0;font-size:12px;text-align:center;color:var(--mut)}
 #drawActionStatus:empty{display:none}
+.account-toolbar{display:flex;align-items:center;gap:10px;margin-top:9px}
+.account-toolbar button{margin:0;flex:1}
+.avatar{display:inline-flex;align-items:center;justify-content:center;flex:none;overflow:hidden;border-radius:50%;background:#dce8ff;color:#1c3fb7;font-weight:800;border:1px solid #b8cae8;text-transform:uppercase}
+.avatar img{display:block;width:100%;height:100%;object-fit:cover}
+.avatar-large{width:48px;height:48px;font-size:19px}
+.avatar-small{width:34px;height:34px;font-size:13px}
+#socialSection h3{font-size:12px;color:var(--mut);margin:14px 0 5px}
+.friend-search{display:grid;grid-template-columns:minmax(0,1fr) 82px;gap:7px;margin-top:8px}
+.friend-search input,.friend-search button{margin:0;min-width:0;padding:8px}
+.friend-search button{font-size:12px}
+.social-results{display:grid;gap:6px;margin-top:8px}
+.person-row{display:flex;align-items:center;gap:8px;padding:7px 2px;border-bottom:1px dashed var(--ln);min-width:0}
+.person-info{flex:1;min-width:0}
+.person-info strong,.person-info small{display:block;overflow-wrap:anywhere}
+.person-info strong{font-size:12px}
+.person-info small{font-size:10px;color:var(--mut)}
+.person-row button{width:auto;max-width:112px;margin:0;padding:6px 8px;font-size:11px;flex:none}
+.person-row .friend-accept{background:#e0f4e7;border-color:#9bd5ae;color:#17663a}
+.person-row .friend-remove{background:#fff0f0;border-color:#efc4c4;color:#a51d1d}
+.social-empty{font-size:12px;color:var(--mut);padding:5px 2px}
+#profileModal{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(14,22,35,.48)}
+#profileModal[hidden]{display:none!important}
+.profile-card{width:min(100%,380px);padding:20px;background:var(--paper);border:1px solid var(--ln);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.24)}
+.profile-card h2{margin:0 0 8px;color:var(--ink);font-size:18px}
+.profile-top{display:flex;align-items:center;gap:14px}
+#profileAvatarPreview{width:76px;height:76px;font-size:28px}
+#avatarFile{display:block;width:100%;margin-top:14px;padding:8px;border:1px dashed var(--ln);font-size:12px}
+.profile-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.profile-actions button{margin:0;padding:9px 6px;font-size:12px}
+#bSaveAvatar{background:var(--blue);color:white;border-color:var(--blue)}
+#bCloseProfile{background:#edf1f4;border-color:var(--ln)}
+#profileStatus{min-height:1.4em;font-size:12px;color:var(--mut);margin-top:8px}
+#matchChatPanel{position:fixed;z-index:35;right:12px;bottom:100px;width:min(360px,calc(100vw - 24px));height:min(440px,calc(100dvh - 160px));min-height:230px;display:flex;flex-direction:column;background:var(--paper);border:1px solid var(--ln);border-radius:12px;box-shadow:0 12px 36px rgba(27,36,48,.24);overflow:hidden}
+#matchChatPanel[hidden]{display:none!important}
+.chat-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;background:#f0f4f7;border-bottom:1px solid var(--ln)}
+.chat-head strong{font-size:13px}
+.chat-head button{width:32px;height:32px;margin:0;padding:0;border:0;background:transparent;font-size:20px}
+#matchChatMessages{flex:1;min-height:0;overflow:auto;padding:10px;display:flex;flex-direction:column;gap:10px}
+.chat-message{display:flex;align-items:flex-start;gap:7px;max-width:94%}
+.chat-message.mine{align-self:flex-end;flex-direction:row-reverse}
+.chat-bubble{min-width:0;max-width:calc(100% - 42px);padding:7px 9px;border-radius:10px;background:#eef2f5;overflow-wrap:anywhere;font-size:12px}
+.chat-message.mine .chat-bubble{background:#e1eaff}
+.chat-author{display:block;font-size:10px;font-weight:700;color:var(--mut);margin-bottom:2px}
+.chat-text{white-space:pre-wrap;word-break:break-word}
+.chat-time{font-size:9px;color:var(--mut);display:block;margin-top:3px;text-align:right}
+.chat-empty{margin:auto;text-align:center;font-size:12px;color:var(--mut);padding:14px}
+#matchChatForm{display:grid;grid-template-columns:minmax(0,1fr) 62px;gap:7px;padding:9px;border-top:1px solid var(--ln)}
+#matchChatForm input,#matchChatForm button{min-width:0;margin:0;padding:9px;font-size:12px}
+#matchChatForm button{background:var(--blue);color:white;border-color:var(--blue)}
+#chatStatus{padding:0 10px 6px;font-size:10px;color:var(--mut)}
+#chatStatus:empty{display:none}
+#chatUnread{display:inline-block;min-width:18px;margin-left:3px;border-radius:10px;background:#fff;color:#a51d1d;font-size:10px;padding:1px 4px}
+#chatUnread[hidden]{display:none}
+@media(max-width:520px){.person-row button{padding:6px 5px;font-size:10px}#matchChatPanel{right:12px;bottom:112px;height:min(430px,calc(100dvh - 180px))}}
 #drawOfferModal{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(14,22,35,.42)}
 #drawOfferModal[hidden]{display:none!important}
 .draw-offer-card{width:min(100%,330px);padding:22px;background:var(--paper);border:1px solid var(--ln);border-radius:12px;box-shadow:0 18px 50px rgba(0,0,0,.22);text-align:center}
@@ -185,6 +239,10 @@ body.online-match-active main>aside{display:none!important}
     <section>
       <h1>Caro <b>5</b></h1>
       <div id="me"></div>
+      <div class="account-toolbar">
+        <div id="accountAvatar" class="avatar avatar-large" aria-label="Ảnh đại diện">?</div>
+        <button id="bProfile" type="button">Sửa hồ sơ</button>
+      </div>
       <button id="bLogout" class="auth-logout" type="button" hidden>Đăng xuất</button>
       <button id="bFind" class="pri">Ghép trận xếp hạng</button>
       <div class="quick-actions">
@@ -210,6 +268,21 @@ body.online-match-active main>aside{display:none!important}
         <div id="network" class="note">Đang kết nối Render để ghép trận người thật…</div>
       </div>
       
+    </section>
+    <section id="socialSection">
+      <h2>Bạn bè</h2>
+      <div class="friend-search">
+        <input id="friendSearchInput" type="text" maxlength="30" placeholder="Tìm người chơi..." aria-label="Tìm người chơi để kết bạn">
+        <button id="bFriendSearch" type="button">Tìm</button>
+      </div>
+      <div id="socialStatus" class="note" aria-live="polite">Tìm người chơi theo tên để gửi lời mời kết bạn.</div>
+      <div id="friendSearchResults" class="social-results"></div>
+      <h3>Yêu cầu kết bạn</h3>
+      <div id="friendRequests" class="social-results"><div class="social-empty">Chưa tải danh sách.</div></div>
+      <h3>Bạn bè của tôi</h3>
+      <div id="friendList" class="social-results"><div class="social-empty">Chưa tải danh sách.</div></div>
+      <h3>Lời mời đã gửi</h3>
+      <div id="friendOutgoing" class="social-results"><div class="social-empty">Chưa tải danh sách.</div></div>
     </section>
     <section>
       <h2>Ván hiện tại</h2>
@@ -274,6 +347,7 @@ body.online-match-active main>aside{display:none!important}
 </main>
 <div id="matchActions" hidden>
   <div class="match-action-row">
+    <button id="bOpenChat" type="button">💬 Chat <span id="chatUnread" hidden>0</span></button>
     <button id="bOfferDraw" type="button">Xin hòa</button>
     <button id="bRes" type="button">Đầu hàng</button>
   </div>
@@ -288,6 +362,31 @@ body.online-match-active main>aside{display:none!important}
       <button id="bAcceptDraw" type="button">Chấp nhận hòa</button>
       <button id="bDeclineDraw" type="button">Từ chối</button>
     </div>
+  </div>
+</div>
+<div id="matchChatPanel" hidden role="dialog" aria-modal="false" aria-label="Chat với đối thủ">
+  <div class="chat-head"><strong id="chatOpponentTitle">Chat với đối thủ</strong><button id="bCloseChat" type="button" aria-label="Đóng chat">×</button></div>
+  <div id="matchChatMessages" aria-live="polite"><div class="chat-empty">Tin nhắn trong trận sẽ hiện ở đây.</div></div>
+  <form id="matchChatForm">
+    <input id="chatMessageInput" maxlength="240" autocomplete="off" placeholder="Nhập tin nhắn..." aria-label="Tin nhắn gửi đối thủ">
+    <button id="bSendChat" type="submit">Gửi</button>
+  </form>
+  <div id="chatStatus" role="status" aria-live="polite"></div>
+</div>
+<div id="profileModal" hidden role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+  <div class="profile-card">
+    <h2 id="profileTitle">Hồ sơ người chơi</h2>
+    <div class="profile-top">
+      <div id="profileAvatarPreview" class="avatar" aria-label="Xem trước ảnh đại diện">?</div>
+      <div class="note">Chọn ảnh của bạn. Ảnh sẽ được thu nhỏ và lưu cùng tài khoản để hiện trong hồ sơ, bạn bè và chat.</div>
+    </div>
+    <input id="avatarFile" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Chọn ảnh đại diện">
+    <div class="profile-actions">
+      <button id="bClearAvatar" type="button">Bỏ ảnh</button>
+      <button id="bSaveAvatar" type="button">Lưu ảnh</button>
+    </div>
+    <button id="bCloseProfile" type="button">Đóng</button>
+    <div id="profileStatus" role="status" aria-live="polite"></div>
   </div>
 </div>
 <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
@@ -506,7 +605,14 @@ body.online-match-active main>aside{display:none!important}
     adminBan: (uid,banned,reason) => rpc('admin:ban', {uid,banned,reason}),
     finishRanked: payload => rpc('ranked:finish', payload),
     offerDraw: payload => rpc('draw:offer', payload),
-    respondDraw: payload => rpc('draw:respond', payload)
+    respondDraw: payload => rpc('draw:respond', payload),
+    updateAvatar: payload => rpc('profile:update', payload),
+    searchFriends: payload => rpc('friends:search', payload),
+    friendsList: () => rpc('friends:list', {}),
+    requestFriend: payload => rpc('friends:request', payload),
+    respondFriend: payload => rpc('friends:respond', payload),
+    removeFriend: payload => rpc('friends:remove', payload),
+    sendChat: payload => rpc('chat:send', payload)
   };
   window.caroRenderSocket = socket;
   window.caroRenderRooms = { create: payload => rpc('room:create', payload), join: payload => rpc('room:join', payload) };
@@ -548,6 +654,7 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 let profile={};try{profile=JSON.parse(localStorage.getItem('caroProfileSeason2')||'{}')}catch{}
 let me={uid:null,name:(localStorage.getItem('caroSessionToken')?localStorage.getItem('caroName'):'')||'',elo:Number(profile.elo)||1000,w:Number(profile.w)||0,l:Number(profile.l)||0,d:Number(profile.d)||0,isAdmin:localStorage.getItem('caroRole')==='admin'};
 let G=null,finding=false,findTimer=null,inviteRef=null,db=null,activeBackend=null,activeBackendIndex=-1,backendCandidates=[],serverOffset=0,switchingBackend=false,onlineLeaderboard=[],profileRef=null,leaderboardRef=null,serverOffsetRef=null,duplicateBackupConfig=false,currentHistoryUid=null,historyRecordsByKey=new Map(),historyReplayReturnGame=null;
+let chatPanelOpen=false,chatUnread=0,chatRenderFingerprint='',selectedAvatarData=null,socialBusy=false;
 const now=()=>Date.now()+serverOffset;
 const cv=$('bd'),cx=cv.getContext('2d');
 function resetCamera(){cam.x=cam.y=N/2;cam.s=Math.min(36,Math.max(12,(cv.clientWidth-16)/N));}
@@ -567,6 +674,10 @@ function ui(){
   $('matchActions').hidden=!onlinePlaying;
   $('bRes').hidden=!onlinePlaying;
   $('bOfferDraw').hidden=!onlinePlaying;
+  $('bOpenChat').hidden=!onlinePlaying;
+  $('matchChatPanel').hidden=!onlinePlaying||!chatPanelOpen;
+  $('socialSection').hidden=!!me.isAdmin;
+  $('bProfile').disabled=!me.uid||me.isAdmin;
   const offer=onlinePlaying&&G.drawOffer?G.drawOffer:null;
   const incomingOffer=!!(offer&&offer.uid!==me.uid);
   $('drawOfferModal').hidden=!incomingOffer;
@@ -582,6 +693,8 @@ function ui(){
   $('bLogout').hidden=!localStorage.getItem('caroSessionToken');
   $('adminSection').hidden=!me.isAdmin;
   renderLeaderboard();
+  renderAccountSummary();
+  renderMatchChat();
 }
 function stat(){
   if(!G){if(!$('st').textContent||$('st').textContent==='Chọn chế độ để bắt đầu.')$('st').textContent='Chọn chế độ để bắt đầu.';return}
@@ -745,14 +858,14 @@ function bindBackendListeners(){
   detachBackendListeners();if(!db||!me.uid)return;
   serverOffsetRef=db.ref('.info/serverTimeOffset');serverOffsetRef.on('value',s=>serverOffset=s.val()||0);
   profileRef=db.ref('players/'+me.uid);
-  profileRef.on('value',s=>{const v=s.val();if(!v)return;me.name=v.name||me.name;me.elo=Number(v.elo)||1000;me.w=Number(v.w)||0;me.l=Number(v.l)||0;me.d=Number(v.d)||0;saveProfile();if(me.name)hideOv();ui()},e=>handleBackendFailure(e,'hồ sơ người chơi'));
+  profileRef.on('value',s=>{const v=s.val();if(!v)return;me.name=v.name||me.name;me.avatar=String(v.avatar||'');me.elo=Number(v.elo)||1000;me.w=Number(v.w)||0;me.l=Number(v.l)||0;me.d=Number(v.d)||0;saveProfile();if(me.name)hideOv();ui()},e=>handleBackendFailure(e,'hồ sơ người chơi'));
   leaderboardRef=db.ref('players').orderByChild('elo').limitToLast(10);
   leaderboardRef.on('value',s=>{const list=[];s.forEach(c=>list.push(c.val()));onlineLeaderboard=list.reverse();renderLeaderboard()},e=>handleBackendFailure(e,'bảng xếp hạng'));
 }
 async function activateBackend(entry){
   const b=await connectBackend(entry);activeBackend=b;activeBackendIndex=backendCandidates.indexOf(entry);db=b.db;me.uid=b.uid;me.isAdmin=!!(b.auth.currentUser&&b.auth.currentUser.isAdmin);serverOffset=0;
   const snap=await db.ref('players/'+me.uid).once('value');
-  if(snap.exists()){const v=snap.val();me.name=v.name||me.name;me.elo=Number(v.elo)||1000;me.w=Number(v.w)||0;me.l=Number(v.l)||0;me.d=Number(v.d)||0;saveProfile()}
+  if(snap.exists()){const v=snap.val();me.name=v.name||me.name;me.avatar=String(v.avatar||'');me.elo=Number(v.elo)||1000;me.w=Number(v.w)||0;me.l=Number(v.l)||0;me.d=Number(v.d)||0;saveProfile()}
   bindBackendListeners();
   const sharedHistoryUid=new URLSearchParams(window.location.search).get('history');
   if(me.name||sharedHistoryUid)hideOv();else showOv();
@@ -760,6 +873,7 @@ async function activateBackend(entry){
   if(sharedHistoryUid)await loadHistoryByUid(sharedHistoryUid).catch(error=>{$('historyStatus').textContent=error.message||String(error)});
   else if(me.uid)await loadHistoryByUid(me.uid,me.name).catch(error=>{$('historyStatus').textContent=error.message||String(error)});
   if(me.isAdmin)loadAdminOverview();
+  if(!me.isAdmin)refreshSocial().catch(error=>{$('socialStatus').textContent=error.message||String(error)});
   if(G&&G.over)saveFinishedMatchHistory(G).catch(error=>console.error('Không lưu được lịch sử:',error));
 }
 async function connectInitial(){
