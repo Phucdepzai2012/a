@@ -207,7 +207,6 @@ io.on('connection', socket => {
     sessions.delete(token);
     reply(ack, { ok: true });
   });
-  socket.data.subscriptions = new Map();
 
   socket.on('room:create', (payload, ack) => {
     try {
