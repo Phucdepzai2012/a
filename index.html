@@ -142,7 +142,7 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
   <div class="loader-card">
     <div class="loader-brand">Caro <b>5</b></div>
     <p class="loader-caption">Đang khởi động ván XO...</p>
-    <div id="loaderBoard" class="loader-board" aria-hidden="true"><svg id="loaderWinLine" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="win-outline" d="M 16.7 16.7 C 29 12.3, 37 21.4, 50 16.7 S 71 12.2, 83.3 16.7"></path><path class="win-blue" d="M 16.7 16.7 C 29 12.3, 37 21.4, 50 16.7 S 71 12.2, 83.3 16.7"></path></svg></div>
+    <div id="loaderBoard" class="loader-board" aria-hidden="true"><svg id="loaderWinLine" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="win-outline" d="M 50 16.7 C 43 28, 57 38, 50 50 S 43 72, 50 83.3"></path><path class="win-blue" d="M 50 16.7 C 43 28, 57 38, 50 50 S 43 72, 50 83.3"></path></svg></div>
     <strong id="loaderResult">X ĐANG ĐÁNH<span class="loader-dots"></span></strong>
   </div>
 </div>
@@ -1235,11 +1235,13 @@ setInterval(()=>{
   }
   board.appendChild(winLine);
 
-  /* Classic 3x3 XO: a slightly hand-drawn victory stroke follows X's top row. */
+  /* Requested final board: O X X / X X O / O X O. X wins down the middle column. */
   const moves=[
-    {cell:0,p:'x'},{cell:4,p:'o'},
-    {cell:1,p:'x'},{cell:3,p:'o'},
-    {cell:2,p:'x'}
+    {cell:1,p:'x'},{cell:0,p:'o'},
+    {cell:3,p:'x'},{cell:5,p:'o'},
+    {cell:4,p:'x'},{cell:6,p:'o'},
+    {cell:2,p:'x'},{cell:8,p:'o'},
+    {cell:7,p:'x'}
   ];
   let index=0;
   const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1252,7 +1254,7 @@ setInterval(()=>{
     cell.textContent=move.p==='x'?'X':'O';
     cell.classList.add('show',move.p==='x'?'mark-x':'mark-o');
     if(index===moves.length){
-      [0,1,2].forEach(i=>cells[i].classList.add('winner'));
+      [1,4,7].forEach(i=>cells[i].classList.add('winner'));
       winLine.classList.add('show');
       result.innerHTML='ĐANG TẢI<span class="loader-dots"></span>';
       setTimeout(()=>overlay.classList.add('done'),reduced?450:1050);
