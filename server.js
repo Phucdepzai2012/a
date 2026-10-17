@@ -232,6 +232,13 @@ function friendListFor(uid) {
   };
 }
 
+function notifySocialUser(uid) {
+  if (!uid) return;
+  for (const client of io.sockets.sockets.values()) {
+    if (client.data && client.data.uid === uid) client.emit('social:update', { at: Date.now() });
+  }
+}
+
 function assertLoginAllowed(key) {
   const record=loginFailures.get(key);
   if(!record)return;
@@ -403,6 +410,21 @@ function assertWriteAccess(path, uid, value, mode='patch') {
 app.get('/', (_req, res) => res.status(200).json({ service: 'caro-realtime', status: 'ok', storage: persistenceReady ? 'postgres' : 'memory' }));
 app.get('/healthz', (_req, res) => res.status(200).json({ status: 'ok', persistentStorage: persistenceReady }));
 
+function assertReadAccess(path, payload) {
+  const parts = cleanPath(path);
+  if (parts[0] === 'games') {
+    const uid = requireSession(payload);
+    const game = parts[1] && data.games[parts[1]];
+    if (parts.length < 2 || !game || !Array.isArray(game.p) || !game.p.some(player => player && player.uid === uid)) {
+      throw new Error('Chỉ người chơi trong ván mới được xem dữ liệu và chat của trận đó.');
+    }
+  }
+  if (parts[0] === 'invite') {
+    const uid = requireSession(payload);
+    if (parts.length < 2 || parts[1] !== uid) throw new Error('Chỉ được đọc lời mời của chính tài khoản.');
+  }
+}
+
 function cleanPath(path) {
   if (typeof path !== 'string') throw new Error('Đường dẫn không hợp lệ.');
   const p = path.replace(/^\/+|\/+$/g, '');
@@ -505,6 +527,7 @@ io.on('connection', socket => {
       version++;
       notifySubscribers();
       const session = makeAccountSession(uid);
+      socket.data.uid = uid;
       await persistState();
       reply(ack, session);
     } catch (error) {
@@ -528,6 +551,7 @@ io.on('connection', socket => {
         if(!password || !crypto.timingSafeEqual(suppliedHash,expectedHash)) throw new Error('Tên đăng nhập hoặc mật khẩu không đúng.');
         clearLoginFailures(throttleKey);
         const session = makeAdminSession();
+        socket.data.uid = session.uid;
         await persistState();
         reply(ack, session);
         return;
@@ -544,6 +568,7 @@ io.on('connection', socket => {
       }
       clearLoginFailures(throttleKey);
       const session = makeAccountSession(uid);
+      socket.data.uid = uid;
       await persistState();
       reply(ack, session);
     } catch (error) {
@@ -556,6 +581,7 @@ io.on('connection', socket => {
     try {
       requirePersistentStorage();
       const uid = requireSession(payload);
+      socket.data.uid = uid;
       const profile = data.players[uid] || {};
       const account = uid === ADMIN_UID ? {name:ADMIN_USERNAME} : accountsByUid.get(uid);
       reply(ack, {
@@ -571,7 +597,9 @@ io.on('connection', socket => {
 
   socket.on('auth:logout', async (payload, ack) => {
     const token = String(payload && payload.sessionToken || '');
+    const uid = sessions.get(token);
     sessions.delete(token);
+    if (socket.data.uid === uid) delete socket.data.uid;
     try { await persistState(); reply(ack, { ok: true }); }
     catch (error) { reply(ack, { ok: false, error: error.message || 'Không thể lưu trạng thái đăng xuất.' }); }
   });
@@ -588,6 +616,9 @@ io.on('connection', socket => {
       profile.avatar = avatar;
       version++;
       notifySubscribers();
+      notifySocialUser(uid);
+      const social = socialStore();
+      for (const friendUid of Object.keys(social.friends[uid] || {})) notifySocialUser(friendUid);
       await persistState();
       reply(ack, { ok: true, avatar });
     } catch (error) {
@@ -652,6 +683,8 @@ io.on('connection', socket => {
       if (!social.requests[targetUid]) social.requests[targetUid] = {};
       social.requests[targetUid][uid] = { at: Date.now() };
       version++;
+      notifySocialUser(targetUid);
+      notifySocialUser(uid);
       await persistState();
       reply(ack, { ok: true });
     } catch (error) {
@@ -680,6 +713,8 @@ io.on('connection', socket => {
         if (!Object.keys(social.requests[targetUid]).length) delete social.requests[targetUid];
       }
       version++;
+      notifySocialUser(uid);
+      notifySocialUser(targetUid);
       await persistState();
       reply(ack, { ok: true, accepted: accept });
     } catch (error) {
@@ -698,6 +733,8 @@ io.on('connection', socket => {
       if (!Object.keys(social.friends[uid]).length) delete social.friends[uid];
       if (social.friends[targetUid] && !Object.keys(social.friends[targetUid]).length) delete social.friends[targetUid];
       version++;
+      notifySocialUser(uid);
+      notifySocialUser(targetUid);
       await persistState();
       reply(ack, { ok: true });
     } catch (error) {
@@ -930,6 +967,7 @@ io.on('connection', socket => {
     try {
       const path = String(payload && payload.path || '');
       const query = payload && payload.query || {};
+      assertReadAccess(path, payload);
       const value = queryValue(path, query);
       reply(ack, { ok: true, data: value, version, key: path.split('/').filter(Boolean).pop() || null });
     } catch (error) {
@@ -943,7 +981,7 @@ io.on('connection', socket => {
       const path = String(payload && payload.path || '');
       const query = payload && payload.query || {};
       if (!subId) throw new Error('Thiếu mã đăng ký theo dõi.');
-      cleanPath(path);
+      assertReadAccess(path, payload);
       socket.data.subscriptions.set(subId, { path, query });
       socket.emit('db:value', { subId, data: queryValue(path, query), version });
       reply(ack, { ok: true });
