@@ -86,15 +86,15 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
       <div id="botPanel" class="bot-panel" hidden>
         <div id="botSettings" class="bot-settings">
           <label for="botEloRange"><span>Sức mạnh của máy</span><strong id="botEloLabel">1500 ELO</strong></label>
-          <input id="botEloRange" type="range" min="1" max="3000" step="1" value="1500" aria-label="Điều chỉnh ELO máy từ 1 đến 3000">
-          <div class="bot-elo-row"><span>1</span><input id="botEloInput" type="number" min="1" max="3000" step="1" value="1500" aria-label="Nhập ELO máy"><span>3000 · MAX</span></div>
+          <input id="botEloRange" type="range" min="1" max="10000" step="1" value="1500" aria-label="Điều chỉnh ELO máy từ 1 đến 10000">
+          <div class="bot-elo-row"><span>1</span><input id="botEloInput" type="number" min="1" max="10000" step="1" value="1500" aria-label="Nhập ELO máy"><span>10000 · MAX</span></div>
           <div id="botEloDesc" class="note">Khá · ELO máy chỉ điều chỉnh độ khó, không đổi ELO của bạn ở chế độ luyện.</div>
         </div>
         <button id="bStartBot" class="pri">Bắt đầu đấu máy</button>
       </div>
+      <button id="bCen" type="button">Về nước vừa đánh</button>
       <button id="bToggleTools" class="tools-toggle" type="button" aria-expanded="false" aria-controls="extraControls">＋ Hiện thêm công cụ</button>
       <div id="extraControls" hidden>
-        <button id="bCen">Về nước vừa đánh</button>
         <div id="network" class="note">Đang kết nối Render để ghép trận người thật…</div>
       </div>
       <button id="bRes" hidden>Đầu hàng</button>
@@ -471,23 +471,58 @@ function ev(b,x,y,p){let t=0;for(const[dx,dy]of D){let n=1,o=0;for(const s of[1,
 function winningMoves(b,p){return candidates(b).filter(([x,y])=>wouldWin(b,x,y,p)).map(([x,y])=>x+','+y)}
 function scoreMove(b,x,y,p,oppWins){let s=ev(b,x,y,p)+ev(b,x,y,1-p)*.96;if(wouldWin(b,x,y,p))s+=100000000;if(oppWins&&oppWins.has(x+','+y))s+=10000000;return s}
 function botMove(b,p,noise=0,elo=1500){
-  const c=candidates(b),oppWins=new Set(winningMoves(b,1-p));
-  if(c.length>1&&Math.random()<botMistakeChance(elo)){const random=c[Math.floor(Math.random()*c.length)];return random}
-  let best=-Infinity,choices=[];
-  for(const[x,y]of c){const s=scoreMove(b,x,y,p,oppWins);if(s>best){best=s;choices=[[x,y,s]]}else if(s===best)choices.push([x,y,s])}
-  if(noise>0){const pool=c.map(([x,y])=>[x,y,scoreMove(b,x,y,p,oppWins)]).filter(a=>a[2]>=best-noise).sort((a,b)=>b[2]-a[2]).slice(0,12);if(pool.length){const k=pool[Math.floor(Math.random()*pool.length)];return[k[0],k[1]]}}
-  const q=choices[Math.floor(Math.random()*choices.length)]||[0,0];return[q[0],q[1]]
+  let c=candidates(b);
+  if(!c.length)return [Math.floor(N/2),Math.floor(N/2)];
+  // Ưu tiên thắng ngay và chặn nước thắng trực tiếp của đối thủ.
+  const immediate=c.find(([x,y])=>wouldWin(b,x,y,p));
+  if(immediate)return immediate;
+  const oppWins=new Set(winningMoves(b,1-p));
+  if(oppWins.size){
+    const blocks=c.filter(([x,y])=>oppWins.has(x+','+y));
+    if(blocks.length)c=blocks;
+  }
+  if(c.length>1&&Math.random()<botMistakeChance(elo))return c[Math.floor(Math.random()*c.length)];
+
+  const ranked=c.map(([x,y])=>[x,y,scoreMove(b,x,y,p,oppWins)]).sort((a,b)=>b[2]-a[2]);
+  // ELO cao dùng tìm kiếm thêm một lượt phản đòn để tránh nước đi chỉ có điểm cục bộ cao.
+  if(elo>=3000){
+    const shortlist=ranked.slice(0,elo>=7000?14:10);
+    let best=-Infinity,choice=null;
+    for(const [x,y,baseScore] of shortlist){
+      const next=new Map(b);next.set(x+','+y,p);
+      if(wouldWin(b,x,y,p))return [x,y];
+      const threats=winningMoves(next,1-p);
+      if(threats.length){
+        const score=-1000000000-threats.length;
+        if(score>best){best=score;choice=[x,y]}
+        continue;
+      }
+      const replies=candidates(next),ourThreats=new Set(winningMoves(next,p));
+      let replyBest=-Infinity;
+      for(const [rx,ry] of replies){
+        if(wouldWin(next,rx,ry,1-p)){replyBest=100000000;break}
+        const rs=scoreMove(next,rx,ry,1-p,ourThreats);
+        if(rs>replyBest)replyBest=rs;
+      }
+      const score=baseScore-replyBest*.88;
+      if(score>best){best=score;choice=[x,y]}
+    }
+    return choice||[ranked[0][0],ranked[0][1]];
+  }
+  const best=ranked[0][2];
+  if(noise>0){const pool=ranked.filter(a=>a[2]>=best-noise).slice(0,12);if(pool.length){const k=pool[Math.floor(Math.random()*pool.length)];return[k[0],k[1]]}}
+  const top=ranked.filter(a=>a[2]===best),q=top[Math.floor(Math.random()*top.length)]||ranked[0];return[q[0],q[1]]
 }
-function botNoise(elo){return clamp((3000-elo)*2.4,0,7198)}
-function botMistakeChance(elo){const weakness=(3000-clamp(Number(elo)||1,1,3000))/2999;return .42*weakness*weakness}
-function botDifficultyText(elo){return elo<=300?'Rất dễ':elo<=700?'Dễ':elo<=1100?'Bình thường':elo<=1500?'Khá':elo<=2000?'Khó':elo<=2500?'Rất khó':'Cực khó · MAX'}
-function updateBotEloDisplay(elo){const n=clamp(Math.round(Number(elo)||1),1,3000);$('botEloLabel').textContent=`${n} ELO`;$('botEloDesc').textContent=`${botDifficultyText(n)} · ELO máy chỉ điều chỉnh độ khó, không đổi ELO của bạn ở chế độ luyện.`;return n}
+function botNoise(elo){return clamp((3000-Math.min(3000,elo))*2.4,0,7198)}
+function botMistakeChance(elo){const n=clamp(Number(elo)||1,1,10000);if(n>=3000)return 0;const weakness=(3000-n)/2999;return .42*weakness*weakness}
+function botDifficultyText(elo){return elo<=300?'Rất dễ':elo<=700?'Dễ':elo<=1100?'Bình thường':elo<=1500?'Khá':elo<=2000?'Khó':elo<=2500?'Rất khó':elo<4000?'Cực khó':elo<7000?'Siêu khó':elo<9500?'Thần cấp':'ELO 10000 · MAX'}
+function updateBotEloDisplay(elo){const n=clamp(Math.round(Number(elo)||1),1,10000);$('botEloLabel').textContent=`${n} ELO`;$('botEloDesc').textContent=`${botDifficultyText(n)} · ELO máy chỉ điều chỉnh độ khó, không đổi ELO của bạn ở chế độ luyện.`;return n}
 function startGame(mode){
   if(!me.name){showOv();return}
   if(G&&G.ref){try{G.ref.off()}catch{}}
   finding=false;clearTimeout(findTimer);if(inviteRef){inviteRef.off();inviteRef=null}$('bFind').textContent='Ghép trận xếp hạng';
   const ranked=mode==='ranked';
-  const botElo=ranked?clamp(Math.round(me.elo+(Math.random()-.5)*150),700,2200):clamp(Math.round(Number($('botEloInput').value)||1500),1,3000);
+  const botElo=ranked?clamp(Math.round(me.elo+(Math.random()-.5)*150),700,2200):clamp(Math.round(Number($('botEloInput').value)||1500),1,10000);
   const botName=ranked?`Máy ${tier(botElo)} (${botElo})`:`Máy ${tier(botElo)} (${botElo} ELO)`;
   const mine=Math.random()<.5?0:1;
   G={mode,mine,botElo,noise:botNoise(botElo),board:new Map(),turn:0,n:0,over:0,names:mine===0?[me.name,botName]:[botName,me.name],moves:[],last:null,line:null,msg:'',winner:null,review:[]};
@@ -630,11 +665,11 @@ $('bStartBot').onclick=()=>{
   $('bBot').textContent='Đấu máy';
   startGame('bot');
 };
-const savedBotElo=clamp(Math.round(Number(localStorage.getItem('caroBotElo'))||1500),1,3000);
+const savedBotElo=clamp(Math.round(Number(localStorage.getItem('caroBotElo'))||1500),1,10000);
 $('botEloRange').value=String(savedBotElo);$('botEloInput').value=String(savedBotElo);updateBotEloDisplay(savedBotElo);
 $('botEloRange').addEventListener('input',()=>{const n=Number($('botEloRange').value);$('botEloInput').value=String(n);localStorage.setItem('caroBotElo',String(n));updateBotEloDisplay(n)});
-$('botEloInput').addEventListener('input',()=>{const raw=$('botEloInput').value;if(raw==='')return;const n=clamp(Math.round(Number(raw)),1,3000);$('botEloRange').value=String(n);localStorage.setItem('caroBotElo',String(n));updateBotEloDisplay(n)});
-$('botEloInput').addEventListener('change',()=>{const n=clamp(Math.round(Number($('botEloInput').value)||1),1,3000);$('botEloInput').value=String(n);$('botEloRange').value=String(n);localStorage.setItem('caroBotElo',String(n));updateBotEloDisplay(n)});
+$('botEloInput').addEventListener('input',()=>{const raw=$('botEloInput').value;if(raw==='')return;const n=clamp(Math.round(Number(raw)),1,10000);$('botEloRange').value=String(n);localStorage.setItem('caroBotElo',String(n));updateBotEloDisplay(n)});
+$('botEloInput').addEventListener('change',()=>{const n=clamp(Math.round(Number($('botEloInput').value)||1),1,10000);$('botEloInput').value=String(n);$('botEloRange').value=String(n);localStorage.setItem('caroBotElo',String(n));updateBotEloDisplay(n)});
 $('bRes').onclick=resign;
 $('bCen').onclick=()=>{const l=G&&G.last;if(l){cam.x=l[0]+.5;cam.y=l[1]+.5}else resetCamera();draw()};
 /* ---------- Xem lại nước đi ---------- */
