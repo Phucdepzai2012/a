@@ -981,6 +981,7 @@ io.on('connection', socket => {
       const path = String(payload && payload.path || '');
       const query = payload && payload.query || {};
       if (!subId) throw new Error('Thiếu mã đăng ký theo dõi.');
+      if (payload && payload.sessionToken) socket.data.uid = requireSession(payload);
       assertReadAccess(path, payload);
       socket.data.subscriptions.set(subId, { path, query });
       socket.emit('db:value', { subId, data: queryValue(path, query), version });
