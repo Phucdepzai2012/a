@@ -21,6 +21,10 @@ const data = { players: {}, lobby: null, invite: {}, games: {}, history: {} };
 const accountsByName = new Map();
 const accountsByUid = new Map();
 const sessions = new Map();
+const bannedUids = new Map();
+const ADMIN_UID = '__caro_admin__';
+const ADMIN_USERNAME = String(process.env.CARO_ADMIN_USERNAME || 'admin').trim().slice(0, 14) || 'admin';
+const ADMIN_NAME_KEY = ADMIN_USERNAME.normalize('NFKC').toLocaleLowerCase('vi-VN');
 let version = 0;
 
 function parseAccountName(value) {
@@ -36,17 +40,88 @@ function makeAccountSession(uid) {
   const account = accountsByUid.get(uid);
   const profile = data.players[uid] || {};
   return {
-    ok: true, token, uid, name: account.name,
+    ok: true, token, uid, name: account.name, role: 'user',
     elo: Number(profile.elo) || 1000,
     w: Number(profile.w) || 0, l: Number(profile.l) || 0, d: Number(profile.d) || 0
   };
 }
 
+function makeAdminSession() {
+  const token = crypto.randomBytes(32).toString('hex');
+  sessions.set(token, ADMIN_UID);
+  const profile = data.players[ADMIN_UID] || (data.players[ADMIN_UID] = {name: ADMIN_USERNAME, elo: 1000, w: 0, l: 0, d: 0});
+  return {ok: true, token, uid: ADMIN_UID, name: ADMIN_USERNAME, role: 'admin', elo: Number(profile.elo) || 1000, w: 0, l: 0, d: 0};
+}
+
 function requireSession(payload) {
   const token = String(payload && payload.sessionToken || '');
   const uid = sessions.get(token);
-  if (!uid || !accountsByUid.has(uid)) throw new Error('Phiên đăng nhập không hợp lệ. Hãy đăng nhập lại.');
+  if (!uid || (uid !== ADMIN_UID && !accountsByUid.has(uid))) throw new Error('Phiên đăng nhập không hợp lệ. Hãy đăng nhập lại.');
+  if (uid !== ADMIN_UID && bannedUids.has(uid)) throw new Error('Tài khoản đã bị khóa quản trị. Hãy liên hệ quản trị viên.');
   return uid;
+}
+
+function requireAdmin(payload) {
+  const uid = requireSession(payload);
+  if (uid !== ADMIN_UID) throw new Error('Bạn không có quyền quản trị.');
+  return uid;
+}
+
+function hasFiveInMoves(moves, winner) {
+  const board = new Map();
+  const ordered = Object.entries(moves && typeof moves === 'object' ? moves : {}).sort((a,b)=>Number(a[0])-Number(b[0]));
+  for (const [, move] of ordered) {
+    if (!move || !Number.isInteger(Number(move.x)) || !Number.isInteger(Number(move.y)) || !Number.isInteger(Number(move.p))) continue;
+    const x=Number(move.x),y=Number(move.y),p=Number(move.p);
+    if(x<0||x>14||y<0||y>14||p<0||p>1)continue;
+    board.set(x+','+y,p);
+    if(p===winner){
+      for(const [dx,dy] of [[1,0],[0,1],[1,1],[1,-1]]){
+        let count=1;
+        for(const sign of [1,-1]){
+          let xx=x+dx*sign,yy=y+dy*sign;
+          while(board.get(xx+','+yy)===p){count++;xx+=dx*sign;yy+=dy*sign}
+        }
+        if(count>=5)return true;
+      }
+    }
+  }
+  return false;
+}
+
+function getAdminOverview() {
+  const users = [...accountsByUid.values()].map(account => {
+    const profile=data.players[account.uid]||{};
+    const ban=bannedUids.get(account.uid);
+    return {uid:account.uid,name:account.name,createdAt:account.createdAt,elo:Number(profile.elo)||1000,w:Number(profile.w)||0,l:Number(profile.l)||0,d:Number(profile.d)||0,banned:!!ban,banReason:ban&&ban.reason||''};
+  }).sort((a,b)=>b.elo-a.elo);
+  const matches=[];
+  for(const [ownerUid,history] of Object.entries(data.history||{})){
+    if(!history||typeof history!=='object')continue;
+    for(const [key,record] of Object.entries(history)){
+      if(!record||typeof record!=='object')continue;
+      matches.push({id:key,timestamp:Number(record.timestamp)||0,playerUid:ownerUid,playerName:String(record.playerName||data.players[ownerUid]?.name||'Người chơi'),opponentUid:String(record.opponentUid||''),opponentName:String(record.opponentName||'Đối thủ'),gameType:String(record.gameType||'Caro'),result:String(record.result||''),eloBefore:Number(record.playerEloBefore)||1000,eloAfter:Number(record.playerEloAfter)||1000,moveCount:Number(record.moveCount)||0,durationMs:Number(record.durationMs)||0});
+    }
+  }
+  matches.sort((a,b)=>b.timestamp-a.timestamp);
+  const uniqueMatches=new Map();
+  for(const match of matches){
+    const id=match.id.startsWith('g_')?match.id:`${match.playerUid}:${match.id}`;
+    if(!uniqueMatches.has(id))uniqueMatches.set(id,match);
+  }
+  const ranked=[...uniqueMatches.values()].filter(m=>m.gameType==='Xếp hạng'&&m.timestamp>Date.now()-24*60*60*1000&&m.opponentUid);
+  const pairs=new Map();
+  for(const match of ranked){
+    const ids=[match.playerUid,match.opponentUid].sort();
+    const key=ids.join('|');
+    if(!pairs.has(key))pairs.set(key,{uids:ids,games:0,names:[match.playerName,match.opponentName],lastAt:0});
+    const pair=pairs.get(key);pair.games++;pair.lastAt=Math.max(pair.lastAt,match.timestamp);
+  }
+  const alerts=[...pairs.values()].filter(pair=>pair.games>=4).map(pair=>({
+    type:'repeat_ranked_pair',uids:pair.uids,games:pair.games,lastAt:pair.lastAt,
+    message:`${pair.names.join(' / ')} đã có ${pair.games} trận xếp hạng trong 24 giờ qua; cần kiểm tra thủ công.`
+  })).sort((a,b)=>b.games-a.games).slice(0,50);
+  return {ok:true,configuredAdmin:!!process.env.CARO_ADMIN_PASSWORD,totalAccounts:users.length,bannedAccounts:bannedUids.size,users:users.slice(0,200),recentMatches:matches.slice(0,100),alerts,volatileStorage:true};
 }
 
 function assertWriteAccess(path, uid, value) {
@@ -54,6 +129,11 @@ function assertWriteAccess(path, uid, value) {
   if (parts[0] === 'players' || parts[0] === 'history') {
     if (parts.length < 2 || parts[1] !== uid) {
       throw new Error('Bạn chỉ được sửa hồ sơ và lịch sử của chính mình.');
+    }
+    if (parts[0] === 'players' && parts.length === 2 && value && typeof value === 'object') {
+      if (['elo','w','l','d'].some(field => Object.prototype.hasOwnProperty.call(value, field))) {
+        throw new Error('ELO và thành tích xếp hạng chỉ được máy chủ cập nhật.');
+      }
     }
   }
   if (parts[0] === 'lobby' && value != null && value.uid && value.uid !== uid) {
@@ -152,6 +232,7 @@ io.on('connection', socket => {
       if (password.length < 8 || Buffer.byteLength(password, 'utf8') > 128) {
         throw new Error('Mật khẩu phải có ít nhất 8 ký tự và tối đa 128 byte.');
       }
+      if (key === ADMIN_NAME_KEY) throw new Error('Tên này được dành riêng cho quản trị viên.');
       if (accountsByName.has(key)) throw new Error('Tên đăng nhập đã được sử dụng.');
       const uid = 'u_' + crypto.randomBytes(18).toString('hex');
       const salt = crypto.randomBytes(16);
@@ -172,6 +253,15 @@ io.on('connection', socket => {
     try {
       const { key } = parseAccountName(payload && payload.name);
       const password = String(payload && payload.password || '');
+      if (key === ADMIN_NAME_KEY) {
+        const configuredPassword = String(process.env.CARO_ADMIN_PASSWORD || '');
+        if (!configuredPassword) throw new Error('Quản trị viên chưa được cấu hình CARO_ADMIN_PASSWORD trên Render.');
+        const suppliedHash=crypto.createHash('sha256').update(password).digest();
+        const expectedHash=crypto.createHash('sha256').update(configuredPassword).digest();
+        if(!password || !crypto.timingSafeEqual(suppliedHash,expectedHash)) throw new Error('Tên đăng nhập hoặc mật khẩu không đúng.');
+        reply(ack, makeAdminSession());
+        return;
+      }
       const uid = accountsByName.get(key);
       const account = uid && accountsByUid.get(uid);
       if (!account || Buffer.byteLength(password, 'utf8') > 128) throw new Error('Tên đăng nhập hoặc mật khẩu không đúng.');
@@ -190,10 +280,10 @@ io.on('connection', socket => {
   socket.on('auth:session', (payload, ack) => {
     try {
       const uid = requireSession(payload);
-      const account = accountsByUid.get(uid);
       const profile = data.players[uid] || {};
+      const account = uid === ADMIN_UID ? {name:ADMIN_USERNAME} : accountsByUid.get(uid);
       reply(ack, {
-        ok: true, uid, name: account.name,
+        ok: true, uid, name: account.name, role:uid===ADMIN_UID?'admin':'user',
         elo: Number(profile.elo) || 1000,
         w: Number(profile.w) || 0, l: Number(profile.l) || 0, d: Number(profile.d) || 0
       });
@@ -206,6 +296,75 @@ io.on('connection', socket => {
     const token = String(payload && payload.sessionToken || '');
     sessions.delete(token);
     reply(ack, { ok: true });
+  });
+
+  socket.on('admin:overview', (payload, ack) => {
+    try { requireAdmin(payload); reply(ack, getAdminOverview()); }
+    catch(error) { reply(ack, {ok:false,error:error.message||'Không thể đọc bảng quản trị.'}); }
+  });
+
+  socket.on('admin:ban', (payload, ack) => {
+    try {
+      requireAdmin(payload);
+      const uid=String(payload&&payload.uid||'').trim();
+      const shouldBan=payload&&payload.banned===true;
+      if(!uid||uid===ADMIN_UID||!accountsByUid.has(uid))throw new Error('Không tìm thấy tài khoản để thao tác.');
+      if(shouldBan){
+        const reason=String(payload&&payload.reason||'Vi phạm quy định').trim().slice(0,200)||'Vi phạm quy định';
+        bannedUids.set(uid,{reason,at:Date.now()});
+      }else bannedUids.delete(uid);
+      reply(ack,{ok:true,uid,banned:bannedUids.has(uid)});
+    }catch(error){reply(ack,{ok:false,error:error.message||'Không thể khóa tài khoản.'})}
+  });
+
+  socket.on('ranked:finish', (payload, ack) => {
+    try {
+      const callerUid=requireSession(payload);
+      const gid=String(payload&&payload.gid||'');
+      const game=data.games[gid];
+      if(!game||!Array.isArray(game.p)||game.p.length!==2)throw new Error('Không tìm thấy trận xếp hạng.');
+      if(/^\d{4}$/.test(gid)||game.roomCode)throw new Error('Đấu phòng riêng không được cộng hoặc trừ ELO.');
+      const callerIndex=game.p.findIndex(player=>player&&player.uid===callerUid);
+      if(callerIndex<0)throw new Error('Bạn không thuộc trận này.');
+      const winnerIndex=Number(payload&&payload.winnerIndex);
+      if(!Number.isInteger(winnerIndex)||![-1,0,1].includes(winnerIndex))throw new Error('Kết quả trận không hợp lệ.');
+      if(game.status!=='over'||Number(game.winner)!==winnerIndex)throw new Error('Máy chủ chưa xác nhận trạng thái kết thúc trận.');
+      if(game.ratingResult){
+        const profile=data.players[callerUid]||{};
+        reply(ack,{ok:true,elo:Number(profile.elo)||1000,w:Number(profile.w)||0,l:Number(profile.l)||0,d:Number(profile.d)||0,alreadyApplied:true});
+        return;
+      }
+      const reason=String(payload&&payload.reason||game.why||'');
+      if(reason==='win'){
+        if(!hasFiveInMoves(game.moves,winnerIndex))throw new Error('Máy chủ chưa xác nhận đủ 5 quân liên tiếp.');
+      }else if(reason==='resign'){
+        if(!game.resignedBy||game.p[winnerIndex===-1?callerIndex:1-winnerIndex]?.uid===game.resignedBy) {
+          if(game.resignedBy!==game.p[1-winnerIndex]?.uid)throw new Error('Kết quả đầu hàng không hợp lệ.');
+        }
+      }else if(reason==='timeout'){
+        if(Date.now()<=Number(game.dl||0)+1800||winnerIndex!==1-Number(game.turn))throw new Error('Thời gian trận chưa hết hợp lệ.');
+      }else if(reason!=='draw')throw new Error('Lý do kết thúc trận không hợp lệ.');
+
+      const playerResults={};
+      const winnerUid=winnerIndex===-1?null:game.p[winnerIndex].uid;
+      for(let i=0;i<2;i++){
+        const player=game.p[i],profile=data.players[player.uid]||(data.players[player.uid]={name:player.name||'Người chơi',elo:1000,w:0,l:0,d:0});
+        const before=Number(profile.elo)||1000;
+        const score=winnerIndex===-1?0.5:winnerIndex===i?1:0;
+        const expected=1/(1+10**(((Number(data.players[game.p[1-i].uid]?.elo)||Number(game.p[1-i].elo)||1000)-before)/400));
+        const after=Math.max(100,Math.round(before+32*(score-expected)));
+        profile.name=player.name||profile.name||'Người chơi';
+        profile.elo=after;
+        if(score===1)profile.w=(Number(profile.w)||0)+1;
+        else if(score===0)profile.l=(Number(profile.l)||0)+1;
+        else profile.d=(Number(profile.d)||0)+1;
+        playerResults[player.uid]={elo:after,w:profile.w,l:profile.l,d:profile.d,before};
+      }
+      game.ratingResult={winnerUid,reason,at:Date.now(),playerResults};
+      version++;notifySubscribers();
+      const result=playerResults[callerUid];
+      reply(ack,{ok:true,elo:result.elo,w:result.w,l:result.l,d:result.d,delta:result.elo-result.before,alreadyApplied:false});
+    }catch(error){reply(ack,{ok:false,error:error.message||'Không thể cập nhật ELO xếp hạng.'})}
   });
 
   socket.on('room:create', (payload, ack) => {
