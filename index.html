@@ -357,12 +357,13 @@ aside>.note{background:#fff;border:1px solid var(--ln);border-radius:8px;padding
 .tier-f .study-tier-head strong{background:#ffd9d9;color:#a51d1d}
 .study-tier-note{font-size:11px;line-height:1.7;color:#647384;margin:12px 0 0}
 /* Image-based, draggable Caro tier maker */
-/* Branded Caro 5 wordmark replaces external icon images. */
-.study-logo-mark{display:flex;align-items:baseline;justify-content:center;gap:2px;flex:none;width:72px;height:36px;padding:0 4px;border:1px solid #ccdaf6;border-radius:9px;background:linear-gradient(145deg,#f7faff,#e6eeff);color:#1c3fb7;font-family:'Caveat',cursive;font-size:25px;font-weight:700;line-height:1;letter-spacing:-.7px;white-space:nowrap;text-shadow:0 1px 0 #fff;box-shadow:0 2px 5px rgba(28,63,183,.12)}
-.study-logo-mark b{color:#d8322b;font-size:1.12em;font-weight:700}
-.study-head-icon .study-logo-mark{width:59px;height:34px;padding:0 3px;border:0;background:transparent;border-radius:0;font-size:23px;box-shadow:none}
-.study-float .study-logo-mark{width:auto;height:auto;padding:0;border:0;border-radius:0;background:transparent;font-size:16px;letter-spacing:-.6px;box-shadow:none}
-.study-float .study-logo-mark b{font-size:1.15em}
+/* Minimal wordmark only: Caro in blue, 5 in red, using the existing Caveat display font. */
+.study-logo-mark{display:inline-flex;align-items:baseline;justify-content:center;gap:1px;flex:none;width:auto;height:auto;margin:0;padding:0;border:0;border-radius:0;background:transparent;color:#1c3fb7;font-family:'Caveat',cursive;font-size:31px;font-weight:700;font-style:normal;line-height:.9;letter-spacing:-1.1px;white-space:nowrap;text-shadow:none;box-shadow:none}
+.study-logo-mark span{color:#1c3fb7;font:inherit;letter-spacing:inherit}
+.study-logo-mark b{color:#d8322b;font-family:'Caveat',cursive;font-size:1em;font-weight:700;line-height:inherit}
+.study-head-icon{display:flex;align-items:center;justify-content:center;flex:none;width:auto!important;height:auto!important;min-width:0;border-radius:0!important;background:transparent!important;color:inherit}
+.study-head-icon .study-logo-mark{font-size:32px;letter-spacing:-1.2px}
+.study-float .study-logo-mark{font-size:19px;letter-spacing:-.7px}
 .tier-image-workshop{display:grid;gap:12px}
 .tier-image-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid #e0e6ed;border-radius:10px;background:#f7f9fc}
 .tier-image-toolbar span{font-size:11px;color:#596a7c;line-height:1.5}
