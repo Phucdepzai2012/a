@@ -135,17 +135,87 @@ function getAdminOverview() {
   return {ok:true,configuredAdmin:!!process.env.CARO_ADMIN_PASSWORD,totalAccounts:users.length,bannedAccounts:bannedUids.size,users:users.slice(0,200),recentMatches:matches.slice(0,100),alerts:alerts.slice(0,50),audit:adminAudit.slice(-100).reverse(),volatileStorage:true};
 }
 
-function assertWriteAccess(path, uid, value) {
+function validateGameRootPatch(gid, uid, patch) {
+  const game=data.games[gid];
+  if(!game||!Array.isArray(game.p)||game.p.length!==2)throw new Error('Không tìm thấy trận đấu hợp lệ.');
+  const playerIndex=game.p.findIndex(player=>player&&player.uid===uid);
+  if(playerIndex<0)throw new Error('Bạn không thuộc trận đấu này.');
+  if(game.status!=='play')throw new Error('Trận đấu đã kết thúc hoặc không còn hoạt động.');
+  if(!patch||typeof patch!=='object'||Array.isArray(patch))throw new Error('Dữ liệu nước đi không hợp lệ.');
+  if(['p','roomCode','createdAt','ratingResult'].some(field=>Object.prototype.hasOwnProperty.call(patch,field)))throw new Error('Không được sửa thông tin cố định của trận đấu.');
+
+  const moveKeys=Object.keys(patch).filter(key=>key.startsWith('moves/'));
+  if(Object.keys(patch).some(key=>key.startsWith('moves/')&&!/^moves\/\d+$/.test(key)))throw new Error('Chỉ được ghi từng nước đi theo thứ tự.');
+  if(moveKeys.length>1)throw new Error('Mỗi lượt chỉ được ghi một nước đi.');
+  if(moveKeys.length===1){
+    const moveKey=moveKeys[0],index=Number(moveKey.slice(6)),move=patch[moveKey];
+    const existing=game.moves&&typeof game.moves==='object'?game.moves:{};
+    if(index!==Object.keys(existing).length||Object.prototype.hasOwnProperty.call(existing,String(index)))throw new Error('Nước đi không đúng thứ tự.');
+    if(playerIndex!==Number(game.turn)||!move||Number(move.p)!==playerIndex)throw new Error('Chưa đến lượt tài khoản này.');
+    const x=Number(move.x),y=Number(move.y);
+    if(!Number.isInteger(x)||!Number.isInteger(y)||x<0||x>14||y<0||y>14)throw new Error('Tọa độ nước đi không hợp lệ.');
+    if(Object.values(existing).some(m=>m&&Number(m.x)===x&&Number(m.y)===y))throw new Error('Ô này đã có quân.');
+    const completeMoves={...existing,[String(index)]:move};
+    if(patch.status==='over'){
+      if(patch.why!=='win'||Number(patch.winner)!==playerIndex||!hasFiveInMoves(completeMoves,playerIndex))throw new Error('Máy chủ chưa xác nhận nước thắng hợp lệ.');
+      if('resignedBy' in patch)throw new Error('Dữ liệu kết thúc trận không hợp lệ.');
+    }else{
+      if('winner' in patch||'why' in patch||'resignedBy' in patch)throw new Error('Kết quả chỉ được đặt khi ván đấu thực sự kết thúc.');
+      if(Number(patch.turn)!==1-playerIndex)throw new Error('Đổi lượt không hợp lệ.');
+      const deadline=Number(patch.dl),now=Date.now();
+      if(!Number.isFinite(deadline)||deadline<now+25000||deadline>now+35000)throw new Error('Thời hạn lượt đi không hợp lệ.');
+    }
+    return;
+  }
+
+  if(patch.status==='over'&&patch.why==='resign'){
+    if(patch.resignedBy!==uid||Number(patch.winner)!==1-playerIndex)throw new Error('Kết quả đầu hàng không hợp lệ.');
+    if('turn' in patch||'dl' in patch)throw new Error('Không được đổi lượt khi đầu hàng.');
+    return;
+  }
+  if(['status','winner','why','resignedBy','turn','dl'].some(field=>Object.prototype.hasOwnProperty.call(patch,field))) {
+    throw new Error('Chỉ máy chủ mới được xử lý timeout; lượt thường phải gửi nước đi hợp lệ.');
+  }
+  throw new Error('Cập nhật trận đấu không hợp lệ.');
+}
+
+function validateGameTransaction(gid,uid,nextValue){
+  const game=data.games[gid];
+  if(!game||!Array.isArray(game.p)||game.p.length!==2||!game.p.some(player=>player&&player.uid===uid))throw new Error('Bạn không thuộc trận đấu này.');
+  if(game.status!=='play'||!nextValue||nextValue.status!=='over'||nextValue.why!=='timeout')throw new Error('Transaction trận đấu không hợp lệ.');
+  if(Date.now()<=Number(game.dl||0)+1800||Number(nextValue.winner)!==1-Number(game.turn))throw new Error('Chưa hết giờ hoặc kết quả timeout không hợp lệ.');
+  if(JSON.stringify(nextValue.p)!==JSON.stringify(game.p)||JSON.stringify(nextValue.moves||{})!==JSON.stringify(game.moves||{})||Number(nextValue.turn)!==Number(game.turn)||Number(nextValue.dl)!==Number(game.dl))throw new Error('Transaction không được sửa nước đi, người chơi hoặc đồng hồ.');
+  const allowed=new Set(['status','winner','why']);
+  const keys=new Set([...Object.keys(game),...Object.keys(nextValue)]);
+  for(const key of keys)if(!allowed.has(key)&&JSON.stringify(nextValue[key])!==JSON.stringify(game[key]))throw new Error('Transaction chứa thay đổi không được phép.');
+}
+
+function assertWriteAccess(path, uid, value, mode='patch') {
   const parts = cleanPath(path);
   if (parts[0] === 'players' || parts[0] === 'history') {
     if (parts.length < 2 || parts[1] !== uid) {
       throw new Error('Bạn chỉ được sửa hồ sơ và lịch sử của chính mình.');
     }
     if (parts[0] === 'players' && parts.length === 2 && value && typeof value === 'object') {
-      if (['elo','w','l','d'].some(field => Object.prototype.hasOwnProperty.call(value, field))) {
+      const fields=Object.keys(value).map(field=>field.split('/')[0]);
+      if (['elo','w','l','d'].some(field => fields.includes(field))) {
         throw new Error('ELO và thành tích xếp hạng chỉ được máy chủ cập nhật.');
       }
     }
+  }
+  if(parts[0]==='games'){
+    const gid=parts[1];
+    if(!gid)throw new Error('Phải chỉ rõ mã trận.');
+    const game=data.games[gid];
+    if(mode==='set'&&parts.length===2&&!game){
+      if(/^\d{4}$/.test(gid)||!value||!Array.isArray(value.p)||value.p.length!==2||!value.p.some(player=>player&&player.uid===uid)||value.status!=='play'||Object.keys(value.moves||{}).length!==0||value.p[0].uid===value.p[1].uid)throw new Error('Không được tự tạo hoặc giả mạo trận xếp hạng.');
+      return;
+    }
+    if(parts.length!==2)throw new Error('Chỉ được cập nhật toàn bộ lượt chơi qua thao tác hợp lệ.');
+    if(mode==='set')throw new Error('Không được ghi đè trận đã tạo.');
+    if(mode==='update'){validateGameRootPatch(gid,uid,value);return}
+    if(mode==='transaction'){validateGameTransaction(gid,uid,value);return}
+    if(!game||!Array.isArray(game.p)||!game.p.some(player=>player&&player.uid===uid))throw new Error('Bạn không thuộc trận đấu này.');
   }
   if (parts[0] === 'lobby' && value != null && value.uid && value.uid !== uid) {
     throw new Error('Không thể tạo hàng chờ thay cho tài khoản khác.');
@@ -467,7 +537,7 @@ io.on('connection', socket => {
       const op = String(payload && payload.op || '');
       const path = String(payload && payload.path || '');
       const uid = requireSession(payload);
-      assertWriteAccess(path, uid, payload.data);
+      assertWriteAccess(path, uid, payload.data, op);
       cleanPath(path);
       if (op === 'set') {
         setAt(path, payload.data);
@@ -495,7 +565,7 @@ io.on('connection', socket => {
     try {
       const path = String(payload && payload.path || '');
       const uid = requireSession(payload);
-      assertWriteAccess(path, uid, payload.value);
+      assertWriteAccess(path, uid, payload.value, 'transaction');
       cleanPath(path);
       if (Number(payload && payload.baseVersion) !== version) {
         reply(ack, { ok: true, committed: false, version });
