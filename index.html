@@ -46,6 +46,15 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 #historyReplayMoves .review-row{gap:8px}
 #historyReplayMoves .review-row.active{background:#dce8ff;border-color:var(--blue)}
 .history-move-meta{font-size:10px;color:var(--mut);white-space:normal}
+#adminSection[hidden]{display:none}
+.admin-row{display:flex;align-items:center;gap:7px;padding:8px 2px;border-bottom:1px dashed var(--ln);font-size:12px;flex-wrap:wrap}
+.admin-row .admin-detail{flex:1;min-width:120px}
+.admin-row small{display:block;color:var(--mut);font-size:10px;white-space:normal}
+.admin-pill{font-size:10px;font-weight:700;padding:3px 5px;border-radius:4px;background:#edf0f2;color:#59636b}
+.admin-pill.warn{background:#fff0c7;color:#876000}
+.admin-pill.block{background:#ffd9d9;color:#a51d1d}
+.admin-action{width:auto;margin:0;padding:5px 7px;font-size:11px;background:#edf1f4;border-color:var(--ln)}
+.admin-action.danger{background:#ffd9d9;border-color:#f1a6a6}
 .history-item{display:flex;align-items:center;gap:8px;padding:8px 3px;border-bottom:1px dashed var(--ln);font-size:12px}
 .history-outcome{flex:none;min-width:48px;text-align:center;border-radius:4px;padding:4px;font-size:10px;font-weight:700}
 .history-outcome.win{background:#d9f6e5;color:#087344}
@@ -147,6 +156,21 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
       <div id="historyStatus" class="note">Có thể tra cứu lịch sử công khai bằng tên người chơi hoặc mở liên kết được chia sẻ.</div>
       <ol id="historyList"></ol>
       <div class="note">Lịch sử được chia sẻ công khai. Máy chủ hiện lưu trong RAM nên dữ liệu có thể mất khi Render khởi động lại hoặc deploy.</div>
+    </section>
+    <section id="adminSection" hidden>
+      <h2>Quản trị máy chủ</h2>
+      <div id="adminStatus" class="note">Bảng quản trị chỉ dành cho tài khoản admin.</div>
+      <button id="bAdminRefresh" class="pri" type="button">Tải dữ liệu quản trị</button>
+      <div id="adminStats" class="review-summary"></div>
+      <h2>Cảnh báo cần kiểm tra</h2>
+      <ol id="adminAlerts"></ol>
+      <h2>Tài khoản</h2>
+      <ol id="adminUsers"></ol>
+      <h2>Trận gần đây</h2>
+      <ol id="adminMatches"></ol>
+      <h2>Nhật ký quản trị</h2>
+      <ol id="adminAudit"></ol>
+      <div class="note">Các cảnh báo chỉ là dấu hiệu để xem xét, không tự kết luận người chơi gian lận. Dữ liệu tạm trên RAM sẽ mất khi máy chủ khởi động lại.</div>
     </section>
     <section id="historyReplayPanel" hidden>
       <h2 id="historyReplayTitle">Xem lại ván đấu</h2>
@@ -330,8 +354,12 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
         if (token) {
           const session = await rpc('auth:session', {});
           localUid = session.uid;
-          try { localStorage.setItem('caroRenderUid', localUid); } catch (_) {}
-          this.currentUser = {uid: session.uid, isAnonymous: false, displayName: session.name};
+          try {
+            localStorage.setItem('caroRenderUid', localUid);
+            localStorage.setItem('caroRole', session.role || 'user');
+            localStorage.setItem('caroName', session.name || '');
+          } catch (_) {}
+          this.currentUser = {uid: session.uid, isAnonymous: false, displayName: session.name, role: session.role || 'user', isAdmin: session.role === 'admin'};
         } else {
           this.currentUser = {uid: localUid, isAnonymous: true};
         }
@@ -356,6 +384,7 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
       localStorage.setItem('caroRenderUid', result.uid);
       localStorage.setItem('caroSessionToken', result.token);
       localStorage.setItem('caroName', result.name);
+      localStorage.setItem('caroRole', result.role || 'user');
       localStorage.setItem('caroProfileSeason2', JSON.stringify({elo: result.elo || 1000, w: result.w || 0, l: result.l || 0, d: result.d || 0}));
     } catch (_) {}
     return result;
@@ -369,9 +398,13 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
         localStorage.removeItem('caroSessionToken');
         localStorage.removeItem('caroRenderUid');
         localStorage.removeItem('caroName');
+        localStorage.removeItem('caroRole');
         localStorage.removeItem('caroProfileSeason2');
       } catch (_) {}
-    }
+    },
+    adminOverview: () => rpc('admin:overview', {}),
+    adminBan: (uid,banned,reason) => rpc('admin:ban', {uid,banned,reason}),
+    finishRanked: payload => rpc('ranked:finish', payload)
   };
   window.caroRenderSocket = socket;
   window.caroRenderRooms = { create: payload => rpc('room:create', payload), join: payload => rpc('room:join', payload) };
@@ -411,7 +444,7 @@ const tier=e=>TIERS.find(t=>e>=t[0])[1];
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 let profile={};try{profile=JSON.parse(localStorage.getItem('caroProfileSeason2')||'{}')}catch{}
-let me={uid:null,name:(localStorage.getItem('caroSessionToken')?localStorage.getItem('caroName'):'')||'',elo:Number(profile.elo)||1000,w:Number(profile.w)||0,l:Number(profile.l)||0,d:Number(profile.d)||0};
+let me={uid:null,name:(localStorage.getItem('caroSessionToken')?localStorage.getItem('caroName'):'')||'',elo:Number(profile.elo)||1000,w:Number(profile.w)||0,l:Number(profile.l)||0,d:Number(profile.d)||0,isAdmin:localStorage.getItem('caroRole')==='admin'};
 let G=null,finding=false,findTimer=null,inviteRef=null,db=null,activeBackend=null,activeBackendIndex=-1,backendCandidates=[],serverOffset=0,switchingBackend=false,onlineLeaderboard=[],profileRef=null,leaderboardRef=null,serverOffsetRef=null,duplicateBackupConfig=false,currentHistoryUid=null,historyRecordsByKey=new Map(),historyReplayReturnGame=null;
 const now=()=>Date.now()+serverOffset;
 const cv=$('bd'),cx=cv.getContext('2d');
@@ -429,6 +462,7 @@ function ui(){
   $('botEloInput').disabled=!!(G&&!G.over)||finding;
   $('bRes').hidden=!(G&&!G.over);
   $('bLogout').hidden=!localStorage.getItem('caroSessionToken');
+  $('adminSection').hidden=!me.isAdmin;
   renderLeaderboard();
 }
 function stat(){
@@ -578,7 +612,7 @@ function bindBackendListeners(){
   leaderboardRef.on('value',s=>{const list=[];s.forEach(c=>list.push(c.val()));onlineLeaderboard=list.reverse();renderLeaderboard()},e=>handleBackendFailure(e,'bảng xếp hạng'));
 }
 async function activateBackend(entry){
-  const b=await connectBackend(entry);activeBackend=b;activeBackendIndex=backendCandidates.indexOf(entry);db=b.db;me.uid=b.uid;serverOffset=0;
+  const b=await connectBackend(entry);activeBackend=b;activeBackendIndex=backendCandidates.indexOf(entry);db=b.db;me.uid=b.uid;me.isAdmin=!!(b.auth.currentUser&&b.auth.currentUser.isAdmin);serverOffset=0;
   const snap=await db.ref('players/'+me.uid).once('value');
   if(snap.exists()){const v=snap.val();me.name=v.name||me.name;me.elo=Number(v.elo)||1000;me.w=Number(v.w)||0;me.l=Number(v.l)||0;me.d=Number(v.d)||0;saveProfile()}
   else if(me.name){await db.ref('players/'+me.uid).update(profileData())}
@@ -588,6 +622,7 @@ async function activateBackend(entry){
   setNetwork(`Đã kết nối ${b.name} · có thể ghép trận người thật.`);ui();stat();
   if(sharedHistoryUid)await loadHistoryByUid(sharedHistoryUid).catch(error=>{$('historyStatus').textContent=error.message||String(error)});
   else if(me.uid)await loadHistoryByUid(me.uid,me.name).catch(error=>{$('historyStatus').textContent=error.message||String(error)});
+  if(me.isAdmin)loadAdminOverview();
   if(G&&G.over)saveFinishedMatchHistory(G).catch(error=>console.error('Không lưu được lịch sử:',error));
 }
 async function connectInitial(){
