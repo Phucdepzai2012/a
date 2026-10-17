@@ -48,6 +48,9 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 .bot-elo-row{display:grid;grid-template-columns:20px minmax(65px,1fr) auto;align-items:center;gap:8px;font-size:12px;color:var(--mut)}
 .bot-elo-row input{width:100%;margin:0;padding:6px 8px;font-size:14px}
 .bot-settings .note{margin-top:6px}
+.tools-toggle{background:#edf1f4;border-color:var(--ln);color:var(--ink);font-size:13px;font-weight:600;text-align:center;margin-top:8px}
+#extraControls{margin-top:4px}
+#extraControls[hidden]{display:none}
 .room-join-row{display:grid;grid-template-columns:minmax(0,1fr) 104px;gap:8px;margin-top:8px}
 .room-join-row input,.room-join-row button{margin:0;min-width:0}
 @media(max-width:520px){.room-join-row{grid-template-columns:minmax(0,1fr) 92px}}
@@ -63,18 +66,21 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
       <h1>Caro <b>5</b></h1>
       <div id="me"></div>
       <button id="bFind" class="pri">Ghép trận xếp hạng</button>
-      <button id="bCreateRoom">Tạo phòng riêng (mã 4 số)</button>
-      <div class="room-join-row"><input id="roomCodeInput" type="text" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="Mã phòng 4 số" aria-label="Nhập mã phòng gồm 4 chữ số"><button id="bJoinRoom">Vào phòng</button></div>
-      <button id="bBot">Luyện với máy (không tính điểm)</button>
-      <div id="botSettings" class="bot-settings">
-        <label for="botEloRange"><span>Sức mạnh của máy</span><strong id="botEloLabel">1500 ELO</strong></label>
-        <input id="botEloRange" type="range" min="1" max="3000" step="1" value="1500" aria-label="Điều chỉnh ELO máy từ 1 đến 3000">
-        <div class="bot-elo-row"><span>1</span><input id="botEloInput" type="number" min="1" max="3000" step="1" value="1500" aria-label="Nhập ELO máy"><span>3000 · MAX</span></div>
-        <div id="botEloDesc" class="note">Khá · ELO máy chỉ điều chỉnh độ khó, không đổi ELO của bạn ở chế độ luyện.</div>
+      <button id="bBot">Luyện với máy</button>
+      <button id="bToggleTools" class="tools-toggle" type="button" aria-expanded="false" aria-controls="extraControls">＋ Hiện thêm công cụ</button>
+      <div id="extraControls" hidden>
+        <button id="bCreateRoom">Tạo phòng riêng (mã 4 số)</button>
+        <div class="room-join-row"><input id="roomCodeInput" type="text" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="Mã phòng 4 số" aria-label="Nhập mã phòng gồm 4 chữ số"><button id="bJoinRoom">Vào phòng</button></div>
+        <div id="botSettings" class="bot-settings">
+          <label for="botEloRange"><span>Sức mạnh của máy</span><strong id="botEloLabel">1500 ELO</strong></label>
+          <input id="botEloRange" type="range" min="1" max="3000" step="1" value="1500" aria-label="Điều chỉnh ELO máy từ 1 đến 3000">
+          <div class="bot-elo-row"><span>1</span><input id="botEloInput" type="number" min="1" max="3000" step="1" value="1500" aria-label="Nhập ELO máy"><span>3000 · MAX</span></div>
+          <div id="botEloDesc" class="note">Khá · ELO máy chỉ điều chỉnh độ khó, không đổi ELO của bạn ở chế độ luyện.</div>
+        </div>
+        <button id="bCen">Về nước vừa đánh</button>
+        <div id="network" class="note">Đang kết nối Render để ghép trận người thật…</div>
       </div>
       <button id="bRes" hidden>Đầu hàng</button>
-      <button id="bCen">Về nước vừa đánh</button>
-      <div id="network" class="note">Đang kết nối Render để ghép trận người thật…</div>
     </section>
     <section>
       <h2>Ván hiện tại</h2>
@@ -579,6 +585,12 @@ async function joinRoom(){
   try{await window.caroRenderRooms.join({code,uid:me.uid,name:me.name,elo:me.elo});await openGame(code);}
   catch(e){$('st').textContent='Vào phòng lỗi: '+(e.message||e);ui()}
 }
+$('bToggleTools').onclick=()=>{
+  const panel=$('extraControls'),opening=panel.hidden;
+  panel.hidden=!opening;
+  $('bToggleTools').setAttribute('aria-expanded',String(opening));
+  $('bToggleTools').textContent=opening?'− Ẩn công cụ':'＋ Hiện thêm công cụ';
+};
 $('bFind').onclick=startMatchmaking;
 $('bCreateRoom').onclick=createRoom;
 $('bJoinRoom').onclick=joinRoom;
