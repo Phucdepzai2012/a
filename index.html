@@ -29,14 +29,23 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 #ov{position:fixed;inset:0;background:rgba(228,233,236,.94);display:flex;align-items:center;justify-content:center;z-index:9;padding:16px}#ov[hidden]{display:none}
 #ov>div{background:var(--paper);padding:24px;border-radius:3px;max-width:340px;width:100%;box-shadow:0 10px 30px -12px rgba(27,36,48,.45)}
 #ov p{margin:8px 0 0;color:var(--mut);font-size:13px}#nmEr{color:var(--red);font-size:13px;min-height:1.4em;margin-top:6px}#me{font-weight:600;color:var(--ink)}
+.password-row{display:grid;grid-template-columns:minmax(0,1fr) 48px;gap:7px;align-items:stretch}
+.password-row input{min-width:0}
+.password-row button{width:48px;margin-top:8px;padding:8px 4px;font-size:18px;background:#edf1f4;border-color:var(--ln)}
+.password-row[hidden]{display:none!important}
 #review[hidden]{display:none}
 .history-search,.history-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:8px}
 .history-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
 .history-search input,.history-search button,.history-actions button{margin:0;min-width:0}
 .history-search button,.history-actions button{padding:8px 6px;font-size:12px}
-#historyList{max-height:360px;overflow:auto;counter-reset:none}
-#historyList li{display:block;padding:0;border:0;counter-increment:none}
-#historyList li:before{display:none}
+#historyList,#historyReplayMoves{max-height:360px;overflow:auto;counter-reset:none}
+#historyList li,#historyReplayMoves li{display:block;padding:0;border:0;counter-increment:none}
+#historyList li:before,#historyReplayMoves li:before{display:none}
+.history-item{flex-wrap:wrap}
+.history-replay-button{flex:none;width:auto;margin:0;padding:6px 8px;font-size:11px;background:#edf1f4;border-color:var(--ln)}
+#historyReplayMoves .review-row{gap:8px}
+#historyReplayMoves .review-row.active{background:#dce8ff;border-color:var(--blue)}
+.history-move-meta{font-size:10px;color:var(--mut);white-space:normal}
 .history-item{display:flex;align-items:center;gap:8px;padding:8px 3px;border-bottom:1px dashed var(--ln);font-size:12px}
 .history-outcome{flex:none;min-width:48px;text-align:center;border-radius:4px;padding:4px;font-size:10px;font-weight:700}
 .history-outcome.win{background:#d9f6e5;color:#087344}
@@ -87,7 +96,7 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 </style>
 </head>
 <body>
-<div id="ov"><div><h1>Caro <b>5</b></h1><p id="authHint">Đăng nhập để đồng bộ ELO và lịch sử đấu của bạn.</p><input id="nm" maxlength="14" placeholder="Tên đăng nhập (3–14 ký tự)" autocomplete="username"><input id="pw" type="password" minlength="8" maxlength="128" placeholder="Mật khẩu (ít nhất 8 ký tự)" autocomplete="current-password"><input id="pwConfirm" type="password" minlength="8" maxlength="128" placeholder="Nhập lại mật khẩu" autocomplete="new-password" hidden><div id="nmEr" role="status" aria-live="polite"></div><button id="nmOk" class="pri">Đăng nhập</button><button id="bSwitchAuth" class="auth-switch" type="button">Chưa có tài khoản? Đăng ký</button></div></div>
+<div id="ov"><div><h1>Caro <b>5</b></h1><p id="authHint">Đăng nhập để đồng bộ ELO và lịch sử đấu của bạn.</p><input id="nm" maxlength="14" placeholder="Tên đăng nhập (3–14 ký tự)" autocomplete="username"><div class="password-row"><input id="pw" type="password" minlength="8" maxlength="128" placeholder="Mật khẩu (ít nhất 8 ký tự)" autocomplete="current-password"><button id="togglePw" type="button" aria-label="Hiện mật khẩu" title="Hiện mật khẩu">👁️</button></div><div id="pwConfirmRow" class="password-row" hidden><input id="pwConfirm" type="password" minlength="8" maxlength="128" placeholder="Nhập lại mật khẩu" autocomplete="new-password"><button id="togglePwConfirm" type="button" aria-label="Hiện mật khẩu xác nhận" title="Hiện mật khẩu xác nhận">👁️</button></div><div id="nmEr" role="status" aria-live="polite"></div><button id="nmOk" class="pri">Đăng nhập</button><button id="bSwitchAuth" class="auth-switch" type="button">Chưa có tài khoản? Đăng ký</button></div></div>
 <main>
   <div class="paper"><canvas id="bd" aria-label="Bàn cờ Caro vô hạn"></canvas></div>
   <aside>
@@ -138,6 +147,13 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
       <div id="historyStatus" class="note">Có thể tra cứu lịch sử công khai bằng tên người chơi hoặc mở liên kết được chia sẻ.</div>
       <ol id="historyList"></ol>
       <div class="note">Lịch sử được chia sẻ công khai. Máy chủ hiện lưu trong RAM nên dữ liệu có thể mất khi Render khởi động lại hoặc deploy.</div>
+    </section>
+    <section id="historyReplayPanel" hidden>
+      <h2 id="historyReplayTitle">Xem lại ván đấu</h2>
+      <div id="historyReplayInfo" class="note"></div>
+      <div id="historyReplayFocus" class="note">Chọn một nước đi bên dưới để nhảy đến vị trí đó.</div>
+      <ol id="historyReplayMoves"></ol>
+      <button id="bCloseHistoryReplay" type="button">Đóng xem lại</button>
     </section>
     <section id="review" hidden>
       <h2>Phân tích sau ván</h2>
@@ -396,7 +412,7 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 let profile={};try{profile=JSON.parse(localStorage.getItem('caroProfileSeason2')||'{}')}catch{}
 let me={uid:null,name:(localStorage.getItem('caroSessionToken')?localStorage.getItem('caroName'):'')||'',elo:Number(profile.elo)||1000,w:Number(profile.w)||0,l:Number(profile.l)||0,d:Number(profile.d)||0};
-let G=null,finding=false,findTimer=null,inviteRef=null,db=null,activeBackend=null,activeBackendIndex=-1,backendCandidates=[],serverOffset=0,switchingBackend=false,onlineLeaderboard=[],profileRef=null,leaderboardRef=null,serverOffsetRef=null,duplicateBackupConfig=false,currentHistoryUid=null;
+let G=null,finding=false,findTimer=null,inviteRef=null,db=null,activeBackend=null,activeBackendIndex=-1,backendCandidates=[],serverOffset=0,switchingBackend=false,onlineLeaderboard=[],profileRef=null,leaderboardRef=null,serverOffsetRef=null,duplicateBackupConfig=false,currentHistoryUid=null,historyRecordsByKey=new Map();
 const now=()=>Date.now()+serverOffset;
 const cv=$('bd'),cx=cv.getContext('2d');
 function resetCamera(){cam.x=cam.y=N/2;cam.s=Math.min(36,Math.max(12,(cv.clientWidth-16)/N));}
@@ -429,6 +445,11 @@ function historyDate(value){
   const date=new Date(Number(value));
   return Number.isFinite(date.getTime())?date.toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'Không rõ thời gian';
 }
+function coordinateName(move){return String.fromCharCode(65+Number(move.x))+String(Number(move.y)+1)}
+function durationLabel(ms){
+  const seconds=Math.max(0,Number(ms)||0)/1000;
+  return seconds>=60?`${Math.floor(seconds/60)}m ${(seconds%60).toFixed(1)}s`:`${seconds.toFixed(1)}s`;
+}
 function renderHistory(records,uid,name){
   currentHistoryUid=uid;
   $('historyTitle').textContent=`Lịch sử của ${name||'người chơi'} · ${records.length} trận`;
@@ -436,12 +457,16 @@ function renderHistory(records,uid,name){
     $('historyList').innerHTML='<li class="note">Chưa có trận đã kết thúc được lưu.</li>';
     return;
   }
+  historyRecordsByKey.clear();
   $('historyList').innerHTML=records.slice(0,30).map(r=>{
     const result=r.result==='win'?['THẮNG','win']:r.result==='loss'?['THUA','loss']:['HÒA','draw'];
     const before=Number(r.playerEloBefore),after=Number(r.playerEloAfter);
     const rating=Number.isFinite(before)&&Number.isFinite(after)&&before>0?(after-before):null;
     const ratingText=rating===null?'':`${rating>0?'+':''}${rating} ELO`;
-    return `<li><div class="history-item"><span class="history-outcome ${result[1]}">${result[0]}</span><div class="history-main"><strong>vs ${esc(r.opponentName||'Đối thủ')}</strong><small>${historyDate(r.timestamp)} · ${esc(r.gameType||'Caro')} · ${Math.max(0,Number(r.moveCount)||0)} nước</small></div><span class="history-rating">${ratingText}</span></div></li>`;
+    const key=String(r.historyKey||'');
+    historyRecordsByKey.set(key,r);
+    const duration=Number(r.durationMs)>0?durationLabel(r.durationMs):'—';
+    return `<li><div class="history-item"><span class="history-outcome ${result[1]}">${result[0]}</span><div class="history-main"><strong>vs ${esc(r.opponentName||'Đối thủ')}</strong><small>${historyDate(r.timestamp)} · ${esc(r.gameType||'Caro')} · ${Math.max(0,Number(r.moveCount)||0)} nước · ${duration}</small></div><span class="history-rating">${ratingText}</span><button class="history-replay-button" type="button" data-history-replay="${esc(key)}">Xem lại</button></div></li>`;
   }).join('');
 }
 async function loadHistoryByUid(uid,nameHint=''){
@@ -495,7 +520,15 @@ async function saveFinishedMatchHistory(game){
     result, winnerName:result==='draw'?'Hòa':result==='win'?me.name:(opponent.name||'Đối thủ'),
     gameType:game.mode==='bot'?'Đấu máy':game.roomCode?'Phòng riêng':'Xếp hạng',
     reason:game.reason||'',moveCount:Array.isArray(game.moves)?game.moves.length:0,
-    moves:(Array.isArray(game.moves)?game.moves:[]).map(m=>({x:Number(m.x),y:Number(m.y),p:Number(m.p),t:Number(m.t)||0})).filter(m=>Number.isInteger(m.x)&&Number.isInteger(m.y)&&Number.isInteger(m.p))
+    durationMs:Math.max(0,Date.now()-(Number(game.startedAt)||Date.now())),
+    playerSide:Number(game.mine)||0,
+    winnerPiece:Number.isInteger(game.winner)?game.winner:-1,
+    names:Array.isArray(game.names)?game.names.slice(0,2):[me.name,opponent.name||'Đối thủ'],
+    players:Array.isArray(game.players)?game.players.map(p=>({uid:p.uid||'',name:p.name||'Người chơi',elo:Number(p.elo)||1000})):[],
+    moves:(Array.isArray(game.moves)?game.moves:[]).map((m,i)=>{
+      const review=(Array.isArray(game.review)?game.review:[]).find(q=>q.index===i);
+      return {x:Number(m.x),y:Number(m.y),p:Number(m.p),t:Number(m.t)||0,elapsedMs:Math.max(0,Number(m.elapsedMs)||0),evaluation:review?review.label:(m.evaluation||''),accuracy:review?Number(review.pct)||0:Number(m.accuracy)||0};
+    }).filter(m=>Number.isInteger(m.x)&&Number.isInteger(m.y)&&Number.isInteger(m.p))
   };
   try{
     await db.ref('history/'+me.uid+'/'+gameKey).set(record);
@@ -601,6 +634,16 @@ function draw(){
   for(let i=0;i<=N;i++){const X=Math.round(ox+i*c)+.5;cx.moveTo(X,oy);cx.lineTo(X,oy+N*c)}
   for(let j=0;j<=N;j++){const Y=Math.round(oy+j*c)+.5;cx.moveTo(ox,Y);cx.lineTo(ox+N*c,Y)}
   cx.stroke();cx.strokeStyle='#789bb3';cx.lineWidth=1.5;cx.strokeRect(ox,oy,N*c,N*c);
+  // Coordinate labels like a chessboard: columns A-O and rows 1-15.
+  cx.save();
+  cx.fillStyle='rgba(253,253,250,.82)';
+  cx.font=`700 ${Math.max(8,Math.min(12,c*.24))}px 'Be Vietnam Pro',system-ui,sans-serif`;
+  cx.textAlign='center';cx.textBaseline='middle';
+  for(let i=0;i<N;i++){
+    cx.fillText(String.fromCharCode(65+i),ox+(i+.5)*c,oy+Math.max(5,c*.14));
+    cx.fillText(String(i+1),ox+Math.max(5,c*.14),oy+(i+.5)*c);
+  }
+  cx.restore();
   if(!G)return;
   const cell=(x,y,f)=>{if(x<0||x>=N||y<0||y>=N)return;cx.fillStyle=f;cx.fillRect(ox+x*c+1,oy+y*c+1,c-1,c-1)};
   if(G.last)cell(G.last[0],G.last[1],'rgba(255,214,10,.45)');
@@ -696,7 +739,7 @@ function startGame(mode){
   const botName=ranked?`Máy ${tier(botElo)} (${botElo})`:`Máy ${tier(botElo)} (${botElo} ELO)`;
   const mine=Math.random()<.5?0:1;
   const myPlayer={uid:me.uid||'',name:me.name,elo:me.elo},botPlayer={uid:'',name:botName,elo:botElo};
-  G={mode,mine,botElo,noise:botNoise(botElo),board:new Map(),turn:0,n:0,over:0,names:mine===0?[me.name,botName]:[botName,me.name],players:mine===0?[myPlayer,botPlayer]:[botPlayer,myPlayer],moves:[],last:null,line:null,msg:'',winner:null,review:[]};
+  G={mode,mine,botElo,noise:botNoise(botElo),board:new Map(),turn:0,n:0,over:0,startedAt:now(),turnStartedAt:now(),names:mine===0?[me.name,botName]:[botName,me.name],players:mine===0?[myPlayer,botPlayer]:[botPlayer,myPlayer],moves:[],last:null,line:null,msg:'',winner:null,review:[]};
   $('review').hidden=true;$('reviewSummary').textContent='';$('reviewList').innerHTML='';$('tm').textContent='';
   resetCamera();setActive(true);ui();draw();stat();
   if(G.turn!==G.mine)setTimeout(botTurn,350);
@@ -704,9 +747,10 @@ function startGame(mode){
 function applyMove(x,y,p){
   if(!G||G.over||G.board.has(x+','+y))return false;
   if(x<0||x>=N||y<0||y>=N)return false;
-  G.board.set(x+','+y,p);G.moves.push({x,y,p});G.last=[x,y];G.n++;
+  const moveAt=now(),elapsedMs=Math.max(0,moveAt-(Number(G.turnStartedAt)||moveAt));
+  G.board.set(x+','+y,p);G.moves.push({x,y,p,t:moveAt,elapsedMs});G.last=[x,y];G.n++;
   const line=win(G.board,x,y);if(line){G.line=line;finishGame(p,'win');return true}
-  G.turn=1-p;draw();stat();return true;
+  G.turn=1-p;G.turnStartedAt=moveAt;draw();stat();return true;
 }
 function playerMove(x,y){
   if(!G||G.over||G.turn!==G.mine||x<0||x>=N||y<0||y>=N||G.board.has(x+','+y))return;
@@ -718,7 +762,8 @@ function playerMove(x,y){
 async function submitOnlineMove(x,y){
   if(!G||G.mode!=='online'||G.over||G.turn!==G.mine||!G.ref)return;
   const game=G,p=G.mine,key=x+','+y,checkBoard=new Map(G.board);checkBoard.set(key,p);
-  const line=win(checkBoard,x,y),update={};update[`moves/${G.n}`]={x,y,p,t:now()};
+  const moveAt=now(),elapsedMs=Math.max(0,moveAt-(Number(G.turnStartedAt)||moveAt));
+  const line=win(checkBoard,x,y),update={};update[`moves/${G.n}`]={x,y,p,t:moveAt,elapsedMs};
   if(line){update.status='over';update.winner=p;update.why='win'}else{update.turn=1-p;update.dl=now()+TURN}
   G.turn=-1;stat();
   try{await game.ref.update(update)}catch(e){await handleBackendFailure(e,'ghi nước đi')}
@@ -737,8 +782,8 @@ function finishGame(winner,why){
   }
   G.reason=why;
   G.msg=(winner===-1?'Hòa':score===1?'Bạn thắng!':'Bạn thua')+(why==='timeout'?' (hết giờ)':why==='resign'?' (đầu hàng)':'')+rating;
-  saveFinishedMatchHistory(G).catch(error=>console.error('Không lưu được lịch sử:',error));
   $('tm').textContent='';setActive(false);ui();draw();stat();showReview();
+  saveFinishedMatchHistory(G).catch(error=>console.error('Không lưu được lịch sử:',error));
 }
 function resign(){
   if(!G||G.over)return;
@@ -758,16 +803,18 @@ async function openGame(gid){
   const ref=db.ref('games/'+gid),snap=await ref.once('value'),v=snap.val();
   if(!v||!Array.isArray(v.p))throw new Error('Không tìm thấy ván đấu.');
   const mine=v.p.findIndex(q=>q.uid===me.uid);if(mine<0)throw new Error('Ván đấu không thuộc tài khoản này.');
-  G={mode:'online',gid,ref,mine,board:new Map(),turn:Number(v.turn)||0,n:0,over:0,dl:v.dl||now()+TURN,names:v.p.map(q=>`${q.name} (${q.elo})`),players:v.p.map(q=>({uid:q.uid||'',name:q.name||'Người chơi',elo:Number(q.elo)||1000})),myElo:Number(v.p[mine].elo)||me.elo,oppElo:Number(v.p[1-mine]?.elo)||1000,moves:[],last:null,line:null,msg:'',winner:null,review:[],roomStatus:v.status,roomCode:/^[0-9]{4}$/.test(gid)?gid:null};
+  G={mode:'online',gid,ref,mine,board:new Map(),turn:Number(v.turn)||0,n:0,over:0,startedAt:Number(v.createdAt)||now(),turnStartedAt:now(),dl:v.dl||now()+TURN,names:v.p.map(q=>`${q.name} (${q.elo})`),players:v.p.map(q=>({uid:q.uid||'',name:q.name||'Người chơi',elo:Number(q.elo)||1000})),myElo:Number(v.p[mine].elo)||me.elo,oppElo:Number(v.p[1-mine]?.elo)||1000,moves:[],last:null,line:null,msg:'',winner:null,review:[],roomStatus:v.status,roomCode:/^[0-9]{4}$/.test(gid)?gid:null};
   await db.ref('invite/'+me.uid).remove().catch(()=>{});setActive(true);resetCamera();ui();draw();stat();
   ref.on('value',onGame,e=>handleBackendFailure(e,'đồng bộ ván đấu'));
 }
 function onGame(s){
   const v=s.val();if(!v||!G||G.gid!==s.key)return;
+  const previousMoveCount=G.moves.length;
   const keys=Object.keys(v.moves||{}).sort((a,b)=>Number(a)-Number(b));
   const moves=keys.map(k=>v.moves[k]).filter(Boolean),board=new Map();moves.forEach((m,i)=>board.set(m.x+','+m.y,Number.isInteger(m.p)?m.p:i%2));
   const last=moves[moves.length-1];const newMine=Array.isArray(v.p)?v.p.findIndex(q=>q.uid===me.uid):G.mine;
   Object.assign(G,{board,moves,n:moves.length,turn:Number(v.turn)||0,dl:Number(v.dl)||0,last:last?[last.x,last.y]:null,roomStatus:v.status,mine:newMine>=0?newMine:G.mine,names:Array.isArray(v.p)?v.p.map(q=>`${q.name} (${q.elo})`):G.names,players:Array.isArray(v.p)?v.p.map(q=>({uid:q.uid||'',name:q.name||'Người chơi',elo:Number(q.elo)||1000})):G.players});
+  if(moves.length>previousMoveCount)G.turnStartedAt=now();
   G.myElo=Number(v.p&&v.p[G.mine]&&v.p[G.mine].elo)||G.myElo||me.elo;
   G.oppElo=Number(v.p&&v.p[1-G.mine]&&v.p[1-G.mine].elo)||G.oppElo||1000;
   if(v.status==='over'&&!G.over){G.winner=Number.isInteger(v.winner)?v.winner:-1;G.line=v.why==='win'&&last?win(board,last.x,last.y):null;finishGame(G.winner,v.why);return}
@@ -858,10 +905,25 @@ $('bShareHistory').onclick=async()=>{
   }
 };
 $('historyList').addEventListener('click',e=>{
+  const replayButton=e.target.closest('[data-history-replay]');
+  if(replayButton){
+    const record=historyRecordsByKey.get(replayButton.dataset.historyReplay);
+    if(record)openSavedReplay(record);
+    return;
+  }
   const button=e.target.closest('[data-history-uid]');
   if(!button)return;
   loadHistoryByUid(button.dataset.historyUid,button.dataset.historyName||'').catch(error=>{$('historyStatus').textContent=error.message||String(error)});
 });
+$('historyReplayMoves').addEventListener('click',e=>{
+  const button=e.target.closest('[data-replay-ply]');
+  if(!button||!G||G.mode!=='replay'||!G.replayRecord)return;
+  showReplayPly(G.replayRecord,Number(button.dataset.replayPly));
+});
+$('bCloseHistoryReplay').onclick=()=>{
+  $('historyReplayPanel').hidden=true;
+  if(G&&G.mode==='replay'){G=null;draw();ui();stat()}
+};
 $('bCen').onclick=()=>{const l=G&&G.last;if(l){cam.x=l[0]+.5;cam.y=l[1]+.5}else resetCamera();draw()};
 /* ---------- Xem lại nước đi ---------- */
 const QUALITY={
@@ -885,6 +947,39 @@ function analyzeGame(){
     const q=QUALITY[label]||QUALITY['Chấp nhận được'];out.push({...m,index:i,label,cls:q[0],pct:q[1]});board.set(key,p);
   }
   return out;
+}
+function showReplayPly(record,index){
+  const moves=Array.isArray(record.moves)?record.moves:[];
+  if(!moves.length){$('historyReplayFocus').textContent='Ván này chưa có dữ liệu nước đi.';return}
+  const ply=clamp(Math.trunc(index),0,moves.length-1),position=moves[ply];
+  const board=new Map();
+  for(let i=0;i<=ply;i++){const m=moves[i];if(Number.isInteger(Number(m.x))&&Number.isInteger(Number(m.y))&&Number.isInteger(Number(m.p)))board.set(Number(m.x)+','+Number(m.y),Number(m.p))}
+  const winLine=win(board,Number(position.x),Number(position.y));
+  G.board=board;G.last=[Number(position.x),Number(position.y)];G.line=winLine;G.replayIndex=ply;
+  cam.x=Number(position.x)+.5;cam.y=Number(position.y)+.5;draw();
+  const evaluation=position.evaluation||'Chưa có đánh giá';
+  const pct=Number(position.accuracy)>0?` · ${Number(position.accuracy)}%`:'';
+  $('historyReplayFocus').textContent=`Nước ${ply+1}/${moves.length} · ${coordinateName(position)} · ${position.p===0?'X':'O'} · ${Number(position.elapsedMs)>0?durationLabel(position.elapsedMs):'chưa có thời gian'} · ${evaluation}${pct}`;
+  $('historyReplayMoves').querySelectorAll('[data-replay-ply]').forEach(button=>button.classList.toggle('active',Number(button.dataset.replayPly)===ply));
+}
+function openSavedReplay(record){
+  const moves=Array.isArray(record.moves)?record.moves:[];
+  if(!moves.length){$('historyStatus').textContent='Ván này chưa lưu các nước đi nên chưa thể xem lại.';return}
+  $('historyReplayPanel').hidden=false;
+  $('historyReplayTitle').textContent=`Xem lại: ${record.playerName||me.name} vs ${record.opponentName||'Đối thủ'}`;
+  $('historyReplayInfo').textContent=`${historyDate(record.timestamp)} · ${esc(record.gameType||'Caro')} · Tổng thời gian: ${Number(record.durationMs)>0?durationLabel(record.durationMs):'—'}`;
+  const gamePlayers=Array.isArray(record.players)&&record.players.length===2?record.players:[{name:record.names&&record.names[0]||record.playerName||me.name},{name:record.names&&record.names[1]||record.opponentName||'Đối thủ'}];
+  const names=gamePlayers.map(p=>String(p.name||'Người chơi'));
+  G={mode:'replay',mine:Number(record.playerSide)||0,over:1,turn:-1,board:new Map(),moves,movesFull:moves,replayRecord:record,names,startedAt:Number(record.timestamp)||now(),last:null,line:null,msg:'Đang xem lại ván đấu',winner:Number.isInteger(record.winnerPiece)?record.winnerPiece:-1,review:[]};
+  cam.x=N/2;cam.y=N/2;
+  $('review').hidden=true;
+  $('historyReplayMoves').innerHTML=moves.map((m,i)=>{
+    const evalLabel=m.evaluation||'Chưa có đánh giá';
+    const accuracy=Number(m.accuracy)>0?` · ${Number(m.accuracy)}%`:'';
+    const duration=Number(m.elapsedMs)>0?durationLabel(m.elapsedMs):'—';
+    return `<li><button class="review-row" type="button" data-replay-ply="${i}"><span class="review-num">${i+1}.</span><b class="review-side ${m.p===0?'x':'o'}">${m.p===0?'X':'O'}</b><span class="review-coord">${coordinateName(m)}</span><span class="history-move-meta">${duration} · ${esc(evalLabel)}${accuracy}</span></button></li>`;
+  }).join('');
+  showReplayPly(record,moves.length-1);
 }
 function showReview(){
   if(!G||!G.moves.length){$('review').hidden=true;return}G.review=analyzeGame();const x=G.review.filter(m=>m.p===0),o=G.review.filter(m=>m.p===1);
@@ -918,12 +1013,24 @@ function updateAuthMode(){
   $('bSwitchAuth').textContent=registering?'Đã có tài khoản? Đăng nhập':'Chưa có tài khoản? Đăng ký';
   $('pwConfirm').hidden=!registering;
   $('pw').setAttribute('autocomplete',registering?'new-password':'current-password');
+  $('pwConfirmRow').hidden=!registering;
   $('nmEr').textContent='';
 }
 $('bSwitchAuth').onclick=()=>{
   authMode=authMode==='login'?'register':'login';
   updateAuthMode();
 };
+function bindPasswordEye(inputId,buttonId,shownLabel,hiddenLabel){
+  $(buttonId).onclick=()=>{
+    const input=$(inputId),visible=input.type==='password';
+    input.type=visible?'text':'password';
+    $(buttonId).textContent=visible?'🙈':'👁️';
+    $(buttonId).setAttribute('aria-label',visible?hiddenLabel:shownLabel);
+    $(buttonId).title=visible?hiddenLabel:shownLabel;
+  };
+}
+bindPasswordEye('pw','togglePw','Hiện mật khẩu','Ẩn mật khẩu');
+bindPasswordEye('pwConfirm','togglePwConfirm','Hiện mật khẩu xác nhận','Ẩn mật khẩu xác nhận');
 $('nmOk').onclick=async()=>{
   const name=$('nm').value.trim().replace(/\s+/g,' ');
   const password=$('pw').value;
