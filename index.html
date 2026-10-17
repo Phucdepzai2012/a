@@ -46,6 +46,12 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 #historyReplayMoves .review-row{gap:8px}
 #historyReplayMoves .review-row.active{background:#dce8ff;border-color:var(--blue)}
 .history-move-meta{font-size:10px;color:var(--mut);white-space:normal}
+.history-replay-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:10px 0 2px}
+.history-replay-controls button{width:auto;min-width:44px;margin:0;padding:7px 9px;font-size:12px}
+.history-replay-controls .replay-speed.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.history-replay-controls .replay-speed-label{font-size:12px;color:var(--mut);margin-left:3px}
+#historyReplaySeek{display:block;width:100%;margin:8px 0 0;padding:0;border:0;accent-color:var(--blue);background:transparent}
+#historyReplayCounter{margin:3px 0 8px;text-align:right;font-variant-numeric:tabular-nums}
 #adminSection[hidden]{display:none}
 .admin-row{display:flex;align-items:center;gap:7px;padding:8px 2px;border-bottom:1px dashed var(--ln);font-size:12px;flex-wrap:wrap}
 .admin-row .admin-detail{flex:1;min-width:120px}
@@ -242,6 +248,15 @@ body.online-match-active main>aside{display:none!important}
     <section id="historyReplayPanel" hidden>
       <h2 id="historyReplayTitle">Xem lại ván đấu</h2>
       <div id="historyReplayInfo" class="note"></div>
+      <div id="historyReplayControls" class="history-replay-controls">
+        <button id="bReplayPlay" type="button" aria-pressed="false">▶ Phát</button>
+        <span class="replay-speed-label">Tốc độ</span>
+        <button class="replay-speed" type="button" data-replay-speed="0.5" aria-pressed="false">0.5×</button>
+        <button class="replay-speed active" type="button" data-replay-speed="1" aria-pressed="true">1×</button>
+        <button class="replay-speed" type="button" data-replay-speed="2" aria-pressed="false">2×</button>
+      </div>
+      <input id="historyReplaySeek" type="range" min="0" max="0" value="0" step="1" aria-label="Tiến trình xem lại ván đấu">
+      <div id="historyReplayCounter" class="note">0 / 0 nước đi</div>
       <div id="historyReplayFocus" class="note">Chọn một nước đi bên dưới để nhảy đến vị trí đó.</div>
       <ol id="historyReplayMoves"></ol>
       <button id="bCloseHistoryReplay" type="button">Đóng xem lại</button>
@@ -1150,9 +1165,36 @@ $('historyList').addEventListener('click',e=>{
 $('historyReplayMoves').addEventListener('click',e=>{
   const button=e.target.closest('[data-replay-ply]');
   if(!button||!G||G.mode!=='replay'||!G.replayRecord)return;
+  stopHistoryReplayPlayback();
   showReplayPly(G.replayRecord,Number(button.dataset.replayPly));
 });
+$('bReplayPlay').onclick=()=>{
+  if(historyReplayPlaying)stopHistoryReplayPlayback();
+  else startHistoryReplayPlayback();
+};
+$('historyReplayControls').addEventListener('click',e=>{
+  const button=e.target.closest('[data-replay-speed]');
+  if(!button)return;
+  historyReplaySpeed=Number(button.dataset.replaySpeed)||1;
+  $('historyReplayControls').querySelectorAll('[data-replay-speed]').forEach(el=>{
+    const active=Number(el.dataset.replaySpeed)===historyReplaySpeed;
+    el.classList.toggle('active',active);
+    el.setAttribute('aria-pressed',String(active));
+  });
+  if(historyReplayPlaying){
+    if(historyReplayTimer!==null)clearTimeout(historyReplayTimer);
+    historyReplayTimer=null;
+    scheduleHistoryReplayStep();
+  }
+});
+$('historyReplaySeek').addEventListener('input',e=>{
+  if(!G||G.mode!=='replay'||!G.replayRecord)return;
+  stopHistoryReplayPlayback();
+  const value=Number(e.target.value)||0;
+  showReplayPly(G.replayRecord,value===0?-1:value-1);
+});
 $('bCloseHistoryReplay').onclick=()=>{
+  stopHistoryReplayPlayback();
   $('historyReplayPanel').hidden=true;
   if(G&&G.mode==='replay'){
     G=historyReplayReturnGame;
@@ -1185,9 +1227,25 @@ function analyzeGame(){
   }
   return out;
 }
+function updateReplayProgress(){
+  const record=G&&G.mode==='replay'?G.replayRecord:null;
+  const moves=record&&Array.isArray(record.moves)?record.moves:[];
+  const shown=record&&Number.isInteger(G.replayIndex)?Math.max(0,G.replayIndex+1):0;
+  $('historyReplaySeek').max=String(moves.length);
+  $('historyReplaySeek').value=String(Math.min(moves.length,shown));
+  $('historyReplayCounter').textContent=`${Math.min(moves.length,shown)} / ${moves.length} nước đi`;
+}
 function showReplayPly(record,index){
   const moves=Array.isArray(record.moves)?record.moves:[];
   if(!moves.length){$('historyReplayFocus').textContent='Ván này chưa có dữ liệu nước đi.';return}
+  if(Number(index)<0){
+    G.board=new Map();G.last=null;G.line=null;G.replayIndex=-1;
+    cam.x=N/2;cam.y=N/2;draw();
+    $('historyReplayFocus').textContent=`Vị trí ban đầu · 0/${moves.length} nước đi`;
+    $('historyReplayMoves').querySelectorAll('[data-replay-ply]').forEach(button=>button.classList.remove('active'));
+    updateReplayProgress();
+    return;
+  }
   const ply=clamp(Math.trunc(index),0,moves.length-1),position=moves[ply];
   const board=new Map();
   for(let i=0;i<=ply;i++){const m=moves[i];if(Number.isInteger(Number(m.x))&&Number.isInteger(Number(m.y))&&Number.isInteger(Number(m.p)))board.set(Number(m.x)+','+Number(m.y),Number(m.p))}
@@ -1198,8 +1256,42 @@ function showReplayPly(record,index){
   const pct=Number(position.accuracy)>0?` · ${Number(position.accuracy)}%`:'';
   $('historyReplayFocus').textContent=`Nước ${ply+1}/${moves.length} · ${coordinateName(position)} · ${position.p===0?'X':'O'} · ${Number(position.elapsedMs)>0?durationLabel(position.elapsedMs):'chưa có thời gian'} · ${evaluation}${pct}`;
   $('historyReplayMoves').querySelectorAll('[data-replay-ply]').forEach(button=>button.classList.toggle('active',Number(button.dataset.replayPly)===ply));
+  updateReplayProgress();
+}
+let historyReplayTimer=null,historyReplaySpeed=1,historyReplayPlaying=false;
+function stopHistoryReplayPlayback(){
+  if(historyReplayTimer!==null)clearTimeout(historyReplayTimer);
+  historyReplayTimer=null;historyReplayPlaying=false;
+  const button=$('bReplayPlay');
+  if(button){button.textContent='▶ Phát';button.setAttribute('aria-pressed','false')}
+}
+function scheduleHistoryReplayStep(){
+  if(!historyReplayPlaying)return;
+  const record=G&&G.mode==='replay'?G.replayRecord:null;
+  if(!record){stopHistoryReplayPlayback();return}
+  const moves=Array.isArray(record.moves)?record.moves:[];
+  const next=Number(G.replayIndex)+1;
+  if(next>=moves.length){stopHistoryReplayPlayback();return}
+  historyReplayTimer=setTimeout(()=>{
+    historyReplayTimer=null;
+    if(!historyReplayPlaying||!G||G.mode!=='replay'||G.replayRecord!==record){stopHistoryReplayPlayback();return}
+    showReplayPly(record,next);
+    if(next>=moves.length-1){stopHistoryReplayPlayback();return}
+    scheduleHistoryReplayStep();
+  },1000/historyReplaySpeed);
+}
+function startHistoryReplayPlayback(){
+  const record=G&&G.mode==='replay'?G.replayRecord:null;
+  const moves=record&&Array.isArray(record.moves)?record.moves:[];
+  if(!record||!moves.length)return;
+  if(Number(G.replayIndex)>=moves.length-1)showReplayPly(record,-1);
+  historyReplayPlaying=true;
+  const button=$('bReplayPlay');
+  button.textContent='⏸ Tạm dừng';button.setAttribute('aria-pressed','true');
+  scheduleHistoryReplayStep();
 }
 function openSavedReplay(record){
+  stopHistoryReplayPlayback();
   const moves=Array.isArray(record.moves)?record.moves:[];
   if(!moves.length){$('historyStatus').textContent='Ván này chưa lưu các nước đi nên chưa thể xem lại.';return}
   if(!G||G.mode!=='replay')historyReplayReturnGame=G;
