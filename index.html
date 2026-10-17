@@ -118,9 +118,11 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 .loader-cell.show{opacity:1;transform:scale(1)}
 .loader-cell.mark-x{color:var(--blue)}
 .loader-cell.mark-o{color:var(--red)}
-.loader-cell.winner{background:#dce8ff;animation:loaderWin .38s ease-in-out alternate 3}
+.loader-cell.winner{background:#dce8ff}
+#loaderWinLine{position:absolute;z-index:3;left:8%;top:16.6667%;width:84%;height:clamp(5px,1vw,9px);border:3px solid #fff;border-radius:999px;background:var(--blue);box-shadow:0 0 0 2px var(--blue),0 2px 9px rgba(28,63,183,.35);transform:translateY(-50%) scaleX(0);transform-origin:left center;opacity:0;pointer-events:none}
+#loaderWinLine.show{opacity:1;transform:translateY(-50%) scaleX(1);transition:transform .52s cubic-bezier(.2,.8,.2,1),opacity .12s ease}
 #loaderResult{display:block;min-height:24px;margin:0;font-size:clamp(13px,2.2vw,17px);font-weight:700;letter-spacing:.06em;color:var(--mut)}
-#loaderResult.win{color:var(--blue);animation:loaderPop .32s ease-out}
+#loaderResult.win{color:var(--mut);animation:none}
 .loader-dots:after{display:inline-block;width:1.5em;text-align:left;animation:loaderDots 1s steps(4,end) infinite;content:""}
 @keyframes loaderWin{to{background:#c9dcff}}
 @keyframes loaderPop{from{opacity:0;transform:translateY(4px) scale(.94)}to{opacity:1;transform:translateY(0) scale(1)}}
@@ -136,7 +138,7 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
   <div class="loader-card">
     <div class="loader-brand">Caro <b>5</b></div>
     <p class="loader-caption">Đang khởi động ván XO...</p>
-    <div id="loaderBoard" class="loader-board" aria-hidden="true"></div>
+    <div id="loaderBoard" class="loader-board" aria-hidden="true"><span id="loaderWinLine"></span></div>
     <strong id="loaderResult">X ĐANG ĐÁNH<span class="loader-dots"></span></strong>
   </div>
 </div>
@@ -1218,7 +1220,8 @@ setInterval(()=>{
   const overlay=document.getElementById('gameLoader');
   const board=document.getElementById('loaderBoard');
   const result=document.getElementById('loaderResult');
-  if(!overlay||!board||!result)return;
+  const winLine=document.getElementById('loaderWinLine');
+  if(!overlay||!board||!result||!winLine)return;
   const cells=[];
   for(let i=0;i<9;i++){
     const cell=document.createElement('span');
@@ -1226,16 +1229,56 @@ setInterval(()=>{
     board.appendChild(cell);
     cells.push(cell);
   }
-  /* A simple XO-like loading animation; it does not declare a winner. */
+
+  /* A short 3x3 XO game: X completes the top row without a winner caption. */
   const moves=[
-    {cell:4,p:'x'},{cell:0,p:'o'},
-    {cell:2,p:'x'},{cell:6,p:'o'},
-    {cell:1,p:'x'},{cell:7,p:'o'},
-    {cell:3,p:'x'},{cell:5,p:'o'}
+    {cell:0,p:'x'},{cell:4,p:'o'},
+    {cell:1,p:'x'},{cell:3,p:'o'},
+    {cell:2,p:'x'}
   ];
   let index=0;
   const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const interval=reduced?95:300;
+  const interval=reduced?150:410;
+  let audioContext=null;
+
+  function getAudio(){
+    try{
+      const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+      if(!AudioContextClass)return null;
+      if(!audioContext)audioContext=new AudioContextClass();
+      if(audioContext.state==='suspended')audioContext.resume().catch(()=>{});
+      return audioContext.state==='running'?audioContext:null;
+    }catch(_){return null}
+  }
+  function tone(frequency,start,duration,volume,type='sine'){
+    const ctx=getAudio();
+    if(!ctx)return;
+    try{
+      const oscillator=ctx.createOscillator(),gain=ctx.createGain();
+      oscillator.type=type;oscillator.frequency.setValueAtTime(frequency,start);
+      gain.gain.setValueAtTime(0.0001,start);
+      gain.gain.exponentialRampToValueAtTime(volume,start+0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001,start+duration);
+      oscillator.connect(gain);gain.connect(ctx.destination);
+      oscillator.start(start);oscillator.stop(start+duration+0.015);
+    }catch(_){}
+  }
+  function playMoveSound(isX){
+    const ctx=getAudio();if(!ctx)return;
+    const now=ctx.currentTime;
+    tone(isX?660:510,now,0.075,isX?0.045:0.035,'triangle');
+    tone(isX?990:760,now+0.006,0.045,0.016,'sine');
+  }
+  function playWinChime(){
+    const ctx=getAudio();if(!ctx)return;
+    const now=ctx.currentTime+0.025;
+    [659.25,783.99,987.77].forEach((frequency,i)=>tone(frequency,now+i*0.105,0.24,0.045,'sine'));
+  }
+  /* Try to unlock audio where the browser requires a gesture; sound remains non-verbal. */
+  const unlockAudio=()=>{const ctx=getAudio();if(ctx&&ctx.state==='suspended')ctx.resume().catch(()=>{})};
+  window.addEventListener('pointerdown',unlockAudio,{passive:true});
+  window.addEventListener('keydown',unlockAudio);
+
   result.innerHTML='ĐANG TẢI<span class="loader-dots"></span>';
   const step=()=>{
     if(index>=moves.length)return;
@@ -1243,12 +1286,17 @@ setInterval(()=>{
     const cell=cells[move.cell];
     cell.textContent=move.p==='x'?'X':'O';
     cell.classList.add('show',move.p==='x'?'mark-x':'mark-o');
+    playMoveSound(move.p==='x');
+
     if(index===moves.length){
-      result.textContent='ĐANG VÀO GAME...';
-      setTimeout(()=>overlay.classList.add('done'),reduced?220:500);
-      setTimeout(()=>overlay.hidden=true,reduced?520:820);
+      [0,1,2].forEach(i=>cells[i].classList.add('winner'));
+      winLine.classList.add('show');
+      playWinChime();
+      /* Keep only the loading label; no spoken audio or winner text. */
+      result.innerHTML='ĐANG TẢI<span class="loader-dots"></span>';
+      setTimeout(()=>overlay.classList.add('done'),reduced?450:1050);
+      setTimeout(()=>overlay.hidden=true,reduced?750:1370);
     }else{
-      result.innerHTML=(move.p==='x'?'X ĐANG ĐÁNH':'O ĐANG ĐÁNH')+'<span class="loader-dots"></span>';
       setTimeout(step,interval);
     }
   };
