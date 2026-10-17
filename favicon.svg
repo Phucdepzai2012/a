@@ -1,34 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#243b70"/>
-      <stop offset=".55" stop-color="#111d39"/>
-      <stop offset="1" stop-color="#080e1d"/>
-    </linearGradient>
-    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#8ac8ff"/>
-      <stop offset="1" stop-color="#3766ec"/>
-    </linearGradient>
-    <linearGradient id="red" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#ffaba0"/>
-      <stop offset="1" stop-color="#e13b4b"/>
-    </linearGradient>
-    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%">
-      <feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="#020617" flood-opacity=".5"/>
-    </filter>
-  </defs>
-  <rect width="128" height="128" rx="29" fill="url(#bg)"/>
-  <rect x="7" y="7" width="114" height="114" rx="24" fill="none" stroke="#91b7ff" stroke-opacity=".32" stroke-width="1.5"/>
-  <g stroke="#c4d8ff" stroke-opacity=".13" stroke-width="1.6">
-    <path d="M24 22V106M43 22V106M62 22V106M81 22V106M100 22V106M22 24H106M22 43H106M22 62H106M22 81H106M22 100H106"/>
-  </g>
-  <g fill="none" stroke="url(#blue)" stroke-width="5.5" stroke-linecap="round">
-    <path d="M18 20L29 31M29 20L18 31"/>
-  </g>
-  <circle cx="103" cy="30" r="7" fill="none" stroke="url(#red)" stroke-width="5"/>
-  <g filter="url(#shadow)">
-    <text x="64" y="70" text-anchor="middle" font-family="Caveat, 'Brush Script MT', cursive" font-size="47" font-style="italic" font-weight="700" letter-spacing="-2" fill="#f7faff" stroke="#111d39" stroke-width="1.5" paint-order="stroke">Caro</text>
-    <text x="64" y="108" text-anchor="middle" font-family="Caveat, 'Brush Script MT', cursive" font-size="43" font-weight="700" fill="url(#red)" stroke="#182442" stroke-width="1.2" paint-order="stroke">5</text>
-  </g>
-  <path d="M29 114H99" stroke="#fff" stroke-opacity=".16" stroke-width="1.5" stroke-linecap="round"/>
+  <text x="64" y="79" text-anchor="middle" font-family="Caveat, 'Brush Script MT', cursive" font-size="55" font-style="italic" font-weight="700" letter-spacing="-2.4">
+    <tspan fill="#1c3fb7">Caro</tspan><tspan fill="#d8322b"> 5</tspan>
+  </text>
 </svg>
