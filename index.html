@@ -1778,105 +1778,208 @@ function ev(b,x,y,p){let t=0;for(const[dx,dy]of D){let n=1,o=0;for(const s of[1,
   t+=n>=5?100000:n===4?(o===2?10000:o?1000:0):n===3?(o===2?500:o?60:0):n===2?(o===2?40:o?5:0):1}return t}
 function winningMoves(b,p){return candidates(b).filter(([x,y])=>wouldWin(b,x,y,p)).map(([x,y])=>x+','+y)}
 function scoreMove(b,x,y,p,oppWins){let s=ev(b,x,y,p)+ev(b,x,y,1-p)*.96;if(wouldWin(b,x,y,p))s+=100000000;if(oppWins&&oppWins.has(x+','+y))s+=10000000;return s}
-/* ---------- Máy tuyển thủ: quét thế cờ + tìm kiếm minimax alpha-beta ---------- */
-const CHAMPION_MATE=1000000000;
-function championEvaluate(board,perspective){
-  let score=0;
-  const weights=[0,2,32,520,9500];
-  for(let y=0;y<N;y++)for(let x=0;x<N;x++)for(const[dx,dy]of D){
+/* ---------- Boss Tuyệt Thủ: alpha-beta, iterative deepening, threat search + transposition table ---------- */
+const BOSS_MATE=1000000000;
+const BOSS_WEIGHTS=[0,5,50,700,80000,BOSS_MATE];
+const BOSS_WINDOWS=[];
+const BOSS_CELL_WINDOWS=Array.from({length:N*N},()=>[]);
+for(const[dx,dy]of D){
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
     const ex=x+4*dx,ey=y+4*dy;
     if(ex<0||ex>=N||ey<0||ey>=N)continue;
-    let own=0,enemy=0;
-    for(let k=0;k<5;k++){
-      const v=board.get((x+k*dx)+','+(y+k*dy));
-      if(v===perspective)own++;
-      else if(v===1-perspective)enemy++;
+    const windowCells=[];
+    for(let k=0;k<5;k++)windowCells.push((y+k*dy)*N+x+k*dx);
+    const wi=BOSS_WINDOWS.length;
+    BOSS_WINDOWS.push(windowCells);
+    for(const cell of windowCells)BOSS_CELL_WINDOWS[cell].push(wi);
+  }
+}
+const BOSS_ZOBRIST=(()=>{
+  let seed=0x6d2b79f5;
+  const next=()=>{seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;return seed>>>0};
+  return Array.from({length:N*N},()=>[[next(),next()],[next(),next()]]);
+})();
+const BOSS_ABORT=Object.freeze({});
+function bossBoardFromMap(source){
+  const board=new Int8Array(N*N);board.fill(-1);
+  for(const[key,value]of source){
+    const parts=key.split(','),x=Number(parts[0]),y=Number(parts[1]),p=Number(value);
+    if(Number.isInteger(x)&&Number.isInteger(y)&&x>=0&&x<N&&y>=0&&y<N&&(p===0||p===1))board[y*N+x]=p;
+  }
+  return board;
+}
+function bossHashBoard(board){
+  let a=0,b=0;
+  for(let i=0;i<board.length;i++){
+    const p=board[i];
+    if(p===0||p===1){const z=BOSS_ZOBRIST[i][p];a=(a^z[0])>>>0;b=(b^z[1])>>>0}
+  }
+  return[a,b];
+}
+function bossHasFive(board,index,p){
+  const x=index%N,y=Math.floor(index/N);
+  for(const[dx,dy]of D){
+    let count=1;
+    for(const sign of[-1,1]){
+      let xx=x+dx*sign,yy=y+dy*sign;
+      while(xx>=0&&xx<N&&yy>=0&&yy<N&&board[yy*N+xx]===p){count++;xx+=dx*sign;yy+=dy*sign}
+    }
+    if(count>=5)return true;
+  }
+  return false;
+}
+function bossWouldWin(board,index,p){
+  if(index<0||index>=N*N||board[index]!==-1)return false;
+  board[index]=p;const result=bossHasFive(board,index,p);board[index]=-1;return result;
+}
+function bossCandidates(board){
+  const mark=new Uint8Array(N*N);let stones=0;
+  for(let i=0;i<board.length;i++){
+    if(board[i]!==0&&board[i]!==1)continue;
+    stones++;
+    const x=i%N,y=Math.floor(i/N);
+    for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){
+      const xx=x+dx,yy=y+dy;
+      if(xx>=0&&xx<N&&yy>=0&&yy<N){const j=yy*N+xx;if(board[j]===-1)mark[j]=1}
+    }
+  }
+  if(!stones)return[Math.floor(N/2)*N+Math.floor(N/2)];
+  const out=[];for(let i=0;i<mark.length;i++)if(mark[i])out.push(i);return out;
+}
+function bossWinningMoves(board,p){
+  const out=[];
+  for(const index of bossCandidates(board))if(bossWouldWin(board,index,p))out.push(index);
+  return out;
+}
+function bossLocalPattern(board,index,p){
+  let total=0;
+  for(const wi of BOSS_CELL_WINDOWS[index]){
+    let own=1,enemy=0;
+    for(const cell of BOSS_WINDOWS[wi]){
+      if(cell===index)continue;
+      if(board[cell]===p)own++;
+      else if(board[cell]===1-p)enemy++;
     }
     if(own&&enemy)continue;
-    if(own)score+=weights[own];
-    else if(enemy)score-=weights[enemy]*1.12;
+    if(own)total+=BOSS_WEIGHTS[own];
+    else if(enemy)total+=BOSS_WEIGHTS[enemy]*1.03;
   }
-  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
-    const piece=board.get(x+','+y);
-    if(piece!==0&&piece!==1)continue;
-    const sign=piece===perspective?1:-1;
-    for(const[dx,dy]of D){
-      const px=x-dx,py=y-dy;
-      if(px>=0&&px<N&&py>=0&&py<N&&board.get(px+','+py)===piece)continue;
-      let run=0,nx=x,ny=y;
-      while(nx>=0&&nx<N&&ny>=0&&ny<N&&board.get(nx+','+ny)===piece){run++;nx+=dx;ny+=dy}
-      const open=(px>=0&&px<N&&py>=0&&py<N&&!board.has(px+','+py)?1:0)
-        +(nx>=0&&nx<N&&ny>=0&&ny<N&&!board.has(nx+','+ny)?1:0);
-      let value=0;
-      if(run>=5)value=CHAMPION_MATE/2;
-      else if(run===4)value=open===2?65000:open===1?18000:0;
-      else if(run===3)value=open===2?6500:open===1?850:0;
-      else if(run===2)value=open===2?350:open===1?50:0;
-      else if(run===1&&open===2)value=4;
-      score+=sign*value;
+  return total;
+}
+function bossRankedMoves(board,p,limit,preferred=-1){
+  const all=bossCandidates(board).map(index=>{
+    let score=bossLocalPattern(board,index,p)+bossLocalPattern(board,index,1-p)*1.08;
+    if(bossWouldWin(board,index,p))score+=1e12;
+    if(bossWouldWin(board,index,1-p))score+=1e11;
+    const x=index%N,y=Math.floor(index/N);
+    score-=(Math.abs(x-(N-1)/2)+Math.abs(y-(N-1)/2))*.02;
+    return{index,score};
+  }).sort((a,b)=>b.score-a.score);
+  const out=all.slice(0,limit).map(item=>item.index);
+  if(preferred>=0&&!out.includes(preferred)&&all.some(item=>item.index===preferred)){
+    if(out.length>=limit)out[out.length-1]=preferred;else out.push(preferred);
+  }
+  return out;
+}
+function bossEvaluate(board,perspective){
+  let score=0;
+  for(const cells of BOSS_WINDOWS){
+    let own=0,enemy=0;
+    for(const cell of cells){
+      if(board[cell]===perspective)own++;
+      else if(board[cell]===1-perspective)enemy++;
+    }
+    if(own&&enemy)continue;
+    if(own)score+=BOSS_WEIGHTS[own];
+    else if(enemy)score-=BOSS_WEIGHTS[enemy]*1.08;
+  }
+  return Math.max(-BOSS_MATE/3,Math.min(BOSS_MATE/3,score));
+}
+function bossSearch(board,turn,perspective,depth,alpha,beta,lastMove,hashA,hashB,extensions,ctx){
+  ctx.nodes++;
+  if((ctx.nodes&63)===0&&(ctx.nodes>=ctx.maxNodes||Date.now()>=ctx.deadline))throw BOSS_ABORT;
+  if(lastMove>=0&&bossHasFive(board,lastMove,1-turn))return(1-turn===perspective?1:-1)*(BOSS_MATE+depth);
+  const ownWins=bossWinningMoves(board,turn);
+  if(ownWins.length)return(turn===perspective?1:-1)*(BOSS_MATE+depth+1);
+  const opponentWins=bossWinningMoves(board,1-turn);
+  if(opponentWins.length>=2)return(1-turn===perspective?1:-1)*(BOSS_MATE+depth);
+  const forcedBlock=opponentWins.length===1;
+  if(depth<=0&&!(forcedBlock&&extensions>0))return bossEvaluate(board,perspective);
+
+  const originalAlpha=alpha,originalBeta=beta;
+  const key=hashA+':'+hashB+':'+turn+':'+(depth<=0?extensions:1);
+  const cached=ctx.table.get(key);
+  let preferred=-1;
+  if(cached){
+    preferred=cached.best;
+    if(cached.depth>=depth){
+      if(cached.flag===0)return cached.value;
+      if(cached.flag===1)alpha=Math.max(alpha,cached.value);
+      else if(cached.flag===2)beta=Math.min(beta,cached.value);
+      if(alpha>=beta)return cached.value;
     }
   }
-  return Math.max(-CHAMPION_MATE/2,Math.min(CHAMPION_MATE/2,score));
-}
-function championRankedMoves(board,p,limit,opponentWins){
-  const all=candidates(board);
-  if(!all.length)return [];
-  const threats=opponentWins instanceof Set?opponentWins:new Set(opponentWins||[]);
-  return all.map(([x,y])=>{
-    const key=x+','+y;
-    let score=scoreMove(board,x,y,p,threats);
-    score+=ev(board,x,y,1-p)*.12;
-    score-=(Math.abs(x-(N-1)/2)+Math.abs(y-(N-1)/2))*.015;
-    return {x,y,score};
-  }).sort((a,b)=>b.score-a.score).slice(0,limit).map(m=>[m.x,m.y]);
-}
-function championSearch(board,turn,perspective,depth,alpha,beta,lastMove,extensions=1){
-  if(lastMove&&wouldWin(board,lastMove[0],lastMove[1],1-turn)){
-    return (1-turn===perspective?1:-1)*(CHAMPION_MATE+depth);
-  }
-  const currentWins=winningMoves(board,turn);
-  if(currentWins.length)return (turn===perspective?1:-1)*(CHAMPION_MATE+depth);
-  const opponentWins=winningMoves(board,1-turn);
-  if(opponentWins.length>=2)return (1-turn===perspective?1:-1)*(CHAMPION_MATE+depth);
-  const forcedBlock=opponentWins.length===1;
-  if(depth<=0&&!(forcedBlock&&extensions>0))return championEvaluate(board,perspective);
-  const moves=forcedBlock
-    ? [opponentWins[0].split(',').map(Number)]
-    : championRankedMoves(board,turn,depth>=3?6:depth===2?5:4,new Set(opponentWins));
-  if(!moves.length)return championEvaluate(board,perspective);
+  const moves=forcedBlock?opponentWins:bossRankedMoves(board,turn,depth>=3?7:depth===2?6:5,preferred);
+  if(!moves.length)return bossEvaluate(board,perspective);
   const maximizing=turn===perspective;
-  let best=maximizing?-Infinity:Infinity;
-  for(const[x,y]of moves){
-    const next=new Map(board);next.set(x+','+y,turn);
-    const nextDepth=depth>0?depth-1:0;
-    const nextExtensions=depth<=0?extensions-1:extensions;
-    const value=championSearch(next,1-turn,perspective,nextDepth,alpha,beta,[x,y],nextExtensions);
-    if(maximizing){if(value>best)best=value;if(best>alpha)alpha=best}
-    else{if(value<best)best=value;if(best<beta)beta=best}
+  let best=maximizing?-Infinity:Infinity,bestMove=moves[0];
+  for(const index of moves){
+    const z=BOSS_ZOBRIST[index][turn];board[index]=turn;
+    let value;
+    try{
+      value=bossSearch(board,1-turn,perspective,depth>0?depth-1:0,
+        alpha,beta,index,(hashA^z[0])>>>0,(hashB^z[1])>>>0,
+        depth<=0?extensions-1:extensions,ctx);
+    }finally{board[index]=-1}
+    if(maximizing){
+      if(value>best){best=value;bestMove=index}
+      if(best>alpha)alpha=best;
+    }else{
+      if(value<best){best=value;bestMove=index}
+      if(best<beta)beta=best;
+    }
     if(beta<=alpha)break;
   }
+  const flag=best<=originalAlpha?2:best>=originalBeta?1:0;
+  ctx.table.set(key,{depth,value:best,flag,best:bestMove});
   return best;
 }
-function championBotMove(board,p){
-  const ownWins=winningMoves(board,p);
-  if(ownWins.length)return ownWins[0].split(',').map(Number);
-  const enemyWins=winningMoves(board,1-p);
-  if(enemyWins.length===1)return enemyWins[0].split(',').map(Number);
-  const ranked=championRankedMoves(board,p,24,new Set(enemyWins));
-  if(!ranked.length)return [Math.floor(N/2),Math.floor(N/2)];
-  for(const[x,y]of ranked.slice(0,10)){
-    const next=new Map(board);next.set(x+','+y,p);
-    if(winningMoves(next,1-p).length)continue;
-    if(winningMoves(next,p).length>=2)return [x,y];
+function championBotMove(sourceBoard,p){
+  const board=bossBoardFromMap(sourceBoard);
+  const wins=bossWinningMoves(board,p);
+  if(wins.length)return[wins[0]%N,Math.floor(wins[0]/N)];
+  const enemyWins=bossWinningMoves(board,1-p);
+  if(enemyWins.length===1)return[enemyWins[0]%N,Math.floor(enemyWins[0]/N)];
+  let rootMoves=bossRankedMoves(board,p,14);
+  if(!rootMoves.length)return[Math.floor(N/2),Math.floor(N/2)];
+  let bestMove=rootMoves[0];
+  const hash=bossHashBoard(board);
+  const ctx={nodes:0,maxNodes:14000,deadline:Date.now()+650,table:new Map()};
+  for(let depth=1;depth<=7;depth++){
+    let iterationMove=bestMove,iterationScore=-Infinity,alpha=-Infinity,complete=true;
+    const ordered=[bestMove,...rootMoves.filter(index=>index!==bestMove)];
+    try{
+      for(const index of ordered){
+        if(ctx.nodes>=ctx.maxNodes||Date.now()>=ctx.deadline){complete=false;break}
+        const z=BOSS_ZOBRIST[index][p];board[index]=p;
+        let value;
+        try{
+          value=bossSearch(board,1-p,p,depth-1,alpha,Infinity,index,
+            (hash[0]^z[0])>>>0,(hash[1]^z[1])>>>0,1,ctx);
+        }finally{board[index]=-1}
+        if(value>iterationScore){iterationScore=value;iterationMove=index}
+        if(value>alpha)alpha=value;
+      }
+    }catch(error){
+      if(error!==BOSS_ABORT)throw error;
+      complete=false;
+    }
+    if(!complete)break;
+    bestMove=iterationMove;
+    rootMoves=[bestMove,...rootMoves.filter(index=>index!==bestMove)];
+    if(iterationScore>=BOSS_MATE-10)break;
   }
-  let choice=ranked[0],best=-Infinity;
-  for(const[x,y]of ranked.slice(0,8)){
-    const next=new Map(board);next.set(x+','+y,p);
-    const value=championSearch(next,1-p,p,3,-Infinity,Infinity,[x,y],2);
-    if(value>best){best=value;choice=[x,y]}
-    if(best>=CHAMPION_MATE+2)break;
-  }
-  return choice;
+  return[bestMove%N,Math.floor(bestMove/N)];
 }
 function botMove(b,p,noise=0,elo=1500){
   if(elo>=9500)return championBotMove(b,p);
