@@ -1138,6 +1138,7 @@ io.on('connection', socket => {
       game.ratingResult={winnerUid,reason,at:Date.now(),playerResults};
       version++;notifySubscribers();
       await persistState();
+      drainRankedQueue();
       const result=playerResults[callerUid];
       reply(ack,{ok:true,elo:result.elo,w:result.w,l:result.l,d:result.d,delta:result.elo-result.before,alreadyApplied:false});
     }catch(error){reply(ack,{ok:false,error:error.message||'Không thể cập nhật ELO xếp hạng.'})}
