@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Caro 5 – Chơi Caro Online Miễn Phí, Đấu Máy & Bạn Bè</title>
-<meta name="description" content="Chơi Caro 5 online miễn phí ngay trên trình duyệt. Đấu với máy, ghép trận xếp hạng, tạo phòng cùng bạn bè, xem lại ván đấu và học chiến thuật Caro.">
+<meta name="application-name" content="Caro 5">
+<title>Caro 5 – Game Cờ Caro Online Miễn Phí, Đấu Bạn Bè</title>
+<meta name="description" content="Caro 5 là game cờ Caro online miễn phí: đấu máy, ghép trận xếp hạng, tạo phòng với bạn bè, xem lịch sử và học chiến thuật Caro 15×15 ngay trên trình duyệt.">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <meta name="googlebot" content="index,follow">
 <link rel="canonical" href="https://phucdepzai2012.github.io/a/">
@@ -14,12 +15,12 @@
 <meta property="og:type" content="website">
 <meta property="og:locale" content="vi_VN">
 <meta property="og:site_name" content="Caro 5">
-<meta property="og:title" content="Caro 5 – Chơi Caro Online Miễn Phí">
-<meta property="og:description" content="Chơi Caro 5 online miễn phí ngay trên trình duyệt. Đấu với máy, ghép trận xếp hạng, tạo phòng cùng bạn bè, xem lại ván đấu và học chiến thuật Caro.">
+<meta property="og:title" content="Caro 5 – Game Cờ Caro Online Miễn Phí">
+<meta property="og:description" content="Caro 5 là game cờ Caro online miễn phí: đấu máy, ghép trận xếp hạng, tạo phòng với bạn bè, xem lịch sử và học chiến thuật Caro 15×15 ngay trên trình duyệt.">
 <meta property="og:url" content="https://phucdepzai2012.github.io/a/">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Caro 5 – Chơi Caro Online Miễn Phí">
-<meta name="twitter:description" content="Chơi Caro 5 online miễn phí ngay trên trình duyệt. Đấu với máy, ghép trận xếp hạng, tạo phòng cùng bạn bè, xem lại ván đấu và học chiến thuật Caro.">
+<meta name="twitter:title" content="Caro 5 – Game Cờ Caro Online Miễn Phí">
+<meta name="twitter:description" content="Caro 5 là game cờ Caro online miễn phí: đấu máy, ghép trận xếp hạng, tạo phòng với bạn bè, xem lịch sử và học chiến thuật Caro 15×15 ngay trên trình duyệt.">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -29,7 +30,7 @@
       "name": "Caro 5",
       "url": "https://phucdepzai2012.github.io/a/",
       "inLanguage": "vi",
-      "description": "Chơi Caro 5 online miễn phí ngay trên trình duyệt. Đấu với máy, ghép trận xếp hạng, tạo phòng cùng bạn bè, xem lại ván đấu và học chiến thuật Caro."
+      "description": "Caro 5 là game cờ Caro online miễn phí: đấu máy, ghép trận xếp hạng, tạo phòng với bạn bè, xem lịch sử và học chiến thuật Caro 15×15 ngay trên trình duyệt."
     },
     {
       "@type": "SoftwareApplication",
@@ -40,7 +41,7 @@
       "inLanguage": "vi",
       "browserRequirements": "Requires JavaScript and a modern web browser",
       "isAccessibleForFree": true,
-      "description": "Chơi Caro 5 online miễn phí ngay trên trình duyệt. Đấu với máy, ghép trận xếp hạng, tạo phòng cùng bạn bè, xem lại ván đấu và học chiến thuật Caro.",
+      "description": "Caro 5 là game cờ Caro online miễn phí: đấu máy, ghép trận xếp hạng, tạo phòng với bạn bè, xem lịch sử và học chiến thuật Caro 15×15 ngay trên trình duyệt.",
       "offers": {
         "@type": "Offer",
         "price": "0",
@@ -228,6 +229,9 @@ body.online-match-active main>aside{display:none!important}
 .person-info strong,.person-info small{display:block;overflow-wrap:anywhere}
 .person-info strong{font-size:12px}
 .person-info small{font-size:10px;color:var(--mut)}
+.person-presence{display:inline-flex;align-items:center;gap:3px;margin-left:4px;font-size:10px;font-weight:800;white-space:nowrap}
+.person-presence.online{color:#087344}
+.person-presence.offline{color:#6c7886}
 .person-row button{width:auto;max-width:112px;margin:0;padding:6px 8px;font-size:11px;flex:none}
 .person-row .friend-accept{background:#e0f4e7;border-color:#9bd5ae;color:#17663a}
 .person-row .friend-remove{background:#fff0f0;border-color:#efc4c4;color:#a51d1d}
@@ -725,8 +729,9 @@ body.study-modal-open{overflow:hidden}
     <ol id="lb"></ol>
     <div class="note">Bảng xếp hạng lấy từ Render khi đã kết nối. Dữ liệu mẫu trên máy chủ sẽ bị xóa khi máy chủ khởi động lại.</div>
     <section class="seo-game-info" aria-labelledby="seoGameTitle">
-      <h2 id="seoGameTitle">Caro 5 – Game Caro online miễn phí</h2>
-      <p>Chơi Caro 5 trực tuyến ngay trong trình duyệt, không cần cài đặt. Luyện tập với máy hoặc thử sức cùng người chơi khác.</p>
+      <h2 id="seoGameTitle">Caro 5 – Game cờ Caro online miễn phí 15×15</h2>
+      <p>Caro 5 là game cờ Caro 15×15 miễn phí chạy trực tiếp trên các trình duyệt hiện đại như Chrome, Edge và Firefox, không cần cài đặt.</p>
+      <p>Luyện tập với máy, ghép trận xếp hạng hoặc tạo phòng riêng để chơi Caro online cùng bạn bè.</p>
       <p>Ghép trận xếp hạng, tạo phòng riêng để chơi với bạn bè, xem lại lịch sử ván đấu và phân tích nước đi.</p>
       <p>Sổ tay Caro gồm hướng dẫn khai cuộc, trung cuộc, tàn cuộc cùng các sơ đồ chiến thuật để bạn luyện cách đọc thế cờ.</p>
     </section>
@@ -1373,7 +1378,10 @@ function renderPersonRow(person,mode){
   }else if(mode==='outgoing'){
     action='<span class="social-empty">Đang chờ</span>';
   }
-  return '<div class="person-row">'+avatarHtml+'<div class="person-info"><strong>'+esc(name)+'</strong><small>'+(Number(p.elo)||1000)+' ELO</small></div>'+action+'</div>';
+  const presence = p.online
+    ? '<span class="person-presence online" aria-label="Đang online">● Đang online</span>'
+    : '<span class="person-presence offline" aria-label="Đang offline">○ Offline</span>';
+  return '<div class="person-row">'+avatarHtml+'<div class="person-info"><strong>'+esc(name)+'</strong><small>'+(Number(p.elo)||1000)+' ELO · '+presence+'</small></div>'+action+'</div>';
 }
 function renderPeople(targetId,people,mode,emptyText){
   const target=$(targetId);
@@ -1387,7 +1395,13 @@ async function refreshSocial(){
   renderPeople('friendList',list.friends,'friend','Bạn chưa có bạn bè. Hãy tìm người chơi bên trên.');
   renderPeople('friendOutgoing',list.outgoing,'outgoing','Chưa có lời mời nào đang chờ.');
 }
-window.caroSocialRefresh=()=>refreshSocial().catch(error=>{const status=$('socialStatus');if(status)status.textContent=error.message||'Không làm mới được danh sách bạn bè.'});
+window.caroSocialRefresh=()=>refreshSocial().then(async()=>{
+  const query=$('friendSearchInput').value.trim();
+  if(query.length>=2&&!socialBusy&&window.caroAuth){
+    const result=await window.caroAuth.searchFriends({query});
+    renderPeople('friendSearchResults',result.results,'search','Không tìm thấy người chơi phù hợp.');
+  }
+}).catch(error=>{const status=$('socialStatus');if(status)status.textContent=error.message||'Không làm mới được danh sách bạn bè.'});
 async function searchFriends(){
   if(!window.caroAuth||!me.uid){$('socialStatus').textContent='Hãy đăng nhập để tìm bạn bè.';return}
   const query=$('friendSearchInput').value.trim();
