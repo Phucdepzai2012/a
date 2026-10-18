@@ -30,7 +30,8 @@ const DRAW_OFFER_COOLDOWN_MS = 45 * 1000;
 const friendRequestRateLimits = new Map();
 const roomCreateEvents = new Map();
 const adminAudit = [];
-const MAX_ACTIVE_RANKED_GAMES = Math.max(1, Math.min(12, Math.floor(Number(process.env.MAX_ACTIVE_RANKED_GAMES) || 3)));
+// Keep ranked matches conservative on Render Free; never allow more than 3 concurrent ranked games.
+const MAX_ACTIVE_RANKED_GAMES = Math.max(1, Math.min(3, Math.floor(Number(process.env.MAX_ACTIVE_RANKED_GAMES) || 2)));
 const MAX_RANKED_QUEUE = 200;
 const rankedQueue = new Map();
 const databaseUrl = String(process.env.DATABASE_URL || '').trim();
