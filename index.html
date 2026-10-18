@@ -604,54 +604,13 @@ body.study-modal-open{overflow:hidden}
 /* Use the player's supplied Ender Chest image for every study-guide icon. */
 .study-head-icon .study-float 
 
-/* Main menu: clean, responsive layout without external character artwork. */
-#mainMenu{position:fixed;inset:0;z-index:8;display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.88fr);overflow:hidden;isolation:isolate;background:#f4f7fb;color:#1c2939;font-family:'Be Vietnam Pro',system-ui,sans-serif}
-#mainMenu[hidden]{display:none!important}
-.menu-backdrop{position:absolute;inset:0;z-index:-3;background:linear-gradient(135deg,#f8fafc 0%,#edf3fa 62%,#e0eaf7 100%)}
-.menu-backdrop:before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 82% 46%,rgba(73,127,202,.14),transparent 48%)}
-.menu-lights{position:absolute;inset:0;z-index:-2;pointer-events:none;opacity:var(--menu-light-opacity,.9);filter:brightness(var(--menu-light,1));background:radial-gradient(ellipse at 78% 36%,rgba(86,145,218,.12),transparent 43%)}
-.menu-copy{position:relative;z-index:4;align-self:center;padding:clamp(26px,6vh,64px) clamp(22px,6.5vw,88px);width:100%;max-width:680px}
-.menu-brand{display:flex;align-items:baseline;gap:5px;font-size:clamp(32px,4vw,48px);font-weight:900;letter-spacing:-.07em;line-height:1;color:#1c2939}
-.menu-brand span{color:#2769c9}
-.menu-brand i{margin-left:9px;font-style:normal;font-size:9px;font-weight:700;letter-spacing:.12em;color:#7b8796}
-.menu-kicker{display:flex;align-items:center;gap:8px;margin-top:clamp(24px,4vh,38px);font-size:10px;font-weight:800;letter-spacing:.12em;color:#6b7787}
-.menu-live-dot{display:inline-block;width:7px;height:7px;flex:none;border-radius:50%;background:#24a36b}
-.menu-title{margin:17px 0 10px;font-size:clamp(36px,5vw,62px);line-height:1.02;letter-spacing:-.055em;font-weight:900;color:#202b3b}
-.menu-title em{font-style:normal;color:#2769c9}
-.menu-subtitle{margin:0;color:#697789;font-size:clamp(12px,1.3vw,15px)}
-.menu-guest-note{display:none}
-.menu-actions{display:none;flex-direction:column;gap:9px;width:min(390px,100%);margin-top:26px}
-#mainMenu.menu-authenticated .menu-actions{display:flex}
-#mainMenu.menu-authenticated .menu-guest-note{display:none}
-.menu-button{display:grid;grid-template-columns:38px minmax(0,1fr) 18px;align-items:center;gap:11px;width:100%;min-height:63px;margin:0;padding:10px 13px;text-align:left;border:1px solid #d7e0eb;border-radius:10px;background:#fff;color:#253449;box-shadow:0 2px 5px rgba(26,46,73,.04);transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease;cursor:pointer}
-.menu-button:hover,.menu-button:focus-visible{transform:translateY(-2px);border-color:#9ab8e4;box-shadow:0 5px 14px rgba(26,67,124,.09);outline:none}
-.menu-button-icon{display:grid;place-items:center;width:35px;height:35px;border-radius:8px;background:#edf3fc;color:#2769c9;font-size:18px}
-.menu-button strong{display:block;font-size:12px;font-weight:900;letter-spacing:.09em}
-.menu-button small{display:block;margin-top:3px;font-size:10px;color:#758397;font-weight:400}
-.menu-button>b{justify-self:end;color:#8290a3;font-size:16px}
-.menu-button-primary{background:#2769c9;border-color:#2769c9;color:#fff;box-shadow:0 4px 10px rgba(39,105,201,.14)}
-.menu-button-primary .menu-button-icon{background:rgba(255,255,255,.16);color:#fff}
-.menu-button-primary small,.menu-button-primary>b{color:#e9f1ff}
-.menu-button-primary:hover,.menu-button-primary:focus-visible{background:#1f5db5;border-color:#1f5db5}
-.menu-button-exit .menu-button-icon{background:#fff0f0;color:#bd3e48}
-.menu-account-line{display:flex;align-items:center;gap:8px;margin-top:3px;color:#66758a;font-size:10px}
-.menu-account-line>span:last-child{margin-left:auto;color:#218557;font-weight:800}
-.menu-board-art{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;padding:clamp(18px,4vw,52px);min-width:0;pointer-events:none}
-.menu-board-card{width:min(100%,400px);padding:clamp(15px,2.4vw,25px);border:1px solid #fff;border-radius:18px;background:rgba(255,255,255,.82);box-shadow:0 16px 42px rgba(35,61,91,.09);transform:rotate(1deg)}
-.menu-board-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:15px;color:#29394e}
-.menu-board-head strong{font-size:11px;letter-spacing:.1em}
-.menu-board-head span{font-size:10px;color:#8390a1}
-.menu-board-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;aspect-ratio:1;border-top:1px solid #cbd6e2;border-left:1px solid #cbd6e2;background:#fafcff}
-.menu-board-cell{display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;border-right:1px solid #cbd6e2;border-bottom:1px solid #cbd6e2;color:#b0bdcc;font-size:clamp(15px,2.5vw,28px);font-weight:900}
-.menu-board-cell:nth-child(5n){border-right:0}
-.menu-board-cell:nth-child(n+21){border-bottom:0}
-.menu-board-cell.mark-x{color:var(--blue,#1c3fb7)}
-.menu-board-cell.mark-o{color:var(--red,#d8322b)}
-.menu-board-cell.is-winning{background:#e7f0ff}
-.menu-board-footer{display:flex;align-items:center;gap:8px;margin-top:14px;color:#67768a;font-size:11px}
-.menu-board-footer small{margin-left:auto;color:#8995a4;font-size:10px}
-.menu-pop{position:absolute;z-index:12;left:clamp(18px,6.5vw,88px);top:50%;transform:translateY(-50%);width:min(405px,calc(47vw - 24px));max-height:84vh;overflow:auto;padding:21px;border:1px solid #dbe4ee;border-radius:14px;background:#fff;color:#243247;box-shadow:0 16px 48px rgba(20,37,61,.18)}
+/* Compact settings dialog; the game itself stays visible and accessible. */
+.settings-launch{display:inline-flex;align-items:center;gap:6px;width:auto;margin:0 0 8px;padding:7px 10px;border:1px solid var(--ln);border-radius:8px;background:#f5f8fb;color:var(--ink);font-size:12px;font-weight:700}
+.settings-launch:hover{background:#eaf0f7}
 .menu-pop[hidden]{display:none!important}
+#menuSettings.menu-pop{position:fixed;inset:0;z-index:1001;display:flex;align-items:center;justify-content:center;transform:none;width:auto;max-height:none;overflow:auto;padding:16px;border:0;border-radius:0;background:rgba(18,28,42,.48);color:#243247;box-shadow:none}
+#menuSettings.menu-pop[hidden]{display:none!important}
+.menu-settings-card{width:min(405px,100%);max-height:calc(100dvh - 32px);overflow:auto;padding:21px;border:1px solid #dbe4ee;border-radius:14px;background:#fff;color:#243247;box-shadow:0 16px 48px rgba(20,37,61,.18)}
 .menu-pop-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .menu-pop-top small{font-size:9px;letter-spacing:.14em;font-weight:800;color:#2769c9}
 .menu-pop h3{margin:5px 0 0;font-size:22px;letter-spacing:-.03em}
@@ -675,43 +634,7 @@ body.study-modal-open{overflow:hidden}
 .menu-pop-actions button{min-width:0;margin:0;padding:10px 9px;border:1px solid #d8e1eb;border-radius:8px;background:#f5f7fa;color:#34455b;font-size:11px;font-weight:800}
 .menu-pop-actions button:hover{border-color:#a5bedf}
 .menu-pop-actions .menu-save{border-color:#2769c9;background:#2769c9;color:#fff}
-.menu-pop-actions .menu-exit-action{background:#bd3e48;border-color:#bd3e48;color:#fff}
-.menu-exit-note{color:#bd3e48;font-size:11px;min-height:1.2em}
-#ov{position:fixed;inset:auto auto auto clamp(18px,6.5vw,88px);top:clamp(300px,39vh,420px);z-index:20;width:min(405px,calc(47vw - 24px));max-height:57vh;overflow:auto;padding:0;transform:none;align-items:flex-start;justify-content:flex-start;background:transparent;pointer-events:none}
-#ov[hidden]{display:none!important}
-#ov>div{width:100%;max-width:none;padding:18px;border:1px solid #dbe4ee;border-radius:13px;background:#fff;color:#243247;box-shadow:0 10px 32px rgba(20,37,61,.13);pointer-events:auto}
-#ov h1{display:none}
-#ov p{margin:0 0 10px;color:#6f7e91;font-size:12px;line-height:1.65}
-#ov input{width:100%;margin-top:9px;padding:10px 11px;border:1px solid #d6e0ea;border-radius:8px;background:#fbfcfe;color:#26364a}
-#ov input::placeholder{color:#8b98a8}
-#ov .password-row button{width:48px;margin-top:9px;padding:8px 4px;border:1px solid #d6e0ea;border-radius:8px;background:#f1f4f8;color:#40516a}
-#ov button{margin-top:9px;padding:10px 12px;border:1px solid #d6e0ea;border-radius:8px;background:#f3f6fa;color:#2b3a50;font-size:12px}
-#ov #nmOk{background:#2769c9;border-color:#2769c9;color:#fff;font-weight:800}
-#ov #bSwitchAuth{background:transparent;color:#2769c9}
-#ov #nmEr{color:#bd3e48}
-.menu-pop input,.menu-pop button{font-family:inherit}
-@media(max-width:760px){
-  #mainMenu{display:block}
-  .menu-copy{padding:24px 20px;width:min(100%,550px)}
-  .menu-brand{font-size:33px}
-  .menu-brand i{font-size:7px}
-  .menu-kicker{margin-top:23px;font-size:8px;letter-spacing:.08em}
-  .menu-title{font-size:clamp(34px,9vw,46px)}
-  .menu-subtitle{font-size:12px}
-  .menu-actions{width:min(390px,100%);margin-top:20px}
-  .menu-button{min-height:58px;padding:8px 10px}
-  .menu-button-icon{width:32px;height:32px}
-  .menu-board-art{position:absolute;right:-70px;top:39%;width:min(62vw,340px);padding:10px;opacity:.22}
-  .menu-board-card{padding:12px;border-radius:12px}
-  .menu-board-head{margin-bottom:8px}
-  .menu-board-footer{margin-top:8px}
-  .menu-board-footer small{display:none}
-  .menu-pop{left:14px;right:14px;top:50%;width:auto;max-height:80vh;padding:17px}
-  #ov{left:16px;right:16px;top:clamp(270px,36vh,390px);width:auto;max-height:61vh}
-  #ov>div{padding:14px}
-  #ov input{padding:9px}
-}
-@media(prefers-reduced-motion:reduce){.menu-button{transition:none!important}}
+@media(max-width:520px){.menu-settings-card{padding:16px}}
 </style>
 </head>
 <body>
@@ -724,36 +647,8 @@ body.study-modal-open{overflow:hidden}
   </div>
 </div>
 
-<section id="mainMenu" aria-label="Menu chính Caro 5">
-  <div class="menu-backdrop" aria-hidden="true"></div>
-  <div class="menu-lights" aria-hidden="true"></div>
-  <div class="menu-copy">
-    <div class="menu-brand">CARO <span>5</span><i>ONLINE ARENA</i></div>
-    <div class="menu-kicker"><span class="menu-live-dot"></span> CHIẾN THUẬT · TẬP TRUNG · CHIẾN THẮNG</div>
-    <h2 class="menu-title">MỖI NƯỚC ĐI<br><em>ĐỊNH ĐOẠT</em></h2>
-    <p class="menu-subtitle">Sẵn sàng đấu trí trên bàn cờ 15×15?</p>
-    <div id="menuGuestNote" class="menu-guest-note">Đăng nhập ở khung bên dưới để mở menu chơi.</div>
-    <div id="menuActions" class="menu-actions">
-      <button id="menuPlay" class="menu-button menu-button-primary" type="button"><span class="menu-button-icon">▶</span><span><strong>PLAY</strong><small>Bắt đầu chơi Caro 5</small></span><b>↗</b></button>
-      <button id="menuSettingsOpen" class="menu-button" type="button"><span class="menu-button-icon">⚙</span><span><strong>SETTING</strong><small>Màu quân cờ và hiệu ứng</small></span><b>↗</b></button>
-      <button id="menuExitOpen" class="menu-button menu-button-exit" type="button"><span class="menu-button-icon">↗</span><span><strong>EXIT</strong><small>Thoát khỏi màn hình game</small></span><b>↗</b></button>
-      <div class="menu-account-line"><span class="menu-live-dot"></span><span id="menuWelcome">Đã đăng nhập</span><span>● ONLINE</span></div>
-    </div>
-  </div>
-  <div class="menu-board-art" aria-hidden="true">
-    <div class="menu-board-card">
-      <div class="menu-board-head"><strong>VÁN ĐẤU MỚI</strong><span>15 × 15</span></div>
-      <div class="menu-board-grid">
-        <span class="menu-board-cell"></span><span class="menu-board-cell"></span><span class="menu-board-cell"></span><span class="menu-board-cell"></span><span class="menu-board-cell mark-o">O</span>
-        <span class="menu-board-cell"></span><span class="menu-board-cell mark-x">X</span><span class="menu-board-cell"></span><span class="menu-board-cell"></span><span class="menu-board-cell"></span>
-        <span class="menu-board-cell mark-x is-winning">X</span><span class="menu-board-cell mark-x is-winning">X</span><span class="menu-board-cell mark-x is-winning">X</span><span class="menu-board-cell mark-x is-winning">X</span><span class="menu-board-cell mark-x is-winning">X</span>
-        <span class="menu-board-cell"></span><span class="menu-board-cell mark-o">O</span><span class="menu-board-cell"></span><span class="menu-board-cell"></span><span class="menu-board-cell"></span>
-        <span class="menu-board-cell mark-o">O</span><span class="menu-board-cell"></span><span class="menu-board-cell"></span><span class="menu-board-cell"></span><span class="menu-board-cell"></span>
-      </div>
-      <div class="menu-board-footer"><span class="menu-live-dot"></span><strong>Sẵn sàng chơi</strong><small>Chiến thuật · Tập trung</small></div>
-    </div>
-  </div>
   <section id="menuSettings" class="menu-pop" role="dialog" aria-modal="true" aria-labelledby="menuSettingsTitle" hidden>
+    <div class="menu-settings-card">
     <div class="menu-pop-top"><div><small>PERSONALIZE</small><h3 id="menuSettingsTitle">Cài đặt giao diện</h3></div><button id="menuSettingsClose" class="menu-close" type="button" aria-label="Đóng cài đặt">×</button></div>
     <p>Đổi màu quân cờ và ánh sáng theo ý bạn. Cài đặt được lưu trên thiết bị này.</p>
     <label class="menu-color-row" for="menuXColor"><span><b class="menu-x-badge">X</b><span><strong>Màu quân X</strong><small>Quân đi trước</small></span></span><input id="menuXColor" type="color" value="#1c3fb7"></label>
@@ -761,21 +656,16 @@ body.study-modal-open{overflow:hidden}
     <label class="menu-range-row" for="menuLightRange"><span><strong>Độ sáng nền</strong><output id="menuLightValue">100%</output></span><input id="menuLightRange" type="range" min="60" max="140" step="5" value="100"></label>
     <label class="menu-check-row" for="menuGlowToggle"><input id="menuGlowToggle" type="checkbox" checked><span><strong>Phát sáng quân X/O</strong><small>Thêm viền sáng khi đánh cờ</small></span></label>
     <div class="menu-pop-actions"><button id="menuResetSettings" type="button">Mặc định</button><button id="menuSaveSettings" class="menu-save" type="button">Lưu cài đặt</button></div>
+      </div>
   </section>
-  <section id="menuExitConfirm" class="menu-pop menu-exit-pop" role="dialog" aria-modal="true" aria-labelledby="menuExitTitle" hidden>
-    <div class="menu-pop-top"><div><small>LEAVE ARENA</small><h3 id="menuExitTitle">Rời khỏi Caro 5?</h3></div><button id="menuExitClose" class="menu-close" type="button" aria-label="Đóng cửa sổ">×</button></div>
-    <p>Trình duyệt có thể chặn việc tự đóng tab. Bạn có thể đóng tab bằng Ctrl + W.</p>
-    <div id="menuExitNote" class="menu-exit-note" aria-live="polite"></div>
-    <div class="menu-pop-actions"><button id="menuExitCancel" type="button">Ở lại</button><button id="menuExitNow" class="menu-save menu-exit-action" type="button">Thoát</button></div>
-  </section>
-</section>
 
-<div id="ov"><div><h1>Caro <b>5</b></h1><p id="authHint">Đăng nhập để đồng bộ ELO và lịch sử đấu của bạn.</p><input id="nm" maxlength="14" placeholder="Tên đăng nhập (3–14 ký tự)" autocomplete="username"><div class="password-row"><input id="pw" type="password" minlength="8" maxlength="128" placeholder="Mật khẩu (ít nhất 8 ký tự)" autocomplete="current-password"><button id="togglePw" type="button" aria-label="Hiện mật khẩu" title="Hiện mật khẩu">👁️</button></div><div id="pwConfirmRow" class="password-row" hidden><input id="pwConfirm" type="password" minlength="8" maxlength="128" placeholder="Nhập lại mật khẩu" autocomplete="new-password"><button id="togglePwConfirm" type="button" aria-label="Hiện mật khẩu xác nhận" title="Hiện mật khẩu xác nhận">👁️</button></div><div id="nmEr" role="status" aria-live="polite"></div><button id="nmOk" class="pri">Đăng nhập</button><button id="bSwitchAuth" class="auth-switch" type="button">Chưa có tài khoản? Đăng ký</button></div></div>
+  <div id="ov"><div><h1>Caro <b>5</b></h1><p id="authHint">Đăng nhập để đồng bộ ELO và lịch sử đấu của bạn.</p><input id="nm" maxlength="14" placeholder="Tên đăng nhập (3–14 ký tự)" autocomplete="username"><div class="password-row"><input id="pw" type="password" minlength="8" maxlength="128" placeholder="Mật khẩu (ít nhất 8 ký tự)" autocomplete="current-password"><button id="togglePw" type="button" aria-label="Hiện mật khẩu" title="Hiện mật khẩu">👁️</button></div><div id="pwConfirmRow" class="password-row" hidden><input id="pwConfirm" type="password" minlength="8" maxlength="128" placeholder="Nhập lại mật khẩu" autocomplete="new-password"><button id="togglePwConfirm" type="button" aria-label="Hiện mật khẩu xác nhận" title="Hiện mật khẩu xác nhận">👁️</button></div><div id="nmEr" role="status" aria-live="polite"></div><button id="nmOk" class="pri">Đăng nhập</button><button id="bSwitchAuth" class="auth-switch" type="button">Chưa có tài khoản? Đăng ký</button></div></div>
 <main>
   <div class="paper"><canvas id="bd" aria-label="Bàn cờ Caro 15 x 15"></canvas></div>
   <aside>
     <section>
       <h1>Caro <b>5</b></h1>
+      <button id="menuSettingsLaunch" class="settings-launch" type="button" aria-haspopup="dialog" aria-controls="menuSettings">⚙ Cài đặt</button>
       <div id="me"></div>
       <div class="account-toolbar">
         <div id="accountAvatar" class="avatar avatar-large" aria-label="Ảnh đại diện">?</div>
@@ -3084,9 +2974,7 @@ render();
 
 <script>
 (function(){
-  const menu=document.getElementById('mainMenu');
   const auth=document.getElementById('ov');
-  if(!menu||!auth)return;
   const $menu=id=>document.getElementById(id);
   const root=document.documentElement;
   const defaultSettings={x:'#1c3fb7',o:'#d8322b',light:100,glow:true};
@@ -3096,12 +2984,15 @@ render();
     settings={...settings,...saved};
   }catch(_){}
   function saveSettings(){
-    try{localStorage.setItem('caroMenuSettings',JSON.stringify(settings));localStorage.setItem('caroMarkGlow',String(settings.glow));}catch(_){}
+    try{
+      localStorage.setItem('caroMenuSettings',JSON.stringify(settings));
+      localStorage.setItem('caroMarkGlow',String(settings.glow));
+    }catch(_){}
   }
   function applySettings(save){
     root.style.setProperty('--blue',settings.x||defaultSettings.x);
     root.style.setProperty('--red',settings.o||defaultSettings.o);
-    root.style.setProperty('--menu-light',String(Number(settings.light||100)/100));
+    root.style.setProperty('--menu-light',String(Number(settings.light||100)/100);
     root.style.setProperty('--menu-light-opacity',String(Math.max(.35,Math.min(1.2,Number(settings.light||100)/100))));
     $menu('menuXColor').value=settings.x||defaultSettings.x;
     $menu('menuOColor').value=settings.o||defaultSettings.o;
@@ -3111,37 +3002,28 @@ render();
     if(save)saveSettings();
     window.dispatchEvent(new Event('caro:themechange'));
   }
-  function syncAccess(){
-    const token=!!(function(){try{return localStorage.getItem('caroSessionToken')}catch(_){return ''}}());
-    if(!token&&auth.hidden)auth.hidden=false;
-    const signedIn=!!(auth.hidden&&token);
-    menu.classList.toggle('menu-authenticated',signedIn);
-    menu.classList.toggle('menu-guest',!signedIn);
-    const name=(function(){try{return localStorage.getItem('caroName')||''}catch(_){return ''}})();
-    $menu('menuWelcome').textContent=name?'Chào '+name:'Đã đăng nhập';
+  function ensureAuth(){
+    let token='';
+    try{token=localStorage.getItem('caroSessionToken')||''}catch(_){}
+    if(auth&&!token&&auth.hidden)auth.hidden=false;
   }
-  const observer=new MutationObserver(syncAccess);
-  observer.observe(auth,{attributes:true,attributeFilter:['hidden']});
-  window.addEventListener('storage',syncAccess);
-  syncAccess();
+  if(auth){
+    new MutationObserver(ensureAuth).observe(auth,{attributes:true,attributeFilter:['hidden']});
+  }
+  window.addEventListener('storage',ensureAuth);
+  ensureAuth();
   applySettings(false);
 
-  $menu('menuPlay').addEventListener('click',()=>{
-    syncAccess();
-    if(!menu.classList.contains('menu-authenticated')){
-      auth.hidden=false;
-      $menu('nm').focus();
-      return;
-    }
-    menu.hidden=true;
-  });
-  $menu('menuSettingsOpen').addEventListener('click',()=>{
-    $menu('menuExitConfirm').hidden=true;
-    $menu('menuSettings').hidden=false;
+  const panel=$menu('menuSettings');
+  const launcher=$menu('menuSettingsLaunch');
+  function openSettings(){
+    panel.hidden=false;
     $menu('menuXColor').focus();
-  });
-  function closeSettings(){ $menu('menuSettings').hidden=true; }
+  }
+  function closeSettings(){panel.hidden=true;}
+  launcher.addEventListener('click',openSettings);
   $menu('menuSettingsClose').addEventListener('click',closeSettings);
+  panel.addEventListener('click',e=>{if(e.target===panel)closeSettings()});
   $menu('menuSaveSettings').addEventListener('click',()=>{applySettings(true);closeSettings()});
   $menu('menuResetSettings').addEventListener('click',()=>{
     settings={...defaultSettings};
@@ -3151,25 +3033,7 @@ render();
   $menu('menuOColor').addEventListener('input',e=>{settings.o=e.target.value;applySettings(true)});
   $menu('menuLightRange').addEventListener('input',e=>{settings.light=Number(e.target.value);applySettings(true)});
   $menu('menuGlowToggle').addEventListener('change',e=>{settings.glow=!!e.target.checked;applySettings(true)});
-
-  function closeExit(){ $menu('menuExitConfirm').hidden=true;$menu('menuExitNote').textContent=''; }
-  $menu('menuExitOpen').addEventListener('click',()=>{
-    $menu('menuSettings').hidden=true;
-    $menu('menuExitNote').textContent='';
-    $menu('menuExitConfirm').hidden=false;
-  });
-  $menu('menuExitClose').addEventListener('click',closeExit);
-  $menu('menuExitCancel').addEventListener('click',closeExit);
-  $menu('menuExitNow').addEventListener('click',()=>{
-    try{window.close()}catch(_){}
-    $menu('menuExitNote').textContent='Nếu tab vẫn mở, trình duyệt không cho trang tự đóng. Hãy nhấn Ctrl + W để thoát.';
-  });
-  document.addEventListener('keydown',e=>{
-    if(e.key==='Escape'){
-      if(!$menu('menuSettings').hidden)closeSettings();
-      if(!$menu('menuExitConfirm').hidden)closeExit();
-    }
-  });
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!panel.hidden)closeSettings()});
   window.addEventListener('caro:themechange',()=>window.dispatchEvent(new Event('resize')));
 })();
 </script>
