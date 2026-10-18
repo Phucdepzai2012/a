@@ -1059,7 +1059,7 @@ body.study-modal-open{overflow:hidden}
     if (socket.connected) return Promise.resolve();
     return new Promise((resolve, reject) => {
       let done = false;
-      const timer = setTimeout(() => finish(new Error('Máy chủ Render chưa kết nối. Hãy kiểm tra trạng thái deploy của dịch vụ.')), 15000);
+      const timer = setTimeout(() => finish(new Error('Máy chủ Render chưa kết nối. Hãy kiểm tra trạng thái deploy của dịch vụ.')), 60000);
       function finish(err) {
         if (done) return; done = true; clearTimeout(timer);
         socket.off('connect', onConnect); socket.off('connect_error', onError);
@@ -1074,7 +1074,7 @@ body.study-modal-open{overflow:hidden}
     await waitForConnection();
     return new Promise((resolve, reject) => {
       let done = false;
-      const timer = setTimeout(() => finish(new Error('Máy chủ phản hồi quá lâu.')), 15000);
+      const timer = setTimeout(() => finish(new Error('Máy chủ phản hồi quá lâu.')), 30000);
       function finish(err, result) {
         if (done) return; done = true; clearTimeout(timer);
         if (err) reject(err);
@@ -1306,6 +1306,7 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 let profile={};try{profile=JSON.parse(localStorage.getItem('caroProfileSeason2')||'{}')}catch{}
 let me={uid:null,name:(localStorage.getItem('caroSessionToken')?localStorage.getItem('caroName'):'')||'',elo:Number(profile.elo)||1000,w:Number(profile.w)||0,l:Number(profile.l)||0,d:Number(profile.d)||0,isAdmin:localStorage.getItem('caroRole')==='admin'};
 let G=null,finding=false,findTimer=null,inviteRef=null,db=null,activeBackend=null,activeBackendIndex=-1,backendCandidates=[],serverOffset=0,switchingBackend=false,onlineLeaderboard=[],profileRef=null,leaderboardRef=null,serverOffsetRef=null,duplicateBackupConfig=false,currentHistoryUid=null,historyRecordsByKey=new Map(),historyReplayReturnGame=null;
+let queueJoinInFlight=false,openingMatchedGid='';
 let chatPanelOpen=false,chatUnread=0,chatRenderFingerprint='',selectedAvatarData=null,socialBusy=false;
 let drawOfferCooldownUntil=0,drawCooldownOwner='';
 const now=()=>Date.now()+serverOffset;
@@ -2231,6 +2232,7 @@ async function cancelFind(showMessage=true){
 }
 async function openGame(gid){
   if(!db||!me.uid)throw new Error('Render chưa kết nối.');
+  if(G&&G.mode==='online'&&G.gid===String(gid)&&G.ref)return;
   if(G&&G.ref)G.ref.off();clearTimeout(findTimer);finding=false;if(inviteRef){inviteRef.off();inviteRef=null}
   $('bFind').textContent='Ghép trận xếp hạng';
   const ref=db.ref('games/'+gid),snap=await ref.once('value'),v=snap.val();
@@ -2240,6 +2242,15 @@ async function openGame(gid){
   G={mode:'online',gid,ref,mine,board:new Map(),turn:Number(v.turn)||0,n:0,over:0,startedAt:Number(v.createdAt)||now(),turnStartedAt:now(),dl:v.dl||now()+TURN,names:v.p.map(q=>`${q.name} (${q.elo})`),players:v.p.map(q=>({uid:q.uid||'',name:q.name||'Người chơi',elo:Number(q.elo)||1000,avatar:safeAvatar(q.avatar)})),myElo:Number(v.p[mine].elo)||me.elo,oppElo:Number(v.p[1-mine]?.elo)||1000,moves:[],last:null,line:null,msg:'',winner:null,review:[],roomStatus:v.status,roomCode:/^[0-9]{4}$/.test(gid)?gid:null,drawOffer:v.drawOffer||null,drawResponse:v.drawResponse||null,chat:Array.isArray(v.chat)?v.chat:[]};
   await db.ref('invite/'+me.uid).remove().catch(()=>{});setActive(true);resetCamera();ui();draw();stat();
   ref.on('value',onGame,e=>handleBackendFailure(e,'đồng bộ ván đấu'));
+}
+async function openMatchedRankedGame(gid){
+  const id=String(gid||'');
+  if(!id)return;
+  if(G&&G.mode==='online'&&G.gid===id&&G.ref)return;
+  if(openingMatchedGid===id)return;
+  openingMatchedGid=id;
+  try{await openGame(id)}
+  finally{if(openingMatchedGid===id)openingMatchedGid=''}
 }
 function onGame(s){
   const v=s.val();if(!v||!G||G.gid!==s.key)return;
@@ -2259,6 +2270,67 @@ function onGame(s){
   if(v.status==='over'&&!G.over){G.winner=Number.isInteger(v.winner)?v.winner:-1;G.line=v.why==='win'&&last?win(board,last.x,last.y):null;finishGame(G.winner,v.why);return}
   ui();draw();stat();
 }
+function showRankedQueueResult(result){
+  if(!finding||!result)return;
+  if(result.status==='matched'&&result.gid){
+    $('st').textContent='Đã ghép đối thủ! Đang mở bàn cờ…';
+    openMatchedRankedGame(String(result.gid)).catch(e=>{
+      if(!finding&&G&&G.mode==='online'&&G.gid===String(result.gid))return;
+      finding=false;
+      $('bFind').textContent='Ghép trận xếp hạng';
+      $('bBot').disabled=!me.name;
+      ui();
+      $('st').textContent='Không mở được ván: '+(e.message||e)+'. Hãy ghép lại để khôi phục trận nếu máy chủ đã tạo.';
+    });
+    return;
+  }
+  const position=Number(result.position)||1;
+  const waiting=Number(result.waiting)||1;
+  const active=Number(result.activeGames)||0;
+  const max=Number(result.maxGames)||3;
+  $('bFind').textContent='Huỷ tìm trận';
+  $('bFind').disabled=false;
+  $('st').textContent='Đang chờ xếp hạng · vị trí '+position+'/'+waiting+' · '+active+'/'+max+' trận đang chạy.';
+}
+async function resumeRankedQueue(){
+  if(!finding||queueJoinInFlight||!window.caroAuth)return;
+  queueJoinInFlight=true;
+  try{
+    let result;
+    try{
+      result=await window.caroAuth.joinRankedQueue();
+    }catch(firstError){
+      if(!finding)return;
+      if(!window.caroRenderSocket||!window.caroRenderSocket.connected){
+        $('bFind').textContent='Huỷ tìm trận';
+        $('bFind').disabled=false;
+        $('st').textContent='Mất kết nối tạm thời. Đang tự kết nối lại; vị trí chờ được giữ tối đa 45 giây.';
+        return;
+      }
+      // Retrying this idempotent request recovers a match if its acknowledgement was lost.
+      try{result=await window.caroAuth.joinRankedQueue()}
+      catch(secondError){
+        if(!finding)return;
+        if(!window.caroRenderSocket||!window.caroRenderSocket.connected){
+          $('bFind').textContent='Huỷ tìm trận';
+          $('bFind').disabled=false;
+          $('st').textContent='Mất kết nối tạm thời. Đang tự kết nối lại; vị trí chờ được giữ tối đa 45 giây.';
+          return;
+        }
+        finding=false;
+        $('bFind').textContent='Ghép trận xếp hạng';
+        $('bBot').disabled=!me.name;
+        ui();
+        $('st').textContent='Ghép trận lỗi: '+(secondError.message||firstError.message||secondError);
+        return;
+      }
+    }
+    if(!finding)return;
+    showRankedQueueResult(result);
+  }finally{
+    queueJoinInFlight=false;
+  }
+}
 async function startMatchmaking(){
   if(finding){await cancelFind();return}
   if(!me.name){showOv();return}
@@ -2268,22 +2340,7 @@ async function startMatchmaking(){
   $('bFind').disabled=false;
   $('bBot').disabled=true;
   $('st').textContent='Đang tham gia hàng chờ xếp hạng…';
-  try{
-    const result=await window.caroAuth.joinRankedQueue();
-    if(!finding)return;
-    const position=Number(result.position)||1;
-    const active=Number(result.activeGames)||0;
-    const max=Number(result.maxGames)||3;
-    $('st').textContent='Đang chờ xếp hạng · vị trí '+position+' · '+active+'/'+max+' trận đang chạy.';
-  }catch(e){
-    if(!finding)return;
-    finding=false;
-    clearTimeout(findTimer);
-    $('bFind').textContent='Ghép trận xếp hạng';
-    $('bBot').disabled=!me.name;
-    ui();
-    $('st').textContent='Ghép trận lỗi: '+(e.message||e);
-  }
+  await resumeRankedQueue();
 }
 async function createRoom(){
   if(!me.name){showOv();return}
@@ -2322,22 +2379,24 @@ if(window.caroRenderSocket){
     if(!finding||!payload||!payload.gid)return;
     clearTimeout(findTimer);
     $('st').textContent='Đã ghép đối thủ! Đang mở bàn cờ…';
-    openGame(String(payload.gid)).catch(e=>{
+    openMatchedRankedGame(String(payload.gid)).catch(e=>{
+      if(!finding&&G&&G.mode==='online'&&G.gid===String(payload.gid))return;
       finding=false;
       $('bFind').textContent='Ghép trận xếp hạng';
       $('bBot').disabled=!me.name;
       ui();
-      $('st').textContent='Không mở được ván: '+(e.message||e);
+      $('st').textContent='Không mở được ván: '+(e.message||e)+'. Hãy ghép lại để khôi phục trận nếu máy chủ đã tạo.';
     });
   });
   window.caroRenderSocket.on('disconnect',()=>{
     if(!finding)return;
-    finding=false;
-    clearTimeout(findTimer);
-    $('bFind').textContent='Ghép trận xếp hạng';
-    $('bBot').disabled=!me.name;
-    ui();
-    $('st').textContent='Mất kết nối máy chủ. Hàng chờ đã bị huỷ; hãy ghép lại khi kết nối ổn định.';
+    // Do not mark the queue cancelled on a temporary Socket.IO disconnect.
+    $('bFind').textContent='Huỷ tìm trận';
+    $('bFind').disabled=false;
+    $('st').textContent='Mất kết nối tạm thời. Đang tự kết nối lại; vị trí chờ được giữ tối đa 45 giây.';
+  });
+  window.caroRenderSocket.on('connect',()=>{
+    if(finding&&!queueJoinInFlight)resumeRankedQueue();
   });
 }
 $('bFind').onclick=startMatchmaking;
