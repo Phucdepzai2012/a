@@ -144,6 +144,9 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 .bot-elo-row{display:grid;grid-template-columns:20px minmax(65px,1fr) auto;align-items:center;gap:8px;font-size:12px;color:var(--mut)}
 .bot-elo-row input{width:100%;margin:0;padding:6px 8px;font-size:14px}
 .bot-settings .note{margin-top:6px}
+.champion-bot-button{margin-top:7px;background:linear-gradient(135deg,#17243b,#263e61);border-color:#263e61;color:#fff;font-weight:800;letter-spacing:.01em}
+.champion-bot-button:hover{filter:brightness(1.08)}
+.champion-bot-note{margin:6px 2px 0;color:var(--mut);font-size:10px;line-height:1.55}
 .bot-panel{margin-top:8px}
 #botPanel[hidden]{display:none}
 #bStartBot{margin-top:8px}
@@ -640,6 +643,8 @@ body.study-modal-open{overflow:hidden}
           <div id="botEloDesc" class="note">Khá · ELO máy chỉ điều chỉnh độ khó, không đổi ELO của bạn ở chế độ luyện.</div>
         </div>
         <button id="bStartBot" class="pri">Bắt đầu đấu máy</button>
+      <button id="bStartChampionBot" class="champion-bot-button" type="button">♟ Đấu máy tuyển thủ</button>
+      <p class="champion-bot-note">AI tìm nước thắng, chặn đòn bắt buộc và tính trước nhiều lượt. Mức khó cao nhất, thời gian suy nghĩ có thể lâu hơn.</p>
       </div>
       <button id="bCen" type="button">Về nước vừa đánh</button>
       <button id="bOpenStudy" class="study-launch" type="button" aria-haspopup="dialog" aria-controls="studyModal">
@@ -1720,7 +1725,108 @@ function ev(b,x,y,p){let t=0;for(const[dx,dy]of D){let n=1,o=0;for(const s of[1,
   t+=n>=5?100000:n===4?(o===2?10000:o?1000:0):n===3?(o===2?500:o?60:0):n===2?(o===2?40:o?5:0):1}return t}
 function winningMoves(b,p){return candidates(b).filter(([x,y])=>wouldWin(b,x,y,p)).map(([x,y])=>x+','+y)}
 function scoreMove(b,x,y,p,oppWins){let s=ev(b,x,y,p)+ev(b,x,y,1-p)*.96;if(wouldWin(b,x,y,p))s+=100000000;if(oppWins&&oppWins.has(x+','+y))s+=10000000;return s}
+/* ---------- Máy tuyển thủ: quét thế cờ + tìm kiếm minimax alpha-beta ---------- */
+const CHAMPION_MATE=1000000000;
+function championEvaluate(board,perspective){
+  let score=0;
+  const weights=[0,2,32,520,9500];
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++)for(const[dx,dy]of D){
+    const ex=x+4*dx,ey=y+4*dy;
+    if(ex<0||ex>=N||ey<0||ey>=N)continue;
+    let own=0,enemy=0;
+    for(let k=0;k<5;k++){
+      const v=board.get((x+k*dx)+','+(y+k*dy));
+      if(v===perspective)own++;
+      else if(v===1-perspective)enemy++;
+    }
+    if(own&&enemy)continue;
+    if(own)score+=weights[own];
+    else if(enemy)score-=weights[enemy]*1.12;
+  }
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+    const piece=board.get(x+','+y);
+    if(piece!==0&&piece!==1)continue;
+    const sign=piece===perspective?1:-1;
+    for(const[dx,dy]of D){
+      const px=x-dx,py=y-dy;
+      if(px>=0&&px<N&&py>=0&&py<N&&board.get(px+','+py)===piece)continue;
+      let run=0,nx=x,ny=y;
+      while(nx>=0&&nx<N&&ny>=0&&ny<N&&board.get(nx+','+ny)===piece){run++;nx+=dx;ny+=dy}
+      const open=(px>=0&&px<N&&py>=0&&py<N&&!board.has(px+','+py)?1:0)
+        +(nx>=0&&nx<N&&ny>=0&&ny<N&&!board.has(nx+','+ny)?1:0);
+      let value=0;
+      if(run>=5)value=CHAMPION_MATE/2;
+      else if(run===4)value=open===2?65000:open===1?18000:0;
+      else if(run===3)value=open===2?6500:open===1?850:0;
+      else if(run===2)value=open===2?350:open===1?50:0;
+      else if(run===1&&open===2)value=4;
+      score+=sign*value;
+    }
+  }
+  return Math.max(-CHAMPION_MATE/2,Math.min(CHAMPION_MATE/2,score));
+}
+function championRankedMoves(board,p,limit,opponentWins){
+  const all=candidates(board);
+  if(!all.length)return [];
+  const threats=opponentWins instanceof Set?opponentWins:new Set(opponentWins||[]);
+  return all.map(([x,y])=>{
+    const key=x+','+y;
+    let score=scoreMove(board,x,y,p,threats);
+    score+=ev(board,x,y,1-p)*.12;
+    score-=(Math.abs(x-(N-1)/2)+Math.abs(y-(N-1)/2))*.015;
+    return {x,y,score};
+  }).sort((a,b)=>b.score-a.score).slice(0,limit).map(m=>[m.x,m.y]);
+}
+function championSearch(board,turn,perspective,depth,alpha,beta,lastMove,extensions=1){
+  if(lastMove&&wouldWin(board,lastMove[0],lastMove[1],1-turn)){
+    return (1-turn===perspective?1:-1)*(CHAMPION_MATE+depth);
+  }
+  const currentWins=winningMoves(board,turn);
+  if(currentWins.length)return (turn===perspective?1:-1)*(CHAMPION_MATE+depth);
+  const opponentWins=winningMoves(board,1-turn);
+  if(opponentWins.length>=2)return (1-turn===perspective?1:-1)*(CHAMPION_MATE+depth);
+  const forcedBlock=opponentWins.length===1;
+  if(depth<=0&&!(forcedBlock&&extensions>0))return championEvaluate(board,perspective);
+  const moves=forcedBlock
+    ? [opponentWins[0].split(',').map(Number)]
+    : championRankedMoves(board,turn,depth>=3?8:depth===2?7:5,new Set(opponentWins));
+  if(!moves.length)return championEvaluate(board,perspective);
+  const maximizing=turn===perspective;
+  let best=maximizing?-Infinity:Infinity;
+  for(const[x,y]of moves){
+    const next=new Map(board);next.set(x+','+y,turn);
+    const nextDepth=depth>0?depth-1:0;
+    const nextExtensions=depth<=0?extensions-1:extensions;
+    const value=championSearch(next,1-turn,perspective,nextDepth,alpha,beta,[x,y],nextExtensions);
+    if(maximizing){if(value>best)best=value;if(best>alpha)alpha=best}
+    else{if(value<best)best=value;if(best<beta)beta=best}
+    if(beta<=alpha)break;
+  }
+  return best;
+}
+function championBotMove(board,p){
+  const ownWins=winningMoves(board,p);
+  if(ownWins.length)return ownWins[0].split(',').map(Number);
+  const enemyWins=winningMoves(board,1-p);
+  if(enemyWins.length===1)return enemyWins[0].split(',').map(Number);
+  const ranked=championRankedMoves(board,p,24,new Set(enemyWins));
+  if(!ranked.length)return [Math.floor(N/2),Math.floor(N/2)];
+  for(const[x,y]of ranked){
+    const next=new Map(board);next.set(x+','+y,p);
+    if(winningMoves(next,1-p).length)continue;
+    if(winningMoves(next,p).length>=2)return [x,y];
+  }
+  let choice=ranked[0],best=-Infinity;
+  for(const[x,y]of ranked.slice(0,12)){
+    const next=new Map(board);next.set(x+','+y,p);
+    const value=championSearch(next,1-p,p,3,-Infinity,Infinity,[x,y],2);
+    if(value>best){best=value;choice=[x,y]}
+    if(best>=CHAMPION_MATE+2)break;
+  }
+  return choice;
+}
 function botMove(b,p,noise=0,elo=1500){
+  if(elo>=9500)return championBotMove(b,p);
   let c=candidates(b);
   if(!c.length)return [Math.floor(N/2),Math.floor(N/2)];
   // Ưu tiên thắng ngay và chặn nước thắng trực tiếp của đối thủ.
@@ -1762,10 +1868,11 @@ function botMove(b,p,noise=0,elo=1500){
   const best=ranked[0][2];
   if(noise>0){const pool=ranked.filter(a=>a[2]>=best-noise).slice(0,12);if(pool.length){const k=pool[Math.floor(Math.random()*pool.length)];return[k[0],k[1]]}}
   const top=ranked.filter(a=>a[2]===best),q=top[Math.floor(Math.random()*top.length)]||ranked[0];return[q[0],q[1]]
+
 }
 function botNoise(elo){return clamp((3000-Math.min(3000,elo))*2.4,0,7198)}
 function botMistakeChance(elo){const n=clamp(Number(elo)||1,1,10000);if(n>=3000)return 0;const weakness=(3000-n)/2999;return .42*weakness*weakness}
-function botDifficultyText(elo){return elo<=300?'Rất dễ':elo<=700?'Dễ':elo<=1100?'Bình thường':elo<=1500?'Khá':elo<=2000?'Khó':elo<=2500?'Rất khó':elo<4000?'Cực khó':elo<7000?'Siêu khó':elo<9500?'Thần cấp':'ELO 10000 · MAX'}
+function botDifficultyText(elo){return elo<=300?'Rất dễ':elo<=700?'Dễ':elo<=1100?'Bình thường':elo<=1500?'Khá':elo<=2000?'Khó':elo<=2500?'Rất khó':elo<4000?'Cực khó':elo<7000?'Siêu khó':elo<9500?'Thần cấp':'Máy tuyển thủ · tìm kiếm sâu'}
 function updateBotEloDisplay(elo){const n=clamp(Math.round(Number(elo)||1),1,10000);$('botEloLabel').textContent=`${n} ELO`;$('botEloDesc').textContent=`${botDifficultyText(n)} · ELO máy chỉ điều chỉnh độ khó, không đổi ELO của bạn ở chế độ luyện.`;return n}
 function startGame(mode){
   if(!me.name){showOv();return}
@@ -1952,6 +2059,16 @@ $('bBot').onclick=()=>{
   if(opening)$('botEloInput').focus();
 };
 $('bStartBot').onclick=()=>{
+  $('botPanel').hidden=true;
+  $('bBot').textContent='Đấu máy';
+  startGame('bot');
+};
+$('bStartChampionBot').onclick=()=>{
+  if(!me.name){showOv();return}
+  $('botEloRange').value='10000';
+  $('botEloInput').value='10000';
+  localStorage.setItem('caroBotElo','10000');
+  updateBotEloDisplay(10000);
   $('botPanel').hidden=true;
   $('bBot').textContent='Đấu máy';
   startGame('bot');
