@@ -1425,8 +1425,8 @@ io.on('connection', socket => {
         throw new Error('Thao tác ghi không hợp lệ.');
       }
       version++;
-      await persistState();
       notifySubscribers(path);
+      await persistState();
       const changedGameId = path.split('/')[1];
       if (path.split('/')[0] === 'games' && changedGameId && data.games[changedGameId] && data.games[changedGameId].status === 'over') drainRankedQueue();
       reply(ack, { ok: true, version });
@@ -1447,8 +1447,8 @@ io.on('connection', socket => {
       }
       setAt(path, payload.value);
       version++;
-      await persistState();
       notifySubscribers(path);
+      await persistState();
       const changedGameId = path.split('/')[1];
       if (path.split('/')[0] === 'games' && changedGameId && data.games[changedGameId] && data.games[changedGameId].status === 'over') drainRankedQueue();
       reply(ack, { ok: true, committed: true, version, data: getAt(path) });
