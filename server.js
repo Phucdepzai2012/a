@@ -23,6 +23,8 @@ const accountsByName = new Map();
 const accountsByUid = new Map();
 const sessions = new Map();
 const bannedUids = new Map();
+const accuracyReports = new Map();
+const accuracyReportRateLimits = new Map();
 const loginFailures = new Map();
 const chatRateLimits = new Map();
 const drawOfferCooldowns = new Map();
@@ -50,6 +52,7 @@ function persistentSnapshot() {
     accounts: [...accountsByUid.values()],
     sessions: [...sessions.entries()],
     bans: [...bannedUids.entries()],
+    accuracyReports: [...accuracyReports.entries()],
     roomCreateEvents: [...roomCreateEvents.entries()],
     drawOfferCooldowns: [...drawOfferCooldowns.entries()].filter(([, at]) => Number.isFinite(at) && Date.now() >= at && Date.now() - at < DRAW_OFFER_COOLDOWN_MS),
     adminAudit: adminAudit.slice(-1000),
@@ -89,6 +92,12 @@ function restorePersistentSnapshot(raw) {
   bannedUids.clear();
   for (const item of Array.isArray(saved.bans) ? saved.bans : []) {
     if (Array.isArray(item) && item.length === 2 && typeof item[0] === 'string' && accountsByUid.has(item[0])) bannedUids.set(item[0], item[1]);
+  }
+  accuracyReports.clear();
+  for (const item of Array.isArray(saved.accuracyReports) ? saved.accuracyReports : []) {
+    if (!Array.isArray(item) || typeof item[0] !== 'string' || !item[1] || typeof item[1] !== 'object') continue;
+    const report = item[1];
+    if (accountsByUid.has(String(report.targetUid || '')) && accountsByUid.has(String(report.reporterUid || ''))) accuracyReports.set(item[0], report);
   }
   roomCreateEvents.clear();
   for (const item of Array.isArray(saved.roomCreateEvents) ? saved.roomCreateEvents : []) {
@@ -316,49 +325,41 @@ function hasFiveInMoves(moves, winner) {
 }
 
 function getAdminOverview() {
+  const reports = [...accuracyReports.entries()]
+    .filter(([, report]) => report && report.status === 'pending')
+    .map(([id, report]) => ({ id, ...report }))
+    .sort((a, b) => Number(b.at) - Number(a.at));
+  const reportedUids = new Set(reports.map(report => report.targetUid));
   const users = [...accountsByUid.values()].map(account => {
-    const profile=data.players[account.uid]||{};
-    const ban=bannedUids.get(account.uid);
-    return {uid:account.uid,name:account.name,createdAt:account.createdAt,elo:Number(profile.elo)||1000,w:Number(profile.w)||0,l:Number(profile.l)||0,d:Number(profile.d)||0,banned:!!ban,banReason:ban&&ban.reason||''};
-  }).sort((a,b)=>b.elo-a.elo);
-  const matches=[];
-  for(const [ownerUid,history] of Object.entries(data.history||{})){
-    if(!history||typeof history!=='object')continue;
-    for(const [key,record] of Object.entries(history)){
-      if(!record||typeof record!=='object')continue;
-      matches.push({id:key,timestamp:Number(record.timestamp)||0,playerUid:ownerUid,playerName:String(record.playerName||data.players[ownerUid]?.name||'Người chơi'),opponentUid:String(record.opponentUid||''),opponentName:String(record.opponentName||'Đối thủ'),gameType:String(record.gameType||'Caro'),result:String(record.result||''),eloBefore:Number(record.playerEloBefore)||1000,eloAfter:Number(record.playerEloAfter)||1000,moveCount:Number(record.moveCount)||0,durationMs:Number(record.durationMs)||0});
-    }
-  }
-  matches.sort((a,b)=>b.timestamp-a.timestamp);
-  const uniqueMatches=new Map();
-  for(const match of matches){
-    const id=match.id.startsWith('g_')?match.id:`${match.playerUid}:${match.id}`;
-    if(!uniqueMatches.has(id))uniqueMatches.set(id,match);
-  }
-  const ranked=[...uniqueMatches.values()].filter(m=>m.gameType==='Xếp hạng'&&m.timestamp>Date.now()-24*60*60*1000&&m.opponentUid);
-  const pairs=new Map();
-  for(const match of ranked){
-    const ids=[match.playerUid,match.opponentUid].sort();
-    const key=ids.join('|');
-    if(!pairs.has(key))pairs.set(key,{uids:ids,games:0,names:[match.playerName,match.opponentName],lastAt:0});
-    const pair=pairs.get(key);pair.games++;pair.lastAt=Math.max(pair.lastAt,match.timestamp);
-  }
-  const alerts=[...pairs.values()].filter(pair=>pair.games>=4).map(pair=>({
-    type:'repeat_ranked_pair',uids:pair.uids,games:pair.games,lastAt:pair.lastAt,
-    message:`${pair.names.join(' / ')} đã có ${pair.games} trận xếp hạng trong 24 giờ qua; cần kiểm tra thủ công.`
-  }));
-  for(const [uid,times] of roomCreateEvents.entries()){
-    const recent=times.filter(t=>t>Date.now()-5*60*1000);
-    roomCreateEvents.set(uid,recent);
-    if(recent.length>=10){
-      const account=accountsByUid.get(uid);
-      alerts.push({type:'room_spam',uids:[uid],games:recent.length,lastAt:Math.max(...recent),message:`${account&&account.name||uid} đã tạo ${recent.length} phòng trong 5 phút; cần kiểm tra thủ công.`});
-    }
-  }
-  alerts.sort((a,b)=>(b.games||0)-(a.games||0));
-  return {ok:true,configuredAdmin:!!(process.env.ADMIN || process.env.admin || process.env.CARO_ADMIN_PASSWORD),storageMode:persistenceReady?'postgres':'memory',persistentStorage:persistenceReady,totalAccounts:users.length,bannedAccounts:bannedUids.size,users:users.slice(0,200),recentMatches:matches.slice(0,100),alerts:alerts.slice(0,50),audit:adminAudit.slice(-100).reverse(),volatileStorage:!persistenceReady};
+    const profile = data.players[account.uid] || {};
+    const ban = bannedUids.get(account.uid);
+    return {
+      uid: account.uid,
+      name: account.name,
+      createdAt: account.createdAt,
+      elo: Number(profile.elo) || 1000,
+      w: Number(profile.w) || 0,
+      l: Number(profile.l) || 0,
+      d: Number(profile.d) || 0,
+      banned: !!ban,
+      banReason: ban && ban.reason || '',
+      reported: reportedUids.has(account.uid)
+    };
+  }).sort((a, b) => Number(b.reported) - Number(a.reported) || Number(b.banned) - Number(a.banned) || b.elo - a.elo);
+  return {
+    ok: true,
+    configuredAdmin: !!(process.env.ADMIN || process.env.admin || process.env.CARO_ADMIN_PASSWORD),
+    storageMode: persistenceReady ? 'postgres' : 'memory',
+    persistentStorage: persistenceReady,
+    totalAccounts: users.length,
+    bannedAccounts: bannedUids.size,
+    totalReports: reports.length,
+    users: users.slice(0, 500),
+    reports: reports.slice(0, 100),
+    audit: adminAudit.slice(-100).reverse(),
+    volatileStorage: !persistenceReady
+  };
 }
-
 
 function isActiveRankedGame(gid, game, now = Date.now()) {
   if (!game || /^\d{4}$/.test(String(gid)) || game.roomCode || game.status !== 'play' || !Array.isArray(game.p) || game.p.length !== 2) return false;
@@ -1069,28 +1070,183 @@ io.on('connection', socket => {
     }
   });
 
+  socket.on('accuracy:report', async (payload, ack) => {
+    try {
+      const reporterUid = requireSession(payload);
+      if (reporterUid === ADMIN_UID) throw new Error('Tài khoản quản trị không thể gửi báo cáo này.');
+      const gid = String(payload && payload.gid || '').trim();
+      const targetUid = String(payload && payload.targetUid || '').trim();
+      const accuracy = Number(payload && payload.accuracy);
+      const game = data.games[gid];
+      if (!gid.startsWith('-R') || !game || game.roomCode || /^d{4}$/.test(gid) || game.status !== 'over' || !game.ratingResult || !Array.isArray(game.p) || game.p.length !== 2) {
+        throw new Error('Chỉ gửi yêu cầu kiểm tra cho trận xếp hạng đã kết thúc và đã xác nhận ELO.');
+      }
+      const reporterIndex = game.p.findIndex(player => player && player.uid === reporterUid);
+      const targetIndex = game.p.findIndex(player => player && player.uid === targetUid);
+      if (reporterIndex < 0 || targetIndex !== 1 - reporterIndex || !accountsByUid.has(targetUid)) {
+        throw new Error('Chỉ được báo cáo đối thủ trong trận của chính bạn.');
+      }
+      if (!Number.isFinite(accuracy) || accuracy < 99 || accuracy > 100) {
+        throw new Error('Chỉ nhận yêu cầu có độ chính xác ước tính từ 99% đến 100%.');
+      }
+      const moves = Object.values(game.moves || {}).filter(move => move && Number.isInteger(Number(move.x)) && Number.isInteger(Number(move.y)) && Number(move.p) === Number(move.p));
+      const targetMoves = moves.filter(move => Number(move.p) === targetIndex).length;
+      if (moves.length < 24 || targetMoves < 12) {
+        throw new Error('Ván đấu cần ít nhất 24 nước tổng cộng và 12 nước của đối thủ để tránh báo nhầm từ ván quá ngắn.');
+      }
+      const reportId = gid + ':' + targetUid;
+      if (accuracyReports.has(reportId)) {
+        reply(ack, { ok: true, created: false, duplicate: true });
+        return;
+      }
+      recordRateLimit(accuracyReportRateLimits, reporterUid, 10, 24 * 60 * 60 * 1000, 'Bạn đã gửi quá nhiều yêu cầu kiểm tra trong ngày.');
+      const target = game.p[targetIndex];
+      const reporter = game.p[reporterIndex];
+      accuracyReports.set(reportId, {
+        gameId: gid,
+        targetUid,
+        targetName: String(target.name || accountsByUid.get(targetUid).name),
+        reporterUid,
+        reporterName: String(reporter.name || accountsByUid.get(reporterUid).name),
+        accuracy: Math.round(accuracy * 100) / 100,
+        totalMoves: moves.length,
+        targetMoves,
+        at: Date.now(),
+        status: 'pending',
+        reason: 'Độ chính xác do bộ phân tích chiến thuật trên trình duyệt ước tính từ 99% đến 100%; cần quản trị viên xem xét thủ công.'
+      });
+      version++;
+      await persistState();
+      reply(ack, { ok: true, created: true });
+    } catch (error) {
+      reply(ack, { ok: false, error: error.message || 'Không gửi được yêu cầu kiểm tra.' });
+    }
+  });
+
   socket.on('admin:overview', (payload, ack) => {
     try { requireAdmin(payload); reply(ack, getAdminOverview()); }
-    catch(error) { reply(ack, {ok:false,error:error.message||'Không thể đọc bảng quản trị.'}); }
+    catch (error) { reply(ack, { ok: false, error: error.message || 'Không thể đọc bảng quản trị.' }); }
+  });
+
+  socket.on('admin:report:resolve', async (payload, ack) => {
+    try {
+      requireAdmin(payload);
+      const reportId = String(payload && payload.reportId || '').trim();
+      const status = String(payload && payload.status || '');
+      if (!['reviewed', 'dismissed'].includes(status)) throw new Error('Trạng thái xử lý không hợp lệ.');
+      const report = accuracyReports.get(reportId);
+      if (!report || report.status !== 'pending') throw new Error('Yêu cầu đã được xử lý hoặc không còn tồn tại.');
+      report.status = status;
+      report.reviewedAt = Date.now();
+      report.reviewedBy = ADMIN_USERNAME;
+      adminAudit.push({
+        at: report.reviewedAt,
+        action: status === 'reviewed' ? 'accuracy_report_reviewed' : 'accuracy_report_dismissed',
+        targetUid: report.targetUid,
+        targetName: report.targetName,
+        reason: 'Độ chính xác ước tính ' + report.accuracy + '% · ' + report.gameId
+      });
+      version++;
+      await persistState();
+      reply(ack, { ok: true });
+    } catch (error) {
+      reply(ack, { ok: false, error: error.message || 'Không thể xử lý yêu cầu.' });
+    }
   });
 
   socket.on('admin:ban', async (payload, ack) => {
     try {
       requireAdmin(payload);
-      const uid=String(payload&&payload.uid||'').trim();
-      const shouldBan=payload&&payload.banned===true;
-      if(!uid||uid===ADMIN_UID||!accountsByUid.has(uid))throw new Error('Không tìm thấy tài khoản để thao tác.');
-      if(shouldBan){
-        const reason=String(payload&&payload.reason||'Vi phạm quy định').trim().slice(0,200)||'Vi phạm quy định';
-        bannedUids.set(uid,{reason,at:Date.now()});
-        adminAudit.push({at:Date.now(),action:'ban',targetUid:uid,targetName:accountsByUid.get(uid).name,reason});
-      }else{
+      const uid = String(payload && payload.uid || '').trim();
+      const shouldBan = payload && payload.banned === true;
+      if (!uid || uid === ADMIN_UID || !accountsByUid.has(uid)) throw new Error('Không tìm thấy tài khoản để thao tác.');
+      const account = accountsByUid.get(uid);
+      if (shouldBan) {
+        const reason = String(payload && payload.reason || 'Vi phạm quy định').trim().slice(0, 200) || 'Vi phạm quy định';
+        bannedUids.set(uid, { reason, at: Date.now() });
+        adminAudit.push({ at: Date.now(), action: 'permanent_ban', targetUid: uid, targetName: account.name, reason });
+        for (const [token, sessionUid] of sessions.entries()) if (sessionUid === uid) sessions.delete(token);
+        rankedQueue.delete(uid);
+        for (const client of io.sockets.sockets.values()) {
+          if (client.data && client.data.uid === uid) {
+            client.emit('auth:revoked', { reason: 'Tài khoản đã bị khóa bởi quản trị viên.' });
+            client.disconnect(true);
+          }
+        }
+        notifyPresenceChange(uid);
+        broadcastRankedQueueStatus();
+        drainRankedQueue();
+      } else {
         bannedUids.delete(uid);
-        adminAudit.push({at:Date.now(),action:'unban',targetUid:uid,targetName:accountsByUid.get(uid).name});
+        adminAudit.push({ at: Date.now(), action: 'unban', targetUid: uid, targetName: account.name, reason: 'Mở khóa theo quyết định quản trị' });
       }
+      version++;
       await persistState();
-      reply(ack,{ok:true,uid,banned:bannedUids.has(uid)});
-    }catch(error){reply(ack,{ok:false,error:error.message||'Không thể khóa tài khoản.'})}
+      reply(ack, { ok: true, uid, banned: bannedUids.has(uid) });
+    } catch (error) {
+      reply(ack, { ok: false, error: error.message || 'Không thể khóa tài khoản.' });
+    }
+  });
+
+  socket.on('admin:delete-account', async (payload, ack) => {
+    try {
+      requireAdmin(payload);
+      const uid = String(payload && payload.uid || '').trim();
+      if (!uid || uid === ADMIN_UID || !accountsByUid.has(uid)) throw new Error('Không tìm thấy tài khoản để xóa.');
+      const account = accountsByUid.get(uid);
+      const deletedAt = Date.now();
+
+      for (const [token, sessionUid] of sessions.entries()) if (sessionUid === uid) sessions.delete(token);
+      rankedQueue.delete(uid);
+      for (const client of io.sockets.sockets.values()) {
+        if (client.data && client.data.uid === uid) {
+          client.emit('auth:revoked', { reason: 'Tài khoản đã bị xóa vĩnh viễn bởi quản trị viên.' });
+          client.disconnect(true);
+        }
+      }
+
+      accountsByUid.delete(uid);
+      accountsByName.delete(account.key);
+      delete data.players[uid];
+      delete data.history[uid];
+      delete data.invite[uid];
+      for (const [key, value] of Object.entries(data.invite || {})) {
+        if (value && (value.uid === uid || value.targetUid === uid || value.fromUid === uid)) delete data.invite[key];
+      }
+      for (const [gid, game] of Object.entries(data.games || {})) {
+        if (game && Array.isArray(game.p) && game.p.some(player => player && player.uid === uid)) delete data.games[gid];
+      }
+      const social = socialStore();
+      delete social.friends[uid];
+      delete social.requests[uid];
+      for (const relations of Object.values(social.friends)) if (relations && typeof relations === 'object') delete relations[uid];
+      for (const requests of Object.values(social.requests)) if (requests && typeof requests === 'object') delete requests[uid];
+      for (const history of Object.values(data.history || {})) {
+        if (!history || typeof history !== 'object') continue;
+        for (const record of Object.values(history)) {
+          if (record && record.opponentUid === uid) {
+            record.opponentUid = '';
+            record.opponentName = 'Tài khoản đã xóa';
+          }
+        }
+      }
+      bannedUids.delete(uid);
+      roomCreateEvents.delete(uid);
+      drawOfferCooldowns.delete(uid);
+      for (const [reportId, report] of accuracyReports.entries()) {
+        if (report && (report.targetUid === uid || report.reporterUid === uid)) accuracyReports.delete(reportId);
+      }
+
+      adminAudit.push({ at: deletedAt, action: 'account_deleted_permanently', targetUid: uid, targetName: account.name, reason: 'Đã xóa tài khoản, hồ sơ, lịch sử riêng và quan hệ xã hội.' });
+      version++;
+      notifySubscribers();
+      await persistState();
+      broadcastRankedQueueStatus();
+      drainRankedQueue();
+      reply(ack, { ok: true, uid, deleted: true });
+    } catch (error) {
+      reply(ack, { ok: false, error: error.message || 'Không thể xóa tài khoản.' });
+    }
   });
 
   socket.on('ranked:finish', async (payload, ack) => {
