@@ -192,6 +192,16 @@ function requireAdmin(payload) {
   return uid;
 }
 
+function isPlayerOnline(uid) {
+  if (!uid || uid === ADMIN_UID) return false;
+  for (const client of io.sockets.sockets.values()) {
+    if (!client.connected || !client.data || client.data.uid !== uid) continue;
+    const token = String(client.data.sessionToken || '');
+    if (token && sessions.get(token) === uid) return true;
+  }
+  return false;
+}
+
 function publicProfile(uid) {
   if (!uid || uid === ADMIN_UID || !accountsByUid.has(uid)) return null;
   const profile = data.players[uid] || {};
@@ -202,7 +212,8 @@ function publicProfile(uid) {
     elo: Number(profile.elo) || 1000,
     w: Number(profile.w) || 0,
     l: Number(profile.l) || 0,
-    d: Number(profile.d) || 0
+    d: Number(profile.d) || 0,
+    online: isPlayerOnline(uid)
   };
 }
 
@@ -246,6 +257,19 @@ function notifySocialUser(uid) {
   if (!uid) return;
   for (const client of io.sockets.sockets.values()) {
     if (client.data && client.data.uid === uid) client.emit('social:update', { at: Date.now() });
+  }
+}
+
+function notifyPresenceChange(uid) {
+  if (!uid || uid === ADMIN_UID) return;
+  const at = Date.now();
+  // Refresh friend lists and currently visible player search results.
+  for (const client of io.sockets.sockets.values()) {
+    const clientUid = client.data && client.data.uid;
+    const token = String(client.data && client.data.sessionToken || '');
+    if (client.connected && clientUid && clientUid !== ADMIN_UID && token && sessions.get(token) === clientUid) {
+      client.emit('social:update', { at });
+    }
   }
 }
 
@@ -541,7 +565,9 @@ io.on('connection', socket => {
       notifySubscribers();
       const session = makeAccountSession(uid);
       socket.data.uid = uid;
+      socket.data.sessionToken = session.token;
       await persistState();
+      notifyPresenceChange(uid);
       reply(ack, session);
     } catch (error) {
       reply(ack, { ok: false, error: error.message || 'Không thể đăng ký tài khoản.' });
@@ -565,6 +591,7 @@ io.on('connection', socket => {
         clearLoginFailures(throttleKey);
         const session = makeAdminSession();
         socket.data.uid = session.uid;
+        socket.data.sessionToken = session.token;
         await persistState();
         reply(ack, session);
         return;
@@ -582,7 +609,9 @@ io.on('connection', socket => {
       clearLoginFailures(throttleKey);
       const session = makeAccountSession(uid);
       socket.data.uid = uid;
+      socket.data.sessionToken = session.token;
       await persistState();
+      notifyPresenceChange(uid);
       reply(ack, session);
     } catch (error) {
       recordLoginFailure(throttleKey);
@@ -593,8 +622,12 @@ io.on('connection', socket => {
   socket.on('auth:session', (payload, ack) => {
     try {
       requirePersistentStorage();
+      const previousUid = socket.data.uid;
       const uid = requireSession(payload);
       socket.data.uid = uid;
+      socket.data.sessionToken = String(payload && payload.sessionToken || '');
+      if (previousUid && previousUid !== uid) notifyPresenceChange(previousUid);
+      notifyPresenceChange(uid);
       const profile = data.players[uid] || {};
       const account = uid === ADMIN_UID ? {name:ADMIN_USERNAME} : accountsByUid.get(uid);
       reply(ack, {
@@ -612,7 +645,11 @@ io.on('connection', socket => {
     const token = String(payload && payload.sessionToken || '');
     const uid = sessions.get(token);
     sessions.delete(token);
-    if (socket.data.uid === uid) delete socket.data.uid;
+    if (socket.data.sessionToken === token || socket.data.uid === uid) {
+      delete socket.data.uid;
+      delete socket.data.sessionToken;
+    }
+    notifyPresenceChange(uid);
     try { await persistState(); reply(ack, { ok: true }); }
     catch (error) { reply(ack, { ok: false, error: error.message || 'Không thể lưu trạng thái đăng xuất.' }); }
   });
@@ -1008,7 +1045,14 @@ io.on('connection', socket => {
       const path = String(payload && payload.path || '');
       const query = payload && payload.query || {};
       if (!subId) throw new Error('Thiếu mã đăng ký theo dõi.');
-      if (payload && payload.sessionToken) socket.data.uid = requireSession(payload);
+      if (payload && payload.sessionToken) {
+        const previousUid = socket.data.uid;
+        const uid = requireSession(payload);
+        socket.data.uid = uid;
+        socket.data.sessionToken = String(payload.sessionToken);
+        if (previousUid && previousUid !== uid) notifyPresenceChange(previousUid);
+        if (uid !== previousUid) notifyPresenceChange(uid);
+      }
       assertReadAccess(path, payload);
       socket.data.subscriptions.set(subId, { path, query });
       socket.emit('db:value', { subId, data: queryValue(path, query), version });
@@ -1072,6 +1116,11 @@ io.on('connection', socket => {
     } catch (error) {
       reply(ack, { ok: false, error: error.message || 'Lỗi transaction.' });
     }
+  });
+
+  socket.on('disconnect', () => {
+    const uid = socket.data && socket.data.uid;
+    if (uid && uid !== ADMIN_UID && !isPlayerOnline(uid)) notifyPresenceChange(uid);
   });
 });
 
