@@ -1720,9 +1720,18 @@ function win(b,x,y){const p=b.get(x+','+y);for(const[dx,dy]of D){const L=[[x,y]]
 function wouldWin(b,x,y,p){for(const[dx,dy]of D){let n=1;for(const s of[1,-1]){let i=x+dx*s,j=y+dy*s;while(b.get(i+','+j)===p){n++;i+=dx*s;j+=dy*s}}if(n>=5)return true}return false}
 const h=(x,y,k)=>{const s=Math.sin(x*12.9898+y*78.233+k*37.7)*43758.5453;return s-Math.floor(s)-.5};
 const cam={x:N/2,y:N/2,s:36};
+let drawFramePending=false;
+function scheduleDraw(){
+  if(drawFramePending)return;
+  drawFramePending=true;
+  requestAnimationFrame(()=>{drawFramePending=false;draw()});
+}
 function draw(){
-  const W=cv.clientWidth,H=cv.clientHeight,d=window.devicePixelRatio||1;
-  cv.width=Math.round(W*d);cv.height=Math.round(H*d);cx.setTransform(d,0,0,d,0,0);
+  const W=cv.clientWidth,H=cv.clientHeight,d=Math.min(window.devicePixelRatio||1,2);
+  const pixelW=Math.max(1,Math.round(W*d)),pixelH=Math.max(1,Math.round(H*d));
+  if(cv.width!==pixelW||cv.height!==pixelH){cv.width=pixelW;cv.height=pixelH}
+  cx.setTransform(d,0,0,d,0,0);
+  cx.clearRect(0,0,W,H);
   const c=cam.s,ox=W/2-cam.x*c,oy=H/2-cam.y*c;
   cx.strokeStyle='#9fc3dc';cx.lineWidth=1;cx.beginPath();
   for(let i=0;i<=N;i++){const X=Math.round(ox+i*c)+.5;cx.moveTo(X,oy);cx.lineTo(X,oy+N*c)}
@@ -2629,11 +2638,11 @@ $('reviewList').addEventListener('click',e=>{
 /* ---------- Kéo, cuộn và chụm để di chuyển/zoom ---------- */
 const ptr=new Map();let moved=0,pinch=0;
 const dist=()=>{const[a,b]=[...ptr.values()];return Math.hypot(a[0]-b[0],a[1]-b[1])};
-function zoomAt(px,py,f){const r=cv.getBoundingClientRect(),W=r.width,H=r.height,old=cam.s,wx=cam.x+(px-W/2)/old,wy=cam.y+(py-H/2)/old;cam.s=Math.min(90,Math.max(12,old*f));cam.x=wx-(px-W/2)/cam.s;cam.y=wy-(py-H/2)/cam.s;draw()}
+function zoomAt(px,py,f){const r=cv.getBoundingClientRect(),W=r.width,H=r.height,old=cam.s,wx=cam.x+(px-W/2)/old,wy=cam.y+(py-H/2)/old;cam.s=Math.min(90,Math.max(12,old*f));cam.x=wx-(px-W/2)/cam.s;cam.y=wy-(py-H/2)/cam.s;scheduleDraw()}
 cv.onpointerdown=e=>{cv.setPointerCapture(e.pointerId);ptr.set(e.pointerId,[e.clientX,e.clientY]);moved=0;if(ptr.size===2)pinch=dist()};
 cv.onpointermove=e=>{if(!ptr.has(e.pointerId))return;const p=ptr.get(e.pointerId),dx=e.clientX-p[0],dy=e.clientY-p[1];ptr.set(e.pointerId,[e.clientX,e.clientY]);
   if(ptr.size===2){const d=dist(),r=cv.getBoundingClientRect(),[a,b]=[...ptr.values()];zoomAt((a[0]+b[0])/2-r.left,(a[1]+b[1])/2-r.top,d/(pinch||d));pinch=d;moved=99;return}
-  moved+=Math.abs(dx)+Math.abs(dy);if(moved>8){cam.x-=dx/cam.s;cam.y-=dy/cam.s;draw()}};
+  moved+=Math.abs(dx)+Math.abs(dy);if(moved>8){cam.x-=dx/cam.s;cam.y-=dy/cam.s;scheduleDraw()}};
 cv.onpointerup=e=>{const one=ptr.size===1;ptr.delete(e.pointerId);if(!one||moved>8||!G||G.over||G.turn!==G.mine)return;
   const r=cv.getBoundingClientRect(),x=Math.floor(cam.x+(e.clientX-r.left-r.width/2)/cam.s),y=Math.floor(cam.y+(e.clientY-r.top-r.height/2)/cam.s);if(x>=0&&x<N&&y>=0&&y<N&&!G.board.has(x+','+y))playerMove(x,y)};
 cv.onpointercancel=e=>ptr.delete(e.pointerId);
