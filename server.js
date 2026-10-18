@@ -48,7 +48,7 @@ let version = 0;
 
 function persistentSnapshot() {
   return {
-    data: clone(data),
+    data,
     accounts: [...accountsByUid.values()],
     sessions: [...sessions.entries()],
     bans: [...bannedUids.entries()],
@@ -641,15 +641,24 @@ function queryValue(path, query = {}) {
   return Object.fromEntries(entries);
 }
 
-function notifySubscribers() {
+function pathsOverlap(a, b) {
+  const left = String(a || '').split('/').filter(Boolean).join('/');
+  const right = String(b || '').split('/').filter(Boolean).join('/');
+  return !left || !right || left === right || left.startsWith(right + '/') || right.startsWith(left + '/');
+}
+
+function notifySubscribers(changedPaths = null) {
+  const paths = changedPaths == null ? null : (Array.isArray(changedPaths) ? changedPaths : [changedPaths])
+    .map(path => String(path || '').split('/').filter(Boolean).join('/'))
+    .filter(Boolean);
   for (const client of io.sockets.sockets.values()) {
     const subs = client.data.subscriptions;
     if (!subs) continue;
     for (const [subId, sub] of subs.entries()) {
+      if (paths && !paths.some(path => pathsOverlap(sub.path, path))) continue;
       client.emit('db:value', { subId, data: queryValue(sub.path, sub.query), version });
     }
   }
-  schedulePersist();
 }
 
 function reply(ack, result) {
@@ -677,7 +686,7 @@ io.on('connection', socket => {
       accountsByUid.set(uid, account);
       data.players[uid] = { name, elo: 1000, w: 0, l: 0, d: 0 };
       version++;
-      notifySubscribers();
+      notifySubscribers('players/' + uid);
       const session = makeAccountSession(uid);
       socket.data.uid = uid;
       socket.data.sessionToken = session.token;
@@ -832,7 +841,7 @@ io.on('connection', socket => {
       const profile = data.players[uid] || (data.players[uid] = { name: accountsByUid.get(uid).name, elo: 1000, w: 0, l: 0, d: 0 });
       profile.avatar = avatar;
       version++;
-      notifySubscribers();
+      notifySubscribers('players/' + uid);
       notifySocialUser(uid);
       const social = socialStore();
       for (const friendUid of Object.keys(social.friends[uid] || {})) notifySocialUser(friendUid);
@@ -989,7 +998,7 @@ io.on('connection', socket => {
       game.chat.push(message);
       if (game.chat.length > 100) game.chat.splice(0, game.chat.length - 100);
       version++;
-      notifySubscribers();
+      notifySubscribers('games/' + gid + '/chat');
       await persistState();
       reply(ack, { ok: true, message });
     } catch (error) {
@@ -1029,7 +1038,7 @@ io.on('connection', socket => {
       };
       game.drawResponse = null;
       version++;
-      notifySubscribers();
+      notifySubscribers(['games/' + gid + '/drawOffer', 'games/' + gid + '/drawResponse']);
       await persistState();
       reply(ack, { ok: true, gid, drawOffer: game.drawOffer, cooldownUntil: now + DRAW_OFFER_COOLDOWN_MS });
     } catch (error) {
@@ -1061,7 +1070,7 @@ io.on('connection', socket => {
         game.drawAgreedAt = now;
       }
       version++;
-      notifySubscribers();
+      notifySubscribers('games/' + gid);
       await persistState();
       if (accept) drainRankedQueue();
       reply(ack, { ok: true, accepted: accept, gid });
@@ -1293,7 +1302,8 @@ io.on('connection', socket => {
         playerResults[player.uid]={elo:after,w:profile.w,l:profile.l,d:profile.d,before};
       }
       game.ratingResult={winnerUid,reason,at:Date.now(),playerResults};
-      version++;notifySubscribers();
+      version++;
+      notifySubscribers(['games/' + gid, 'players/' + game.p[0].uid, 'players/' + game.p[1].uid]);
       await persistState();
       drainRankedQueue();
       const result=playerResults[callerUid];
@@ -1321,7 +1331,7 @@ io.on('connection', socket => {
       if(recent.length===10)adminAudit.push({at:createdAt,action:'room_spam_warning',targetUid:uid,targetName:name,count:recent.length,reason:'10 phòng được tạo trong vòng 5 phút'});
       data.games[code] = { roomCode: code, p: [{ uid, name, elo }], moves: {}, turn: 0, status: 'waiting', dl: 0, createdAt };
       version++;
-      notifySubscribers();
+      notifySubscribers('games/' + code);
       await persistState();
       reply(ack, { ok: true, code });
     } catch (error) { reply(ack, { ok: false, error: error.message || 'Không tạo được phòng.' }); }
@@ -1345,7 +1355,8 @@ io.on('connection', socket => {
       game.p.push({ uid, name, elo });
       if (Math.random() < 0.5) game.p.reverse();
       game.status = 'play'; game.turn = 0; game.dl = Date.now() + 30000;
-      version++; notifySubscribers();
+      version++;
+      notifySubscribers('games/' + code);
       await persistState();
       reply(ack, { ok: true, code });
     } catch (error) { reply(ack, { ok: false, error: error.message || 'Không thể vào phòng.' }); }
@@ -1414,8 +1425,8 @@ io.on('connection', socket => {
         throw new Error('Thao tác ghi không hợp lệ.');
       }
       version++;
-      notifySubscribers();
       await persistState();
+      notifySubscribers(path);
       const changedGameId = path.split('/')[1];
       if (path.split('/')[0] === 'games' && changedGameId && data.games[changedGameId] && data.games[changedGameId].status === 'over') drainRankedQueue();
       reply(ack, { ok: true, version });
@@ -1436,8 +1447,8 @@ io.on('connection', socket => {
       }
       setAt(path, payload.value);
       version++;
-      notifySubscribers();
       await persistState();
+      notifySubscribers(path);
       const changedGameId = path.split('/')[1];
       if (path.split('/')[0] === 'games' && changedGameId && data.games[changedGameId] && data.games[changedGameId].status === 'over') drainRankedQueue();
       reply(ack, { ok: true, committed: true, version, data: getAt(path) });
