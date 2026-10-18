@@ -610,16 +610,16 @@ body.study-modal-open{overflow:hidden}
 .menu-backdrop{position:absolute;inset:0;z-index:-3;background:radial-gradient(ellipse at 77% 48%,#24385c 0%,#111a2e 34%,#080d19 72%);background-color:#080d19}
 .menu-backdrop:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(129,167,219,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(129,167,219,.055) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(90deg,transparent,#000 60%,#000)}
 .menu-lights{position:absolute;inset:-10%;z-index:-2;pointer-events:none;opacity:var(--menu-light-opacity,.9);filter:brightness(var(--menu-light,1));background:radial-gradient(ellipse at 72% 35%,rgba(56,130,255,.25),transparent 44%),radial-gradient(ellipse at 93% 79%,rgba(15,210,210,.13),transparent 36%)}
-.menu-copy{position:relative;z-index:4;align-self:center;padding:clamp(28px,6.5vw,96px);padding-right:16px;width:100%;max-width:690px}
+.menu-copy{position:relative;z-index:4;align-self:start;padding:clamp(28px,5.5vh,64px) clamp(28px,6.5vw,96px) 24px;padding-right:16px;width:100%;max-width:690px}
 .menu-brand{display:flex;align-items:baseline;gap:5px;font-size:clamp(30px,4vw,48px);font-weight:900;letter-spacing:-.07em;line-height:1;color:#fff}
 .menu-brand span{color:#59a4ff;text-shadow:0 0 24px rgba(65,143,255,.75)}
 .menu-brand i{margin-left:12px;font-style:normal;font-size:9px;letter-spacing:.22em;color:#9fb6d6}
-.menu-kicker{display:flex;align-items:center;gap:9px;margin-top:clamp(32px,6vh,62px);font-size:10px;font-weight:800;letter-spacing:.16em;color:#9fb6d6}
+.menu-kicker{display:flex;align-items:center;gap:9px;margin-top:clamp(24px,3.6vh,42px);font-size:10px;font-weight:800;letter-spacing:.16em;color:#9fb6d6}
 .menu-live-dot{display:inline-block;width:7px;height:7px;flex:none;border-radius:50%;background:#62f5c0;box-shadow:0 0 12px rgba(98,245,192,.8)}
 .menu-title{margin:15px 0 10px;font-size:clamp(36px,5.2vw,67px);line-height:.99;letter-spacing:-.065em;font-weight:900;color:#fff}
 .menu-title em{font-style:normal;color:#72afff;text-shadow:0 0 34px rgba(67,130,255,.28)}
 .menu-subtitle{margin:0;color:#aebbd0;font-size:clamp(12px,1.3vw,15px)}
-.menu-guest-note{margin-top:20px;display:inline-flex;align-items:center;padding:10px 13px;border:1px solid rgba(149,180,226,.22);border-radius:9px;background:rgba(14,24,43,.62);color:#a9bddb;font-size:12px}
+.menu-guest-note{display:none}
 .menu-actions{display:none;flex-direction:column;gap:10px;width:min(390px,100%);margin-top:clamp(25px,4vh,38px)}
 #mainMenu.menu-authenticated .menu-actions{display:flex}
 #mainMenu.menu-authenticated .menu-guest-note{display:none}
@@ -676,7 +676,7 @@ body.study-modal-open{overflow:hidden}
 .menu-pop-actions .menu-save{border-color:#4b90fb;background:linear-gradient(110deg,#2165df,#388cff);color:white}
 .menu-pop-actions .menu-exit-action{background:linear-gradient(110deg,#be3547,#e34e62);border-color:#ed7380}
 .menu-exit-note{color:#ffc0c6;font-size:11px;min-height:1.2em}
-#ov{position:fixed;inset:auto auto auto clamp(18px,6.5vw,92px);top:36vh;z-index:20;width:min(405px,calc(45vw - 22px));padding:0;transform:none;align-items:flex-start;justify-content:flex-start;background:transparent;pointer-events:none}
+#ov{position:fixed;inset:auto auto auto clamp(18px,6.5vw,92px);top:clamp(310px,39vh,420px);z-index:20;width:min(405px,calc(45vw - 22px));padding:0;transform:none;align-items:flex-start;justify-content:flex-start;background:transparent;pointer-events:none}
 #ov[hidden]{display:none!important}
 #ov>div{width:100%;max-width:none;padding:20px;border:1px solid rgba(126,168,229,.3);border-radius:16px;background:linear-gradient(145deg,rgba(17,29,49,.97),rgba(9,15,28,.97));color:#f5f8ff;box-shadow:0 22px 64px rgba(0,0,0,.42),inset 0 1px rgba(255,255,255,.06);pointer-events:auto;backdrop-filter:blur(16px)}
 #ov h1{display:none}
@@ -3106,6 +3106,7 @@ render();
   }
   function syncAccess(){
     const token=!!(function(){try{return localStorage.getItem('caroSessionToken')}catch(_){return ''}}());
+    if(!token&&auth.hidden)auth.hidden=false;
     const signedIn=!!(auth.hidden&&token);
     menu.classList.toggle('menu-authenticated',signedIn);
     menu.classList.toggle('menu-guest',!signedIn);
