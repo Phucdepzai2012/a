@@ -2992,7 +2992,7 @@ render();
   function applySettings(save){
     root.style.setProperty('--blue',settings.x||defaultSettings.x);
     root.style.setProperty('--red',settings.o||defaultSettings.o);
-    root.style.setProperty('--menu-light',String(Number(settings.light||100)/100);
+    root.style.setProperty('--menu-light',String(Number(settings.light||100)/100));
     root.style.setProperty('--menu-light-opacity',String(Math.max(.35,Math.min(1.2,Number(settings.light||100)/100))));
     $menu('menuXColor').value=settings.x||defaultSettings.x;
     $menu('menuOColor').value=settings.o||defaultSettings.o;
