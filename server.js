@@ -356,7 +356,7 @@ function getAdminOverview() {
     }
   }
   alerts.sort((a,b)=>(b.games||0)-(a.games||0));
-  return {ok:true,configuredAdmin:!!process.env.CARO_ADMIN_PASSWORD,storageMode:persistenceReady?'postgres':'memory',persistentStorage:persistenceReady,totalAccounts:users.length,bannedAccounts:bannedUids.size,users:users.slice(0,200),recentMatches:matches.slice(0,100),alerts:alerts.slice(0,50),audit:adminAudit.slice(-100).reverse(),volatileStorage:!persistenceReady};
+  return {ok:true,configuredAdmin:!!(process.env.ADMIN || process.env.admin || process.env.CARO_ADMIN_PASSWORD),storageMode:persistenceReady?'postgres':'memory',persistentStorage:persistenceReady,totalAccounts:users.length,bannedAccounts:bannedUids.size,users:users.slice(0,200),recentMatches:matches.slice(0,100),alerts:alerts.slice(0,50),audit:adminAudit.slice(-100).reverse(),volatileStorage:!persistenceReady};
 }
 
 
@@ -697,8 +697,8 @@ io.on('connection', socket => {
       assertLoginAllowed(throttleKey);
       const password = String(payload && payload.password || '');
       if (key === ADMIN_NAME_KEY) {
-        const configuredPassword = String(process.env.CARO_ADMIN_PASSWORD || '');
-        if (!configuredPassword) throw new Error('Quản trị viên chưa được cấu hình CARO_ADMIN_PASSWORD trên Render.');
+        const configuredPassword = String(process.env.ADMIN || process.env.admin || process.env.CARO_ADMIN_PASSWORD || '');
+        if (!configuredPassword) throw new Error('Quản trị viên chưa được cấu hình biến môi trường ADMIN trên Render.');
         const suppliedHash=crypto.createHash('sha256').update(password).digest();
         const expectedHash=crypto.createHash('sha256').update(configuredPassword).digest();
         if(!password || !crypto.timingSafeEqual(suppliedHash,expectedHash)) throw new Error('Tên đăng nhập hoặc mật khẩu không đúng.');
