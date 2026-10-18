@@ -35,6 +35,8 @@ const adminAudit = [];
 // Keep ranked matches conservative on Render Free; never allow more than 3 concurrent ranked games.
 const MAX_ACTIVE_RANKED_GAMES = Math.max(1, Math.min(3, Math.floor(Number(process.env.MAX_ACTIVE_RANKED_GAMES) || 2)));
 const MAX_RANKED_QUEUE = 200;
+// Keep a queued player for a short reconnect grace period to survive brief network drops.
+const RANKED_QUEUE_RECONNECT_GRACE_MS = 45 * 1000;
 const rankedQueue = new Map();
 const databaseUrl = String(process.env.DATABASE_URL || '').trim();
 const pool = databaseUrl ? new Pool({ connectionString: databaseUrl, max: 5, connectionTimeoutMillis: 10000 }) : null;
@@ -385,6 +387,7 @@ function findActiveRankedGame(uid) {
 }
 
 function pruneRankedQueue() {
+  const now = Date.now();
   for (const [uid, entry] of rankedQueue.entries()) {
     for (const socketId of [...entry.socketIds]) {
       const client = io.sockets.sockets.get(socketId);
@@ -393,15 +396,26 @@ function pruneRankedQueue() {
         entry.socketIds.delete(socketId);
       }
     }
-    if (!entry.socketIds.size || !accountsByUid.has(uid) || bannedUids.has(uid)) rankedQueue.delete(uid);
+    if (!entry.socketIds.size) {
+      if (!entry.disconnectedAt) entry.disconnectedAt = now;
+      if (now - entry.disconnectedAt > RANKED_QUEUE_RECONNECT_GRACE_MS) rankedQueue.delete(uid);
+    } else {
+      entry.disconnectedAt = 0;
+    }
+    if (!accountsByUid.has(uid) || bannedUids.has(uid)) rankedQueue.delete(uid);
   }
 }
 
-function removeRankedQueueSocket(uid, socketId) {
+function removeRankedQueueSocket(uid, socketId, preserveForReconnect = false) {
   const entry = rankedQueue.get(uid);
   if (!entry || !entry.socketIds.has(socketId)) return false;
   entry.socketIds.delete(socketId);
-  if (!entry.socketIds.size) rankedQueue.delete(uid);
+  if (!entry.socketIds.size) {
+    if (preserveForReconnect) entry.disconnectedAt = Date.now();
+    else rankedQueue.delete(uid);
+  } else {
+    entry.disconnectedAt = 0;
+  }
   return true;
 }
 
@@ -425,9 +439,14 @@ function broadcastRankedQueueStatus() {
 
 function drainRankedQueue() {
   pruneRankedQueue();
-  while (activeRankedGameCount() < MAX_ACTIVE_RANKED_GAMES && rankedQueue.size >= 2) {
-    const selected = [...rankedQueue.values()].sort((a, b) => a.joinedAt - b.joinedAt).slice(0, 2);
-    if (selected.length < 2) break;
+  while (activeRankedGameCount() < MAX_ACTIVE_RANKED_GAMES) {
+    // Only pair players with a live socket. Disconnected entries keep their place briefly,
+    // but must never be matched into a game they cannot enter.
+    const available = [...rankedQueue.values()]
+      .filter(entry => entry.socketIds.size > 0)
+      .sort((a, b) => a.joinedAt - b.joinedAt);
+    if (available.length < 2) break;
+    const selected = available.slice(0, 2);
     for (const entry of selected) rankedQueue.delete(entry.uid);
 
     const players = selected.map(entry => {
@@ -771,11 +790,26 @@ io.on('connection', socket => {
       const previousUid = socket.data.uid;
       const uid = requireSession(payload);
       if (uid === ADMIN_UID) throw new Error('Tài khoản quản trị không thể vào hàng chờ xếp hạng.');
-      if (findActiveRankedGame(uid)) throw new Error('Bạn đang có một trận xếp hạng chưa kết thúc.');
       socket.data.uid = uid;
       socket.data.sessionToken = String(payload && payload.sessionToken || '');
       if (previousUid && previousUid !== uid) notifyPresenceChange(previousUid);
 
+      // A join request may be retried after a lost acknowledgement. Return the existing
+      // match instead of treating that retry as an error.
+      const activeMatch = findActiveRankedGame(uid);
+      if (activeMatch) {
+        rankedQueue.delete(uid);
+        const result = {
+          ok: true, status: 'matched', gid: activeMatch[0], position: 0,
+          waiting: rankedQueue.size, activeGames: activeRankedGameCount(),
+          maxGames: MAX_ACTIVE_RANKED_GAMES
+        };
+        reply(ack, result);
+        socket.emit('ranked:matched', { gid: activeMatch[0] });
+        return;
+      }
+
+      pruneRankedQueue();
       let entry = rankedQueue.get(uid);
       if (!entry && rankedQueue.size >= MAX_RANKED_QUEUE) throw new Error('Hàng chờ đang quá đông. Hãy thử lại sau.');
       if (!entry) {
@@ -783,6 +817,7 @@ io.on('connection', socket => {
         rankedQueue.set(uid, entry);
       }
       entry.socketIds.add(socket.id);
+      entry.disconnectedAt = 0;
       drainRankedQueue();
 
       const matched = findActiveRankedGame(uid);
@@ -1459,7 +1494,8 @@ io.on('connection', socket => {
 
   socket.on('disconnect', () => {
     const uid = socket.data && socket.data.uid;
-    if (uid && removeRankedQueueSocket(uid, socket.id)) drainRankedQueue();
+    // Preserve matchmaking position briefly so Socket.IO can recover from a transient drop.
+    if (uid && removeRankedQueueSocket(uid, socket.id, true)) drainRankedQueue();
     if (uid && uid !== ADMIN_UID && !isPlayerOnline(uid)) notifyPresenceChange(uid);
   });
 });
