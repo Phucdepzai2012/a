@@ -30,6 +30,9 @@ const DRAW_OFFER_COOLDOWN_MS = 45 * 1000;
 const friendRequestRateLimits = new Map();
 const roomCreateEvents = new Map();
 const adminAudit = [];
+const MAX_ACTIVE_RANKED_GAMES = Math.max(1, Math.min(12, Math.floor(Number(process.env.MAX_ACTIVE_RANKED_GAMES) || 3)));
+const MAX_RANKED_QUEUE = 200;
+const rankedQueue = new Map();
 const databaseUrl = String(process.env.DATABASE_URL || '').trim();
 const pool = databaseUrl ? new Pool({ connectionString: databaseUrl, max: 5, connectionTimeoutMillis: 10000 }) : null;
 if (pool) pool.on('error', error => console.error('PostgreSQL pool error:', error.message));
@@ -355,6 +358,115 @@ function getAdminOverview() {
   return {ok:true,configuredAdmin:!!process.env.CARO_ADMIN_PASSWORD,storageMode:persistenceReady?'postgres':'memory',persistentStorage:persistenceReady,totalAccounts:users.length,bannedAccounts:bannedUids.size,users:users.slice(0,200),recentMatches:matches.slice(0,100),alerts:alerts.slice(0,50),audit:adminAudit.slice(-100).reverse(),volatileStorage:!persistenceReady};
 }
 
+
+function isActiveRankedGame(gid, game, now = Date.now()) {
+  if (!game || /^\d{4}$/.test(String(gid)) || game.roomCode || game.status !== 'play' || !Array.isArray(game.p) || game.p.length !== 2) return false;
+  const deadline = Number(game.dl) || Number(game.createdAt) || 0;
+  return !deadline || now - deadline <= 5 * 60 * 1000;
+}
+
+function activeRankedGameCount() {
+  const now = Date.now();
+  let count = 0;
+  for (const [gid, game] of Object.entries(data.games)) {
+    if (isActiveRankedGame(gid, game, now)) count++;
+  }
+  return count;
+}
+
+function findActiveRankedGame(uid) {
+  const now = Date.now();
+  for (const [gid, game] of Object.entries(data.games)) {
+    if (isActiveRankedGame(gid, game, now) && game.p.some(player => player && player.uid === uid)) return [gid, game];
+  }
+  return null;
+}
+
+function pruneRankedQueue() {
+  for (const [uid, entry] of rankedQueue.entries()) {
+    for (const socketId of [...entry.socketIds]) {
+      const client = io.sockets.sockets.get(socketId);
+      if (!client || !client.connected || !client.data || client.data.uid !== uid ||
+          !client.data.sessionToken || sessions.get(client.data.sessionToken) !== uid) {
+        entry.socketIds.delete(socketId);
+      }
+    }
+    if (!entry.socketIds.size || !accountsByUid.has(uid) || bannedUids.has(uid)) rankedQueue.delete(uid);
+  }
+}
+
+function removeRankedQueueSocket(uid, socketId) {
+  const entry = rankedQueue.get(uid);
+  if (!entry || !entry.socketIds.has(socketId)) return false;
+  entry.socketIds.delete(socketId);
+  if (!entry.socketIds.size) rankedQueue.delete(uid);
+  return true;
+}
+
+function broadcastRankedQueueStatus() {
+  pruneRankedQueue();
+  const entries = [...rankedQueue.values()].sort((a, b) => a.joinedAt - b.joinedAt);
+  const activeGames = activeRankedGameCount();
+  entries.forEach((entry, index) => {
+    const status = {
+      position: index + 1,
+      waiting: entries.length,
+      activeGames,
+      maxGames: MAX_ACTIVE_RANKED_GAMES
+    };
+    for (const socketId of entry.socketIds) {
+      const client = io.sockets.sockets.get(socketId);
+      if (client && client.connected) client.emit('ranked:queue:status', status);
+    }
+  });
+}
+
+function drainRankedQueue() {
+  pruneRankedQueue();
+  while (activeRankedGameCount() < MAX_ACTIVE_RANKED_GAMES && rankedQueue.size >= 2) {
+    const selected = [...rankedQueue.values()].sort((a, b) => a.joinedAt - b.joinedAt).slice(0, 2);
+    if (selected.length < 2) break;
+    for (const entry of selected) rankedQueue.delete(entry.uid);
+
+    const players = selected.map(entry => {
+      const account = accountsByUid.get(entry.uid);
+      const profile = data.players[entry.uid] || {};
+      return {
+        uid: entry.uid,
+        name: account ? account.name : String(profile.name || 'Người chơi'),
+        elo: Number(profile.elo) || 1000,
+        avatar: String(profile.avatar || '')
+      };
+    });
+    if (Math.random() < 0.5) players.reverse();
+
+    let gid;
+    do {
+      gid = '-R' + Date.now().toString(36) + crypto.randomBytes(6).toString('hex');
+    } while (data.games[gid]);
+
+    const createdAt = Date.now();
+    data.games[gid] = {
+      p: players,
+      moves: {},
+      turn: 0,
+      status: 'play',
+      dl: createdAt + 30000,
+      createdAt
+    };
+    version++;
+    schedulePersist();
+
+    for (const entry of selected) {
+      for (const socketId of entry.socketIds) {
+        const client = io.sockets.sockets.get(socketId);
+        if (client && client.connected) client.emit('ranked:matched', { gid });
+      }
+    }
+  }
+  broadcastRankedQueueStatus();
+}
+
 function validateGameRootPatch(gid, uid, patch) {
   const game=data.games[gid];
   if(!game||!Array.isArray(game.p)||game.p.length!==2)throw new Error('Không tìm thấy trận đấu hợp lệ.');
@@ -427,6 +539,7 @@ function assertWriteAccess(path, uid, value, mode='patch') {
     if(!gid)throw new Error('Phải chỉ rõ mã trận.');
     const game=data.games[gid];
     if(mode==='set'&&parts.length===2&&!game){
+      if(!/^\d{4}$/.test(gid)&&activeRankedGameCount()>=MAX_ACTIVE_RANKED_GAMES)throw new Error('Máy chủ đang đủ số trận xếp hạng. Hãy dùng hàng chờ để chờ lượt.');
       const p=value&&Array.isArray(value.p)?value.p:[];
       const creator=p[0],opponent=p[1],creatorProfile=creator&&data.players[creator.uid],opponentProfile=opponent&&data.players[opponent.uid];
       const currentTime=Date.now(),deadline=Number(value&&value.dl);
@@ -641,10 +754,62 @@ io.on('connection', socket => {
     }
   });
 
+  socket.on('ranked:queue:join', (payload, ack) => {
+    try {
+      requirePersistentStorage();
+      const previousUid = socket.data.uid;
+      const uid = requireSession(payload);
+      if (uid === ADMIN_UID) throw new Error('Tài khoản quản trị không thể vào hàng chờ xếp hạng.');
+      if (findActiveRankedGame(uid)) throw new Error('Bạn đang có một trận xếp hạng chưa kết thúc.');
+      socket.data.uid = uid;
+      socket.data.sessionToken = String(payload && payload.sessionToken || '');
+      if (previousUid && previousUid !== uid) notifyPresenceChange(previousUid);
+
+      let entry = rankedQueue.get(uid);
+      if (!entry && rankedQueue.size >= MAX_RANKED_QUEUE) throw new Error('Hàng chờ đang quá đông. Hãy thử lại sau.');
+      if (!entry) {
+        entry = { uid, joinedAt: Date.now(), socketIds: new Set() };
+        rankedQueue.set(uid, entry);
+      }
+      entry.socketIds.add(socket.id);
+      drainRankedQueue();
+
+      const matched = findActiveRankedGame(uid);
+      const ordered = [...rankedQueue.values()].sort((a, b) => a.joinedAt - b.joinedAt);
+      const position = ordered.findIndex(item => item.uid === uid);
+      reply(ack, {
+        ok: true,
+        status: matched ? 'matched' : 'queued',
+        gid: matched ? matched[0] : null,
+        position: position >= 0 ? position + 1 : 0,
+        waiting: rankedQueue.size,
+        activeGames: activeRankedGameCount(),
+        maxGames: MAX_ACTIVE_RANKED_GAMES
+      });
+    } catch (error) {
+      reply(ack, { ok: false, error: error.message || 'Không thể vào hàng chờ xếp hạng.' });
+    }
+  });
+
+  socket.on('ranked:queue:cancel', (payload, ack) => {
+    try {
+      const uid = requireSession(payload);
+      const removed = removeRankedQueueSocket(uid, socket.id);
+      if (removed) drainRankedQueue();
+      else broadcastRankedQueueStatus();
+      const matched = !removed ? findActiveRankedGame(uid) : null;
+      reply(ack, { ok: true, matched: !!matched, gid: matched ? matched[0] : null });
+    } catch (error) {
+      reply(ack, { ok: false, error: error.message || 'Không thể huỷ tìm trận.' });
+    }
+  });
+
   socket.on('auth:logout', async (payload, ack) => {
     const token = String(payload && payload.sessionToken || '');
     const uid = sessions.get(token);
     sessions.delete(token);
+    const removedFromQueue = uid ? removeRankedQueueSocket(uid, socket.id) : false;
+    if (removedFromQueue) drainRankedQueue();
     if (socket.data.sessionToken === token || socket.data.uid === uid) {
       delete socket.data.uid;
       delete socket.data.sessionToken;
@@ -896,6 +1061,7 @@ io.on('connection', socket => {
       version++;
       notifySubscribers();
       await persistState();
+      if (accept) drainRankedQueue();
       reply(ack, { ok: true, accepted: accept, gid });
     } catch (error) {
       reply(ack, { ok: false, error: error.message || 'Không thể phản hồi lời xin hòa.' });
@@ -1092,6 +1258,8 @@ io.on('connection', socket => {
       version++;
       notifySubscribers();
       await persistState();
+      const changedGameId = path.split('/')[1];
+      if (path.split('/')[0] === 'games' && changedGameId && data.games[changedGameId] && data.games[changedGameId].status === 'over') drainRankedQueue();
       reply(ack, { ok: true, version });
     } catch (error) {
       reply(ack, { ok: false, error: error.message || 'Lỗi ghi dữ liệu.' });
@@ -1112,6 +1280,8 @@ io.on('connection', socket => {
       version++;
       notifySubscribers();
       await persistState();
+      const changedGameId = path.split('/')[1];
+      if (path.split('/')[0] === 'games' && changedGameId && data.games[changedGameId] && data.games[changedGameId].status === 'over') drainRankedQueue();
       reply(ack, { ok: true, committed: true, version, data: getAt(path) });
     } catch (error) {
       reply(ack, { ok: false, error: error.message || 'Lỗi transaction.' });
@@ -1120,6 +1290,7 @@ io.on('connection', socket => {
 
   socket.on('disconnect', () => {
     const uid = socket.data && socket.data.uid;
+    if (uid && removeRankedQueueSocket(uid, socket.id)) drainRankedQueue();
     if (uid && uid !== ADMIN_UID && !isPlayerOnline(uid)) notifyPresenceChange(uid);
   });
 });
