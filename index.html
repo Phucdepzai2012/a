@@ -164,7 +164,7 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 @media(max-width:520px){.room-join-row{grid-template-columns:minmax(0,1fr) 92px}}
 @media(max-width:520px){body{padding:8px}main{gap:12px}.paper{padding:6px}.review-row{gap:4px}.tag{font-size:9px;padding:3px 4px}}
 
-/* Full-screen responsive XO loading screen. */
+/* Stable loading board: only the X/O marks animate; the grid remains fixed. */
 #gameLoader{position:fixed;inset:0;width:100%;height:100vh;height:100dvh;z-index:1000;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:clamp(14px,4vw,36px);background:radial-gradient(ellipse at 50% 36%,#fdfdfa 0%,#edf1f3 58%,#dce4e9 100%);transition:opacity .3s ease,visibility .3s ease}
 #gameLoader.done{opacity:0;visibility:hidden;pointer-events:none}
 #gameLoader[hidden]{display:none}
@@ -172,30 +172,19 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 .loader-brand{margin:0;font:700 clamp(42px,7vw,68px)/.95 Caveat,cursive;color:var(--blue)}
 .loader-brand b{color:var(--red)}
 .loader-caption{font-size:clamp(13px,2vw,17px);color:var(--mut);margin:0}
-.loader-board{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:min(80vw,52vh,430px);width:min(80vw,52dvh,430px);aspect-ratio:1;padding:0;gap:0;background:transparent;border:0;border-radius:0}
-.loader-cell{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;aspect-ratio:1;background:transparent;border:0;border-right:3px solid #b8c6d1;border-bottom:3px solid #b8c6d1;border-radius:0;color:transparent;font-size:clamp(36px,10vw,88px);font-weight:700;line-height:1;opacity:.08;transform:scale(.9);transition:opacity .18s ease,transform .18s ease,background .2s ease,color .18s ease}
-.loader-cell:nth-child(3n){border-right:0}
-.loader-cell:nth-child(n+7){border-bottom:0}
-.loader-cell.show{opacity:1;transform:scale(1)}
+.loader-board{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:min(80vw,52vh,430px);width:min(80vw,52dvh,430px);aspect-ratio:1;padding:0;gap:0;background:
+ linear-gradient(to right,transparent calc(33.333% - 1.5px),#b8c6d1 calc(33.333% - 1.5px),#b8c6d1 calc(33.333% + 1.5px),transparent calc(33.333% + 1.5px),transparent calc(66.666% - 1.5px),#b8c6d1 calc(66.666% - 1.5px),#b8c6d1 calc(66.666% + 1.5px),transparent calc(66.666% + 1.5px)),
+ linear-gradient(to bottom,transparent calc(33.333% - 1.5px),#b8c6d1 calc(33.333% - 1.5px),#b8c6d1 calc(33.333% + 1.5px),transparent calc(33.333% + 1.5px),transparent calc(66.666% - 1.5px),#b8c6d1 calc(66.666% - 1.5px),#b8c6d1 calc(66.666% + 1.5px),transparent calc(66.666% + 1.5px))}
+.loader-cell{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;background:transparent;border:0;border-radius:0;color:transparent;font-family:Arial,Helvetica,sans-serif;font-size:clamp(36px,10vw,88px);font-weight:600;line-height:1;opacity:0;transition:opacity .14s ease}
+.loader-cell.show{opacity:1}
 .loader-cell.mark-x{color:var(--blue)}
 .loader-cell.mark-o{color:var(--red)}
-.loader-cell.winner{background:#dce8ff}
-#loaderWinLine{position:absolute;z-index:3;inset:0;width:100%;height:100%;overflow:visible;opacity:0;pointer-events:none}
-#loaderWinLine.show{opacity:1}
-#loaderWinLine path{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100;stroke-dashoffset:100}
-#loaderWinLine .win-outline{stroke:#fff;stroke-width:7.2;filter:drop-shadow(0 1px 1px rgba(28,63,183,.18))}
-#loaderWinLine .win-blue{stroke:var(--blue);stroke-width:3.8}
-#loaderWinLine.show path{animation:loaderDraw .58s cubic-bezier(.2,.8,.2,1) forwards}
 #loaderResult{display:block;min-height:24px;margin:0;font-size:clamp(13px,2.2vw,17px);font-weight:700;letter-spacing:.06em;color:var(--mut)}
-#loaderResult.win{color:var(--mut);animation:none}
 .loader-dots:after{display:inline-block;width:1.5em;text-align:left;animation:loaderDots 1s steps(4,end) infinite;content:""}
-@keyframes loaderDraw{to{stroke-dashoffset:0}}
-@keyframes loaderPop{from{opacity:0;transform:translateY(4px) scale(.94)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes loaderDots{0%{content:""}25%{content:"."}50%{content:".."}75%,100%{content:"..."}}
-@media(max-width:520px){.loader-card{gap:clamp(10px,2.5vh,20px)}.loader-board{width:min(82vw,48vh,360px);width:min(82vw,48dvh,360px)}.loader-cell{border-right-width:2px;border-bottom-width:2px;font-size:clamp(42px,17vw,76px)}#loaderWinLine .win-outline{stroke-width:8}#loaderWinLine .win-blue{stroke-width:4}}
+@media(max-width:520px){.loader-card{gap:clamp(10px,2.5vh,20px)}.loader-board{width:min(82vw,48vh,360px);width:min(82vw,48dvh,360px)}}
 @media(orientation:landscape) and (max-height:520px){.loader-card{display:grid;grid-template-columns:auto minmax(150px,min(43vw,38vh));grid-template-rows:auto auto;align-content:center;justify-content:center;column-gap:clamp(18px,5vw,54px);row-gap:8px}.loader-brand,.loader-caption,#loaderResult{grid-column:1;align-self:end}.loader-caption{align-self:start}.loader-board{grid-column:2;grid-row:1 / span 3;width:min(43vw,74vh,340px);width:min(43vw,74dvh,340px)}}
-@media(prefers-reduced-motion:reduce){#gameLoader,.loader-cell{transition:none}.loader-cell.winner,#loaderResult.win{animation:none}.loader-dots:after{animation:none;content:"..."}}
-
+@media(prefers-reduced-motion:reduce){#gameLoader,.loader-cell{transition:none}.loader-dots:after{animation:none;content:"..."}}
 
 /* During a live online match, keep the board and draw/resign controls only. */
 body.online-match-active{min-height:100vh;min-height:100dvh;padding:10px 10px 92px;align-items:center}
@@ -642,7 +631,7 @@ body.study-modal-open{overflow:hidden}
   <div class="loader-card">
     <div class="loader-brand">Caro <b>5</b></div>
     <p class="loader-caption">Đang khởi động ván XO...</p>
-    <div id="loaderBoard" class="loader-board" aria-hidden="true"><svg id="loaderWinLine" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="win-outline" d="M 50 16.7 C 43 28, 57 38, 50 50 S 43 72, 50 83.3"></path><path class="win-blue" d="M 50 16.7 C 43 28, 57 38, 50 50 S 43 72, 50 83.3"></path></svg></div>
+    <div id="loaderBoard" class="loader-board" aria-hidden="true"></div>
     <strong id="loaderResult">X ĐANG ĐÁNH<span class="loader-dots"></span></strong>
   </div>
 </div>
@@ -2708,8 +2697,8 @@ setInterval(()=>{
   const overlay=document.getElementById('gameLoader');
   const board=document.getElementById('loaderBoard');
   const result=document.getElementById('loaderResult');
-  const winLine=document.getElementById('loaderWinLine');
-  if(!overlay||!board||!result||!winLine)return;
+  if(!overlay||!board||!result)return;
+
   const cells=[];
   for(let i=0;i<9;i++){
     const cell=document.createElement('span');
@@ -2717,9 +2706,8 @@ setInterval(()=>{
     board.appendChild(cell);
     cells.push(cell);
   }
-  board.appendChild(winLine);
 
-  /* Requested final board: O X X / X X O / O X O. X wins down the middle column. */
+  /* Only the letters appear in sequence. The grid stays completely still. */
   const moves=[
     {cell:1,p:'x'},{cell:0,p:'o'},
     {cell:3,p:'x'},{cell:5,p:'o'},
@@ -2729,8 +2717,9 @@ setInterval(()=>{
   ];
   let index=0;
   const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const interval=reduced?150:410;
+  const interval=reduced?150:340;
   result.innerHTML='ĐANG TẢI<span class="loader-dots"></span>';
+
   const step=()=>{
     if(index>=moves.length)return;
     const move=moves[index++];
@@ -2738,11 +2727,8 @@ setInterval(()=>{
     cell.textContent=move.p==='x'?'X':'O';
     cell.classList.add('show',move.p==='x'?'mark-x':'mark-o');
     if(index===moves.length){
-      [1,4,7].forEach(i=>cells[i].classList.add('winner'));
-      winLine.classList.add('show');
-      result.innerHTML='ĐANG TẢI<span class="loader-dots"></span>';
-      setTimeout(()=>overlay.classList.add('done'),reduced?450:1050);
-      setTimeout(()=>overlay.hidden=true,reduced?750:1370);
+      setTimeout(()=>overlay.classList.add('done'),reduced?350:650);
+      setTimeout(()=>overlay.hidden=true,reduced?650:970);
     }else{
       setTimeout(step,interval);
     }
