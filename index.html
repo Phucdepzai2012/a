@@ -1210,6 +1210,8 @@ body.study-modal-open{overflow:hidden}
     adminOverview: () => rpc('admin:overview', {}),
     adminBan: (uid,banned,reason) => rpc('admin:ban', {uid,banned,reason}),
     finishRanked: payload => rpc('ranked:finish', payload),
+    joinRankedQueue: () => rpc('ranked:queue:join', {}),
+    cancelRankedQueue: () => rpc('ranked:queue:cancel', {}),
     offerDraw: payload => rpc('draw:offer', payload),
     respondDraw: payload => rpc('draw:respond', payload),
     updateAvatar: payload => rpc('profile:update', payload),
@@ -1963,9 +1965,26 @@ function resign(){
   finishGame(1-G.mine,'resign');
 }
 async function cancelFind(showMessage=true){
-  clearTimeout(findTimer);finding=false;if(inviteRef){inviteRef.off();inviteRef=null}
-  if(db&&me.uid){try{await db.ref('lobby').transaction(c=>c&&c.uid===me.uid?null:undefined)}catch{}try{await db.ref('invite/'+me.uid).remove()}catch{}}
-  $('bFind').textContent='Ghép trận xếp hạng';$('bBot').disabled=!me.name;ui();
+  clearTimeout(findTimer);
+  const wasFinding=finding;
+  finding=false;
+  if(inviteRef){inviteRef.off();inviteRef=null}
+  let matchedGid='';
+  if(wasFinding&&window.caroAuth&&me.uid){
+    try{
+      const result=await window.caroAuth.cancelRankedQueue();
+      if(result&&result.matched&&result.gid)matchedGid=String(result.gid);
+    }catch{}
+  }
+  if(matchedGid){
+    finding=true;
+    $('st').textContent='Đối thủ vừa được ghép trước lúc huỷ. Đang mở trận…';
+    try{await openGame(matchedGid)}catch(e){finding=false;ui();$('st').textContent='Không mở được ván: '+(e.message||e)}
+    return;
+  }
+  $('bFind').textContent='Ghép trận xếp hạng';
+  $('bBot').disabled=!me.name;
+  ui();
   if(showMessage)$('st').textContent='Đã huỷ tìm trận.';
 }
 async function openGame(gid){
@@ -1998,24 +2017,31 @@ function onGame(s){
   if(v.status==='over'&&!G.over){G.winner=Number.isInteger(v.winner)?v.winner:-1;G.line=v.why==='win'&&last?win(board,last.x,last.y):null;finishGame(G.winner,v.why);return}
   ui();draw();stat();
 }
-async function startMatchmaking(retry=false){
-  if(finding){await cancelFind();return}if(!me.name){showOv();return}
-  if(!db||!me.uid){$('st').textContent='Không thể ghép người thật: Render chưa kết nối. Hãy kiểm tra trạng thái máy chủ.';return}
-  finding=true;$('bFind').textContent='Huỷ tìm trận';$('bFind').disabled=false;$('bBot').disabled=true;$('st').textContent='Đang tìm người chơi thật…';
+async function startMatchmaking(){
+  if(finding){await cancelFind();return}
+  if(!me.name){showOv();return}
+  if(!db||!me.uid||!window.caroAuth){$('st').textContent='Không thể ghép người thật: Render chưa kết nối. Hãy kiểm tra máy chủ.';return}
+  finding=true;
+  $('bFind').textContent='Huỷ tìm trận';
+  $('bFind').disabled=false;
+  $('bBot').disabled=true;
+  $('st').textContent='Đang tham gia hàng chờ xếp hạng…';
   try{
-    await db.ref('invite/'+me.uid).remove();let opponent=null;const lobby=db.ref('lobby');
-    await lobby.transaction(current=>{opponent=null;if(current&&current.uid!==me.uid&&now()-Number(current.t||0)<60000){opponent=current;return null}return {uid:me.uid,name:me.name,elo:me.elo,t:now()}});
+    const result=await window.caroAuth.joinRankedQueue();
     if(!finding)return;
-    if(opponent){
-      const gid=db.ref('games').push().key;const players=[{uid:me.uid,name:me.name,elo:me.elo},{uid:opponent.uid,name:opponent.name||'Đối thủ',elo:Number(opponent.elo)||1000}];
-      await db.ref('games/'+gid).set({p:players,moves:{},turn:0,status:'play',dl:now()+TURN,createdAt:now()});
-      await db.ref('invite/'+opponent.uid).set(gid);await openGame(gid);
-    }else{
-      inviteRef=db.ref('invite/'+me.uid);
-      inviteRef.on('value',s=>{if(!s.val()||!finding)return;const gid=s.val();if(inviteRef){inviteRef.off();inviteRef=null}clearTimeout(findTimer);openGame(gid).catch(e=>handleBackendFailure(e,'mở ván đấu'))},e=>handleBackendFailure(e,'nhận lời mời'));
-      findTimer=setTimeout(async()=>{if(finding){await cancelFind(false);$('st').textContent='Chưa tìm thấy đối thủ. Hãy thử lại sau.'}},60000);
-    }
-  }catch(e){const switched=await handleBackendFailure(e,'ghép trận');if(switched){$('st').textContent='Đã chuyển máy chủ dự phòng. Nhấn Ghép trận để thử lại.';return}finding=false;ui();$('st').textContent='Ghép trận lỗi: '+(e.message||e)}
+    const position=Number(result.position)||1;
+    const active=Number(result.activeGames)||0;
+    const max=Number(result.maxGames)||3;
+    $('st').textContent='Đang chờ xếp hạng · vị trí '+position+' · '+active+'/'+max+' trận đang chạy.';
+  }catch(e){
+    if(!finding)return;
+    finding=false;
+    clearTimeout(findTimer);
+    $('bFind').textContent='Ghép trận xếp hạng';
+    $('bBot').disabled=!me.name;
+    ui();
+    $('st').textContent='Ghép trận lỗi: '+(e.message||e);
+  }
 }
 async function createRoom(){
   if(!me.name){showOv();return}
@@ -2041,6 +2067,37 @@ $('bToggleTools').onclick=()=>{
   $('bToggleTools').setAttribute('aria-expanded',String(opening));
   $('bToggleTools').textContent=opening?'− Ẩn công cụ':'＋ Hiện thêm công cụ';
 };
+if(window.caroRenderSocket){
+  window.caroRenderSocket.on('ranked:queue:status',state=>{
+    if(!finding||!state)return;
+    const position=Number(state.position)||1;
+    const waiting=Number(state.waiting)||1;
+    const active=Number(state.activeGames)||0;
+    const max=Number(state.maxGames)||3;
+    $('st').textContent='Đang chờ xếp hạng · vị trí '+position+'/'+waiting+' · '+active+'/'+max+' trận đang chạy.';
+  });
+  window.caroRenderSocket.on('ranked:matched',payload=>{
+    if(!finding||!payload||!payload.gid)return;
+    clearTimeout(findTimer);
+    $('st').textContent='Đã ghép đối thủ! Đang mở bàn cờ…';
+    openGame(String(payload.gid)).catch(e=>{
+      finding=false;
+      $('bFind').textContent='Ghép trận xếp hạng';
+      $('bBot').disabled=!me.name;
+      ui();
+      $('st').textContent='Không mở được ván: '+(e.message||e);
+    });
+  });
+  window.caroRenderSocket.on('disconnect',()=>{
+    if(!finding)return;
+    finding=false;
+    clearTimeout(findTimer);
+    $('bFind').textContent='Ghép trận xếp hạng';
+    $('bBot').disabled=!me.name;
+    ui();
+    $('st').textContent='Mất kết nối máy chủ. Hàng chờ đã bị huỷ; hãy ghép lại khi kết nối ổn định.';
+  });
+}
 $('bFind').onclick=startMatchmaking;
 $('bCreateRoom').onclick=createRoom;
 $('bShowJoinRoom').onclick=()=>{
