@@ -688,8 +688,8 @@ body.study-modal-open{overflow:hidden}
           <div id="botEloDesc" class="note">Khá · ELO máy chỉ điều chỉnh độ khó, không đổi ELO của bạn ở chế độ luyện.</div>
         </div>
         <button id="bStartBot" class="pri">Bắt đầu đấu máy</button>
-      <button id="bStartChampionBot" class="champion-bot-button" type="button">♟ Đấu máy tuyển thủ</button>
-      <p class="champion-bot-note">AI tìm nước thắng, chặn đòn bắt buộc và tính trước nhiều lượt. Mức khó cao nhất, thời gian suy nghĩ có thể lâu hơn.</p>
+      <button id="bStartChampionBot" class="champion-bot-button" type="button">♟ Boss Tuyệt Thủ</button>
+      <p class="champion-bot-note">Tìm kiếm alpha-beta nhiều lượt, ưu tiên thắng ngay, chặn đòn bắt buộc và ghi nhớ thế cờ. Không có engine nào được bảo đảm tuyệt đối không sai.</p>
       </div>
       <button id="bCen" type="button">Về nước vừa đánh</button>
       <button id="bOpenStudy" class="study-launch" type="button" aria-haspopup="dialog" aria-controls="studyModal">
@@ -1945,6 +1945,7 @@ function bossSearch(board,turn,perspective,depth,alpha,beta,lastMove,hashA,hashB
   return best;
 }
 function championBotMove(sourceBoard,p){
+  if(!sourceBoard.size)return[Math.floor(N/2),Math.floor(N/2)];
   const board=bossBoardFromMap(sourceBoard);
   const wins=bossWinningMoves(board,p);
   if(wins.length)return[wins[0]%N,Math.floor(wins[0]/N)];
