@@ -40,7 +40,7 @@ if (pool) pool.on('error', error => console.error('PostgreSQL pool error:', erro
 let persistenceReady = false;
 let persistQueue = Promise.resolve();
 const ADMIN_UID = '__caro_admin__';
-const ADMIN_USERNAME = String(process.env.CARO_ADMIN_USERNAME || 'admin').trim().slice(0, 14) || 'admin';
+const ADMIN_USERNAME = String(process.env.CARO_ADMIN_USERNAME || 'admin').trim().toLocaleLowerCase('vi-VN').slice(0, 14) || 'admin';
 const ADMIN_NAME_KEY = ADMIN_USERNAME.normalize('NFKC').toLocaleLowerCase('vi-VN');
 let version = 0;
 
