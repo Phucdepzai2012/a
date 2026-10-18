@@ -653,7 +653,6 @@ body.study-modal-open{overflow:hidden}
     <p>Đổi màu quân cờ và ánh sáng theo ý bạn. Cài đặt được lưu trên thiết bị này.</p>
     <label class="menu-color-row" for="menuXColor"><span><b class="menu-x-badge">X</b><span><strong>Màu quân X</strong><small>Quân đi trước</small></span></span><input id="menuXColor" type="color" value="#1c3fb7"></label>
     <label class="menu-color-row" for="menuOColor"><span><b class="menu-o-badge">O</b><span><strong>Màu quân O</strong><small>Quân đi sau</small></span></span><input id="menuOColor" type="color" value="#d8322b"></label>
-    <label class="menu-range-row" for="menuLightRange"><span><strong>Độ sáng nền</strong><output id="menuLightValue">100%</output></span><input id="menuLightRange" type="range" min="60" max="140" step="5" value="100"></label>
     <label class="menu-check-row" for="menuGlowToggle"><input id="menuGlowToggle" type="checkbox" checked><span><strong>Phát sáng quân X/O</strong><small>Thêm viền sáng khi đánh cờ</small></span></label>
     <div class="menu-pop-actions"><button id="menuResetSettings" type="button">Mặc định</button><button id="menuSaveSettings" class="menu-save" type="button">Lưu cài đặt</button></div>
       </div>
@@ -2977,7 +2976,7 @@ render();
   const auth=document.getElementById('ov');
   const $menu=id=>document.getElementById(id);
   const root=document.documentElement;
-  const defaultSettings={x:'#1c3fb7',o:'#d8322b',light:100,glow:true};
+  const defaultSettings={x:'#1c3fb7',o:'#d8322b',glow:true};
   let settings={...defaultSettings};
   try{
     const saved=JSON.parse(localStorage.getItem('caroMenuSettings')||'{}');
@@ -2992,12 +2991,8 @@ render();
   function applySettings(save){
     root.style.setProperty('--blue',settings.x||defaultSettings.x);
     root.style.setProperty('--red',settings.o||defaultSettings.o);
-    root.style.setProperty('--menu-light',String(Number(settings.light||100)/100));
-    root.style.setProperty('--menu-light-opacity',String(Math.max(.35,Math.min(1.2,Number(settings.light||100)/100))));
     $menu('menuXColor').value=settings.x||defaultSettings.x;
     $menu('menuOColor').value=settings.o||defaultSettings.o;
-    $menu('menuLightRange').value=String(settings.light||100);
-    $menu('menuLightValue').textContent=String(settings.light||100)+'%';
     $menu('menuGlowToggle').checked=settings.glow!==false;
     if(save)saveSettings();
     window.dispatchEvent(new Event('caro:themechange'));
@@ -3031,7 +3026,6 @@ render();
   });
   $menu('menuXColor').addEventListener('input',e=>{settings.x=e.target.value;applySettings(true)});
   $menu('menuOColor').addEventListener('input',e=>{settings.o=e.target.value;applySettings(true)});
-  $menu('menuLightRange').addEventListener('input',e=>{settings.light=Number(e.target.value);applySettings(true)});
   $menu('menuGlowToggle').addEventListener('change',e=>{settings.glow=!!e.target.checked;applySettings(true)});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!panel.hidden)closeSettings()});
   window.addEventListener('caro:themechange',()=>window.dispatchEvent(new Event('resize')));
