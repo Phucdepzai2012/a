@@ -175,10 +175,14 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 .loader-board{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:min(80vw,52vh,430px);width:min(80vw,52dvh,430px);aspect-ratio:1;padding:0;gap:0;background:
  linear-gradient(to right,transparent calc(33.333% - 1.5px),#b8c6d1 calc(33.333% - 1.5px),#b8c6d1 calc(33.333% + 1.5px),transparent calc(33.333% + 1.5px),transparent calc(66.666% - 1.5px),#b8c6d1 calc(66.666% - 1.5px),#b8c6d1 calc(66.666% + 1.5px),transparent calc(66.666% + 1.5px)),
  linear-gradient(to bottom,transparent calc(33.333% - 1.5px),#b8c6d1 calc(33.333% - 1.5px),#b8c6d1 calc(33.333% + 1.5px),transparent calc(33.333% + 1.5px),transparent calc(66.666% - 1.5px),#b8c6d1 calc(66.666% - 1.5px),#b8c6d1 calc(66.666% + 1.5px),transparent calc(66.666% + 1.5px))}
-.loader-cell{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;background:transparent;border:0;border-radius:0;color:transparent;font-family:Arial,Helvetica,sans-serif;font-size:clamp(36px,10vw,88px);font-weight:600;line-height:1;opacity:0;transition:opacity .14s ease}
+.loader-cell{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;background:transparent;border:0;border-radius:0;color:transparent;font-size:0;line-height:1;opacity:0;transition:opacity .14s ease}
 .loader-cell.show{opacity:1}
 .loader-cell.mark-x{color:var(--blue)}
 .loader-cell.mark-o{color:var(--red)}
+.loader-cell.mark-x:before,.loader-cell.mark-x:after{content:"";position:absolute;width:62%;height:9%;border-radius:999px;background:currentColor}
+.loader-cell.mark-x:before{transform:rotate(45deg)}
+.loader-cell.mark-x:after{transform:rotate(-45deg)}
+.loader-cell.mark-o:before{content:"";position:absolute;width:59%;height:59%;border:clamp(4px,1vw,9px) solid currentColor;border-radius:50%;}
 #loaderResult{display:block;min-height:24px;margin:0;font-size:clamp(13px,2.2vw,17px);font-weight:700;letter-spacing:.06em;color:var(--mut)}
 .loader-dots:after{display:inline-block;width:1.5em;text-align:left;animation:loaderDots 1s steps(4,end) infinite;content:""}
 @keyframes loaderDots{0%{content:""}25%{content:"."}50%{content:".."}75%,100%{content:"..."}}
@@ -639,10 +643,9 @@ body.study-modal-open{overflow:hidden}
   <section id="menuSettings" class="menu-pop" role="dialog" aria-modal="true" aria-labelledby="menuSettingsTitle" hidden>
     <div class="menu-settings-card">
     <div class="menu-pop-top"><div><small>PERSONALIZE</small><h3 id="menuSettingsTitle">Cài đặt giao diện</h3></div><button id="menuSettingsClose" class="menu-close" type="button" aria-label="Đóng cài đặt">×</button></div>
-    <p>Đổi màu quân cờ và ánh sáng theo ý bạn. Cài đặt được lưu trên thiết bị này.</p>
+    <p>Chọn màu quân cờ theo ý bạn. Cài đặt được lưu trên thiết bị này.</p>
     <label class="menu-color-row" for="menuXColor"><span><b class="menu-x-badge">X</b><span><strong>Màu quân X</strong><small>Quân đi trước</small></span></span><input id="menuXColor" type="color" value="#1c3fb7"></label>
     <label class="menu-color-row" for="menuOColor"><span><b class="menu-o-badge">O</b><span><strong>Màu quân O</strong><small>Quân đi sau</small></span></span><input id="menuOColor" type="color" value="#d8322b"></label>
-    <label class="menu-check-row" for="menuGlowToggle"><input id="menuGlowToggle" type="checkbox" checked><span><strong>Phát sáng quân X/O</strong><small>Thêm viền sáng khi đánh cờ</small></span></label>
     <div class="menu-pop-actions"><button id="menuResetSettings" type="button">Mặc định</button><button id="menuSaveSettings" class="menu-save" type="button">Lưu cài đặt</button></div>
       </div>
   </section>
@@ -1732,7 +1735,6 @@ function draw(){
   const winningPiece=G.line&&G.line.length?G.board.get(G.line[0][0]+','+G.line[0][1]):null;
   const winningColor=winningPiece===0?markX:markO;
   const winningTint=winningPiece===0?tint(markX,.14):tint(markO,.14);
-  const glowMarks=localStorage.getItem('caroMarkGlow')!=='false';
   if(G.line)G.line.forEach(([x,y])=>cell(x,y,winningTint));
   cx.lineCap='round';cx.lineWidth=Math.max(2,c*.1);
   G.board.forEach((v,k)=>{
@@ -1740,11 +1742,11 @@ function draw(){
     if(x<0||x>=N||y<0||y>=N)return;
     const px=ox+(x+.5)*c,py=oy+(y+.5)*c,r=c*.3,q=c*.07;cx.beginPath();
     if(v===0){
-      cx.strokeStyle=markX;cx.shadowColor=markX;cx.shadowBlur=glowMarks?Math.max(0,c*.15):0;
-      cx.moveTo(px-r+h(x,y,1)*q,py-r+h(x,y,2)*q);cx.quadraticCurveTo(px+h(x,y,3)*q,py+h(x,y,4)*q,px+r+h(x,y,5)*q,py+r+h(x,y,6)*q);
-      cx.moveTo(px+r+h(x,y,7)*q,py-r+h(x,y,8)*q);cx.quadraticCurveTo(px+h(x,y,9)*q,py+h(x,y,1)*q,px-r+h(x,y,2)*q,py+r+h(x,y,3)*q);
+      cx.strokeStyle=markX;cx.shadowBlur=0;
+      cx.moveTo(px-r,py-r);cx.lineTo(px+r,py+r);
+      cx.moveTo(px+r,py-r);cx.lineTo(px-r,py+r);
     }else{
-      cx.strokeStyle=markO;cx.shadowColor=markO;cx.shadowBlur=glowMarks?Math.max(0,c*.15):0;cx.ellipse(px,py,r*(1+h(x,y,4)*.12),r*(1+h(x,y,5)*.12),h(x,y,6)*1.2,0,7);
+      cx.strokeStyle=markO;cx.shadowBlur=0;cx.ellipse(px,py,r,r,0,0,Math.PI*2);
     }
     cx.stroke();
   });
@@ -3066,7 +3068,7 @@ render();
   const auth=document.getElementById('ov');
   const $menu=id=>document.getElementById(id);
   const root=document.documentElement;
-  const defaultSettings={x:'#1c3fb7',o:'#d8322b',glow:true};
+  const defaultSettings={x:'#1c3fb7',o:'#d8322b'};
   let settings={...defaultSettings};
   try{
     const saved=JSON.parse(localStorage.getItem('caroMenuSettings')||'{}');
@@ -3074,8 +3076,8 @@ render();
   }catch(_){}
   function saveSettings(){
     try{
-      localStorage.setItem('caroMenuSettings',JSON.stringify(settings));
-      localStorage.setItem('caroMarkGlow',String(settings.glow));
+      localStorage.setItem('caroMenuSettings',JSON.stringify({x:settings.x,o:settings.o}));
+      localStorage.removeItem('caroMarkGlow');
     }catch(_){}
   }
   function applySettings(save){
@@ -3083,7 +3085,6 @@ render();
     root.style.setProperty('--red',settings.o||defaultSettings.o);
     $menu('menuXColor').value=settings.x||defaultSettings.x;
     $menu('menuOColor').value=settings.o||defaultSettings.o;
-    $menu('menuGlowToggle').checked=settings.glow!==false;
     if(save)saveSettings();
     window.dispatchEvent(new Event('caro:themechange'));
   }
@@ -3116,7 +3117,6 @@ render();
   });
   $menu('menuXColor').addEventListener('input',e=>{settings.x=e.target.value;applySettings(true)});
   $menu('menuOColor').addEventListener('input',e=>{settings.o=e.target.value;applySettings(true)});
-  $menu('menuGlowToggle').addEventListener('change',e=>{settings.glow=!!e.target.checked;applySettings(true)});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!panel.hidden)closeSettings()});
   window.addEventListener('caro:themechange',()=>window.dispatchEvent(new Event('resize')));
 })();
