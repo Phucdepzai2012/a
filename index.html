@@ -1789,7 +1789,7 @@ function championSearch(board,turn,perspective,depth,alpha,beta,lastMove,extensi
   if(depth<=0&&!(forcedBlock&&extensions>0))return championEvaluate(board,perspective);
   const moves=forcedBlock
     ? [opponentWins[0].split(',').map(Number)]
-    : championRankedMoves(board,turn,depth>=3?8:depth===2?7:5,new Set(opponentWins));
+    : championRankedMoves(board,turn,depth>=3?6:depth===2?5:4,new Set(opponentWins));
   if(!moves.length)return championEvaluate(board,perspective);
   const maximizing=turn===perspective;
   let best=maximizing?-Infinity:Infinity;
@@ -1811,13 +1811,13 @@ function championBotMove(board,p){
   if(enemyWins.length===1)return enemyWins[0].split(',').map(Number);
   const ranked=championRankedMoves(board,p,24,new Set(enemyWins));
   if(!ranked.length)return [Math.floor(N/2),Math.floor(N/2)];
-  for(const[x,y]of ranked){
+  for(const[x,y]of ranked.slice(0,10)){
     const next=new Map(board);next.set(x+','+y,p);
     if(winningMoves(next,1-p).length)continue;
     if(winningMoves(next,p).length>=2)return [x,y];
   }
   let choice=ranked[0],best=-Infinity;
-  for(const[x,y]of ranked.slice(0,12)){
+  for(const[x,y]of ranked.slice(0,8)){
     const next=new Map(board);next.set(x+','+y,p);
     const value=championSearch(next,1-p,p,3,-Infinity,Infinity,[x,y],2);
     if(value>best){best=value;choice=[x,y]}
