@@ -111,7 +111,7 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 .admin-pill{font-size:10px;font-weight:700;padding:3px 5px;border-radius:4px;background:#edf0f2;color:#59636b}
 .admin-pill.warn{background:#fff0c7;color:#876000}
 .admin-pill.block{background:#ffd9d9;color:#a51d1d}
-.admin-action{width:auto;margin:0;padding:5px 7px;font-size:11px;background:#edf1f4;border-color:var(--ln)}
+.admin-action{width:auto;margin:0;padding:5px 7px;font-size:11px;background:#edf1f4;border-color:var(--ln)}.admin-filters{display:grid;grid-template-columns:minmax(0,1fr) 130px;gap:7px;margin:8px 0}.admin-filters input,.admin-filters select{width:100%;min-width:0;margin:0;padding:8px;font-size:12px;border:1px solid var(--ln);border-radius:6px;background:#fff;color:var(--ink)}.admin-report-actions{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}@media(max-width:520px){.admin-filters{grid-template-columns:1fr}}
 .admin-action.danger{background:#ffd9d9;border-color:#f1a6a6}
 .history-item{display:flex;align-items:center;gap:8px;padding:8px 3px;border-bottom:1px dashed var(--ln);font-size:12px}
 .history-outcome{flex:none;min-width:48px;text-align:center;border-radius:4px;padding:4px;font-size:10px;font-weight:700}
@@ -740,18 +740,15 @@ body.study-modal-open{overflow:hidden}
     </section>
     <section id="adminSection" hidden>
       <h2>Quản trị máy chủ</h2>
-      <div id="adminStatus" class="note">Bảng quản trị chỉ dành cho tài khoản admin.</div>
-      <button id="bAdminRefresh" class="pri" type="button">Tải dữ liệu quản trị</button>
+      <div id="adminStatus" class="note">Chỉ dành cho admin.</div>
+      <button id="bAdminRefresh" class="pri" type="button">Làm mới</button>
       <div id="adminStats" class="review-summary"></div>
-      <h2>Cảnh báo cần kiểm tra</h2>
-      <ol id="adminAlerts"></ol>
+      <h2>Yêu cầu kiểm tra accuracy</h2><ol id="adminReports"></ol>
       <h2>Tài khoản</h2>
+      <div class="admin-filters"><input id="adminFilterInput" type="search" placeholder="Lọc tên hoặc UID"><select id="adminFilterMode"><option value="all">Tất cả</option><option value="active">Đang hoạt động</option><option value="reported">Có báo cáo</option><option value="banned">Đã khóa</option></select></div>
       <ol id="adminUsers"></ol>
-      <h2>Trận gần đây</h2>
-      <ol id="adminMatches"></ol>
-      <h2>Nhật ký quản trị</h2>
-      <ol id="adminAudit"></ol>
-      <div class="note">Các cảnh báo chỉ là dấu hiệu để xem xét, không tự kết luận người chơi gian lận. Dữ liệu tạm trên RAM sẽ mất khi máy chủ khởi động lại.</div>
+      <h2>Nhật ký quản trị</h2><ol id="adminAudit"></ol>
+      <div class="note">Accuracy 99–100% chỉ là tín hiệu để admin xem xét, không tự kết luận gian lận. Khóa sẽ kéo dài đến khi admin mở khóa.</div>
     </section>
     <section id="historyReplayPanel" hidden>
       <h2 id="historyReplayTitle">Xem lại ván đấu</h2>
@@ -1254,6 +1251,8 @@ body.study-modal-open{overflow:hidden}
     },
     adminOverview: () => rpc('admin:overview', {}),
     adminBan: (uid,banned,reason) => rpc('admin:ban', {uid,banned,reason}),
+    adminResolveReport: (reportId,status) => rpc('admin:report:resolve', {reportId,status}),
+    reportAccuracy: payload => rpc('accuracy:report', payload),
     finishRanked: payload => rpc('ranked:finish', payload),
     joinRankedQueue: () => rpc('ranked:queue:join', {}),
     cancelRankedQueue: () => rpc('ranked:queue:cancel', {}),
@@ -1517,13 +1516,19 @@ function formatAdminDate(value){
   const date=new Date(Number(value));
   return Number.isFinite(date.getTime())?date.toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
 }
+let adminOverviewCache=null;
+function renderAdminUsers(){
+ const d=adminOverviewCache||{},q=String($('adminFilterInput').value||'').trim().toLocaleLowerCase('vi-VN'),mode=$('adminFilterMode').value||'all',reported=new Set((d.reports||[]).map(r=>r.targetUid));
+ const users=(d.users||[]).filter(u=>(mode!=='active'||!u.banned)&&(mode!=='banned'||u.banned)&&(mode!=='reported'||reported.has(u.uid)||u.reported)&&(!q||String(u.name||'').toLocaleLowerCase('vi-VN').includes(q)||String(u.uid||'').toLowerCase().includes(q)));
+ $('adminUsers').innerHTML=users.map(u=>'<li><div class="admin-row"><div class="admin-detail"><b>'+esc(u.name)+'</b><small>'+(Number(u.elo)||1000)+' ELO · '+esc(u.uid)+'</small>'+(u.reported?'<small>Có báo cáo đang chờ.</small>':'')+(u.banned?'<small>Đã khóa: '+esc(u.banReason||'Vi phạm quy định')+'</small>':'')+'</div><span class="admin-pill '+(u.banned?'block':'')+'">'+(u.banned?'ĐÃ KHÓA':'HOẠT ĐỘNG')+'</span><button type="button" class="admin-action '+(u.banned?'':'danger')+'" data-admin-ban="'+esc(u.uid)+'" data-banned="'+(u.banned?'true':'false')+'">'+(u.banned?'Mở khóa':'Khóa vô thời hạn')+'</button></div></li>').join('')||'<li class="note">Không có tài khoản phù hợp.</li>';
+}
 function renderAdminOverview(data){
-  $('adminStats').innerHTML=`Tài khoản: <b>${Number(data.totalAccounts)||0}</b> · Đang khóa: <b>${Number(data.bannedAccounts)||0}</b> · Cảnh báo: <b>${(data.alerts||[]).length}</b>`;
-  $('adminAlerts').innerHTML=(data.alerts||[]).length?(data.alerts||[]).map(a=>`<li><div class="admin-row"><span class="admin-pill warn">${a.type==='room_spam'?'SPAM PHÒNG':'TÁI ĐẤU'}</span><div class="admin-detail">${esc(a.message||'Cần kiểm tra')}<small>${formatAdminDate(a.lastAt)}</small></div></div></li>`).join(''):'<li class="note">Chưa có cảnh báo tự động.</li>';
-  $('adminUsers').innerHTML=(data.users||[]).length?(data.users||[]).map(u=>`<li><div class="admin-row"><div class="admin-detail"><b>${esc(u.name)}</b><small>${Number(u.elo)||1000} ELO · ${Number(u.w)||0}T ${Number(u.l)||0}B ${Number(u.d)||0}H · ${esc(u.uid)}</small>${u.banned?'<small>Tạm khóa: '+esc(u.banReason||'Vi phạm quy định')+'</small>':''}</div><span class="admin-pill ${u.banned?'block':''}">${u.banned?'ĐÃ KHÓA':'HOẠT ĐỘNG'}</span><button type="button" class="admin-action ${u.banned?'':'danger'}" data-admin-ban="${esc(u.uid)}" data-banned="${u.banned?'true':'false'}">${u.banned?'Mở khóa':'Khóa'}</button></div></li>`).join(''):'<li class="note">Chưa có tài khoản.</li>';
-  $('adminMatches').innerHTML=(data.recentMatches||[]).slice(0,30).map(m=>`<li><div class="admin-row"><span class="admin-pill">${esc(m.gameType||'Caro')}</span><div class="admin-detail"><b>${esc(m.playerName)} vs ${esc(m.opponentName)}</b><small>${formatAdminDate(m.timestamp)} · ${esc(m.result)} · ${Number(m.moveCount)||0} nước · ${Number(m.eloBefore)||1000} → ${Number(m.eloAfter)||1000} ELO</small></div></div></li>`).join('')||'<li class="note">Chưa có trận đã lưu.</li>';
-  $('adminAudit').innerHTML=(data.audit||[]).slice(0,30).map(a=>`<li><div class="admin-row"><div class="admin-detail"><b>${esc(a.action||'Hoạt động')}</b> · ${esc(a.targetName||a.targetUid||'—')}<small>${formatAdminDate(a.at)} · ${esc(a.reason||'')}</small></div></div></li>`).join('')||'<li class="note">Chưa có nhật ký quản trị.</li>';
-  $('adminStatus').textContent=data.configuredAdmin?'Đã xác thực admin ở máy chủ. Cảnh báo là dấu hiệu cần xem xét, không phải kết luận gian lận.':'Chưa cấu hình CARO_ADMIN_PASSWORD trong biến môi trường Render.';
+ adminOverviewCache=data||{};const reports=data.reports||[];
+ $('adminStats').innerHTML='Tài khoản: <b>'+(Number(data.totalAccounts)||0)+'</b> · Đã khóa: <b>'+(Number(data.bannedAccounts)||0)+'</b> · Yêu cầu chờ: <b>'+reports.length+'</b>';
+ $('adminReports').innerHTML=reports.map(r=>'<li><div class="admin-row"><span class="admin-pill warn">'+(Number(r.accuracy)||0)+'%</span><div class="admin-detail"><b>'+esc(r.targetName||'Người chơi')+'</b><small>'+(Number(r.targetMoves)||0)+' nước người chơi · '+(Number(r.totalMoves)||0)+' nước cả trận</small><small>'+esc(r.gameId||'—')+' · báo bởi '+esc(r.reporterName||'Người chơi')+'</small><small>'+formatAdminDate(r.at)+' · '+esc(r.reason||'Cần xem xét thủ công')+'</small><div class="admin-report-actions"><button class="admin-action" data-report-resolve="'+esc(r.id)+'" data-report-status="reviewed" type="button">Đã xem</button><button class="admin-action" data-report-resolve="'+esc(r.id)+'" data-report-status="dismissed" type="button">Bỏ qua</button></div></div></div></li>').join('')||'<li class="note">Chưa có yêu cầu kiểm tra.</li>';
+ renderAdminUsers();
+ $('adminAudit').innerHTML=(data.audit||[]).slice(0,30).map(a=>'<li><div class="admin-row"><div class="admin-detail"><b>'+esc(a.action||'Hoạt động')+'</b> · '+esc(a.targetName||a.targetUid||'—')+'<small>'+formatAdminDate(a.at)+' · '+esc(a.reason||'')+'</small></div></div></li>').join('')||'<li class="note">Chưa có nhật ký quản trị.</li>';
+ $('adminStatus').textContent=data.configuredAdmin?'Đã xác thực admin ở máy chủ. Các yêu cầu cần được xem xét thủ công.':'Chưa cấu hình CARO_ADMIN_PASSWORD trên Render.';
 }
 async function loadAdminOverview(){
   if(!me.isAdmin||!window.caroAuth){$('adminStatus').textContent='Không có quyền quản trị.';return}
@@ -2111,6 +2116,7 @@ function finishGame(winner,why){
     ui();
   }).finally(()=>{
     saveFinishedMatchHistory(completed).catch(error=>console.error('Không lưu được lịch sử:',error));
+    submitAccuracyReport(completed);
   });
 }
 function resign(){
@@ -2426,17 +2432,12 @@ $('profileModal').addEventListener('keydown',e=>{if(e.key==='Escape')$('profileM
 
 $('bHistorySearch').onclick=searchPlayerHistory;
 $('bAdminRefresh').onclick=loadAdminOverview;
+$('adminFilterInput').addEventListener('input',renderAdminUsers);
+$('adminFilterMode').addEventListener('change',renderAdminUsers);
 $('adminUsers').addEventListener('click',async e=>{
-  const button=e.target.closest('[data-admin-ban]');
-  if(!button||!me.isAdmin||!window.caroAuth)return;
-  const uid=button.dataset.adminBan;
-  const shouldBan=button.dataset.banned!=='true';
-  if(shouldBan&&!window.confirm('Khóa tài khoản này? Tài khoản sẽ không thể tiếp tục sử dụng phiên đăng nhập.'))return;
-  const reason=shouldBan?(window.prompt('Lý do khóa tài khoản:','Nghi vấn lạm dụng ELO hoặc spam phòng')||'Nghi vấn lạm dụng'): 'Mở khóa theo quyết định quản trị';
-  button.disabled=true;
-  try{await window.caroAuth.adminBan(uid,shouldBan,reason);await loadAdminOverview()}
-  catch(error){$('adminStatus').textContent='Không thực hiện được thao tác: '+(error.message||error);button.disabled=false}
+ const btn=e.target.closest('[data-admin-ban]');if(!btn||!me.isAdmin||!window.caroAuth)return;const uid=btn.dataset.adminBan,ban=btn.dataset.banned!=='true';if(ban&&!window.confirm('Khóa tài khoản vô thời hạn? Admin có thể mở khóa sau.'))return;const reason=ban?(window.prompt('Lý do khóa:','Yêu cầu admin kiểm tra dấu hiệu bất thường')||'Vi phạm quy định'):'Mở khóa theo quyết định quản trị';btn.disabled=true;try{await window.caroAuth.adminBan(uid,ban,reason);await loadAdminOverview()}catch(error){$('adminStatus').textContent='Không thực hiện được: '+(error.message||error);btn.disabled=false}
 });
+$('adminReports').addEventListener('click',async e=>{const btn=e.target.closest('[data-report-resolve]');if(!btn||!me.isAdmin||!window.caroAuth)return;btn.disabled=true;try{await window.caroAuth.adminResolveReport(btn.dataset.reportResolve,btn.dataset.reportStatus);await loadAdminOverview()}catch(error){$('adminStatus').textContent='Không xử lý được: '+(error.message||error);btn.disabled=false}});
 $('historyPlayerInput').addEventListener('keydown',e=>{if(e.key==='Enter')searchPlayerHistory()});
 $('bMyHistory').onclick=()=>loadHistoryByUid(me.uid,me.name).catch(error=>{$('historyStatus').textContent=error.message||String(error)});
 $('bShareHistory').onclick=async()=>{
@@ -2615,6 +2616,12 @@ function showReview(){
   const count=a=>a.filter(m=>['Sai lầm','Sai lầm nghiêm trọng','Siêu sai lầm','Bỏ lỡ chiến thắng'].includes(m.label)).length;
   $('reviewSummary').innerHTML=`<b class="x">X (${esc(G.names[0])}):</b> ${acc(x)}% · ${count(x)} lỗi<br><b class="o">O (${esc(G.names[1])}):</b> ${acc(o)}% · ${count(o)} lỗi<br><span class="note">Chọn một nước để đưa bàn cờ tới vị trí đó.</span>`;
   $('reviewList').innerHTML=G.review.map(m=>`<li><button class="review-row" data-index="${m.index}" title="Xem nước đi ${m.index+1}"><span class="review-num">${m.index+1}.</span><b class="review-side ${m.p===0?'x':'o'}">${m.p===0?'X':'O'}</b><span class="review-coord">(${m.x}, ${m.y})</span><span class="tag tag-${m.cls}">${m.label}</span></button></li>`).join('');$('review').hidden=false;
+}
+async function submitAccuracyReport(game){
+ if(!game||game.mode!=='online'||game.roomCode||!game.gid||!game.ratingConfirmed||!me.uid||!window.caroAuth||!Array.isArray(game.players)||!Array.isArray(game.review)||game.accuracyReportSent)return;
+ game.accuracyReportSent=true;const oi=1-Number(game.mine),op=game.players[oi];if(!op||!op.uid||op.uid===me.uid||game.moves.length<24)return;
+ const moves=game.review.filter(m=>Number(m.p)===oi);if(moves.length<12)return;const accuracy=Math.round(moves.reduce((a,m)=>a+(Number(m.pct)||0),0)/moves.length);if(accuracy<99||accuracy>100)return;
+ try{const result=await window.caroAuth.reportAccuracy({gid:game.gid,targetUid:op.uid,accuracy});if(result&&result.created&&G===game)$('reviewSummary').insertAdjacentHTML('beforeend','<div class="note">Đã gửi admin yêu cầu kiểm tra accuracy 99–100% của đối thủ; đây chưa phải kết luận gian lận.</div>')}catch(error){console.warn('Không gửi được yêu cầu kiểm tra:',error.message||error)}
 }
 $('reviewList').addEventListener('click',e=>{
   const btn=e.target.closest('[data-index]');if(!btn||!G||!G.review)return;const m=G.review[Number(btn.dataset.index)];if(!m)return;cam.x=m.x+.5;cam.y=m.y+.5;G.last=[m.x,m.y];draw();
