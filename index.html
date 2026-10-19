@@ -343,8 +343,6 @@ aside>section .note{font-size:11px;line-height:1.4}
 .history-main small{font-size:10px}
 #historyList,#historyReplayMoves,#reviewList{max-height:220px}
 aside>h2{background:#fff;padding:10px 12px;margin:0;border:1px solid var(--ln);border-radius:10px 10px 0 0}
-aside>#lb{padding:7px 12px;background:#fff;border:1px solid var(--ln);border-top:0;border-radius:0 0 10px 10px}
-aside>#lb li{font-size:11px;padding:4px 0}
 aside>.note{background:#fff;border:1px solid var(--ln);border-radius:8px;padding:8px 10px;margin:7px 0 0;font-size:10px}
 @media(max-width:860px){
   body:not(.online-match-active){align-items:flex-start;padding:8px}
@@ -756,6 +754,11 @@ body.study-modal-open{overflow:hidden}
         <div class="prestige-stat"><small>BẬC</small><strong id="prestigeTier">—</strong></div>
         <div class="prestige-stat"><small>THẮNG / THUA / HÒA</small><strong id="prestigeRecord">0 / 0 / 0</strong></div>
       </div>
+      <div id="achievementPanel" class="achievement-panel" aria-label="Danh hiệu người chơi">
+              <div class="achievement-panel-head"><strong>🏆 Danh hiệu</strong><span id="achievementStreak">Chuỗi thắng 0/5</span></div>
+              <div id="achievementBadges" class="achievement-badges"></div>
+              <p class="achievement-foot">Tiến độ danh hiệu được lưu trên thiết bị này.</p>
+            </div>
       <h4>🏅 Bảng xếp hạng</h4>
       <ol id="prestigeLeaderboard" aria-label="Bảng xếp hạng người chơi"></ol>
       <p class="prestige-note">ELO và bậc được lấy từ hồ sơ hiện có. Chơi xếp hạng để cạnh tranh vị trí trên bảng.</p>
@@ -789,11 +792,6 @@ body.study-modal-open{overflow:hidden}
       <div class="account-toolbar">
         <div id="accountAvatar" class="avatar avatar-large" aria-label="Ảnh đại diện">?</div>
         <button id="bProfile" type="button">Sửa hồ sơ</button>
-      </div>
-      <div id="achievementPanel" class="achievement-panel" aria-label="Danh hiệu người chơi">
-        <div class="achievement-panel-head"><strong>🏆 Danh hiệu</strong><span id="achievementStreak">Chuỗi thắng 0/5</span></div>
-        <div id="achievementBadges" class="achievement-badges"></div>
-        <p class="achievement-foot">Tiến độ danh hiệu được lưu trên thiết bị này.</p>
       </div>
       <button id="bLogout" class="auth-logout" type="button" hidden>Đăng xuất</button>
       <button id="bFind" class="pri">Ghép trận xếp hạng</button>
@@ -897,9 +895,6 @@ body.study-modal-open{overflow:hidden}
       <ol id="reviewList"></ol>
       <div class="note">Đánh giá được ước lượng bằng thuật toán chiến thuật Caro trong trình duyệt, không phải engine chuyên nghiệp. “Sách giáo khoa” là nhãn cho nước khai cuộc được chấm tốt, không tra cứu cơ sở dữ liệu khai cuộc.</div>
     </section>
-    <h2>Bảng xếp hạng</h2>
-    <ol id="lb"></ol>
-    <div class="note">Bảng xếp hạng lấy từ Render khi đã kết nối. Dữ liệu mẫu trên máy chủ sẽ bị xóa khi máy chủ khởi động lại.</div>
     <section class="seo-game-info" aria-labelledby="seoGameTitle">
       <h2 id="seoGameTitle">Caro 5 – Game cờ Caro online miễn phí</h2>
       <p><strong>Caro 5</strong> là game cờ caro trực tuyến trên bàn cờ 15×15. Hai người chơi lần lượt đặt quân X và O; mục tiêu là tạo năm quân liên tiếp theo hàng ngang, hàng dọc hoặc đường chéo.</p>
@@ -1530,7 +1525,9 @@ function stat(){
 }
 function renderLeaderboard(){
   const rows=onlineLeaderboard.length?onlineLeaderboard:(me.name?[{name:me.name,elo:me.elo}]:[]);
-  $('lb').innerHTML=rows.length?rows.map(p=>`<li><span>${esc(p.name||'Người chơi')}</span><i>${tier(Number(p.elo)||1000)}</i><b>${Number(p.elo)||1000}</b></li>`).join(''):'<li><span>Chưa có người chơi</span><i>—</i><b>—</b></li>';
+  const html=rows.length?rows.map(p=>`<li><span>${esc(p.name||'Người chơi')}</span><i>${tier(Number(p.elo)||1000)}</i><b>${Number(p.elo)||1000}</b></li>`).join(''):'<li><span>Chưa có người chơi</span><i>—</i><b>—</b></li>';
+  const target=$('prestigeLeaderboard');
+  if(target)target.innerHTML=html;
 }
 function safeAvatar(value){const avatar=String(value||'');return avatar.length<100000&&/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(avatar)?avatar:''}
 function setAvatarElement(element,avatar,name){
@@ -3513,12 +3510,7 @@ render();
       ? [Number(player.w) || 0, Number(player.l) || 0, Number(player.d) || 0].join(' / ')
       : '—';
 
-    const source = document.getElementById('lb');
-    const target = document.getElementById('prestigeLeaderboard');
-    target.replaceChildren();
-    if (source) {
-      for (const item of Array.from(source.children)) target.appendChild(item.cloneNode(true));
-    }
+    if (typeof renderLeaderboard === 'function') renderLeaderboard();
   }
 
   function openPrestige() {
