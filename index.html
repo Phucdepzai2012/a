@@ -1736,7 +1736,7 @@ function renderMatchChat(){
     $('matchChatMessages').innerHTML=messages.length?messages.map(message=>{
       const own=message.uid===me.uid,name=String(message.name||'Người chơi'),avatar=safeAvatar(message.avatar);
       const time=Number(message.at)?new Date(Number(message.at)).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}):'';
-      const avatarHtml='<span class="avatar avatar-small">'+(avatar?'<img src="'+avatar+'" data-fallback="'+esc(name.slice(0,1).toLocaleUpperCase('vi')||'?')+'" alt="'>':esc(name.slice(0,1).toLocaleUpperCase('vi')||'?'))+'</span>';
+      const avatarHtml='<span class="avatar avatar-small">'+(avatar?'<img src="'+avatar+'" data-fallback="'+esc(name.slice(0,1).toLocaleUpperCase('vi')||'?')+'" alt="">'>':esc(name.slice(0,1).toLocaleUpperCase('vi')||'?'))+'</span>';
       return '<div class="chat-message '+(own?'mine':'')+'">'+avatarHtml+'<div class="chat-bubble"><span class="chat-author">'+esc(own?'Bạn':name)+'</span><div class="chat-text">'+esc(message.text||'')+'</div><span class="chat-time">'+esc(time)+'</span></div></div>';
     }).join(''):'<div class="chat-empty">Chưa có tin nhắn. Hãy chào đối thủ nhé!</div>';
   }
