@@ -20,6 +20,7 @@ const io = new Server(server, {
 const data = { players: {}, lobby: null, invite: {}, games: {}, history: {}, social: { friends: {}, requests: {} } };
 // Temporary in-memory account/session store. Passwords are stored only as scrypt hashes.
 const accountsByName = new Map();
+const registeringNames = new Set();
 const accountsByUid = new Map();
 const sessions = new Map();
 const bannedUids = new Map();
@@ -41,8 +42,21 @@ const rankedQueue = new Map();
 const databaseUrl = String(process.env.DATABASE_URL || '').trim();
 const pool = databaseUrl ? new Pool({ connectionString: databaseUrl, max: 5, connectionTimeoutMillis: 10000 }) : null;
 if (pool) pool.on('error', error => console.error('PostgreSQL pool error:', error.message));
+
+function scryptAsync(password, salt, keylen) {
+  return new Promise((resolve, reject) => {
+    crypto.scrypt(password, salt, keylen, (error, derivedKey) => {
+      if (error) reject(error);
+      else resolve(derivedKey);
+    });
+  });
+}
 let persistenceReady = false;
-let persistQueue = Promise.resolve();
+// Coalesce bursts of changes so a small instance serializes and writes one latest snapshot.
+const PERSIST_BATCH_MS = 90;
+let persistTimer = null;
+let persistWaiters = [];
+let persistWriting = false;
 const ADMIN_UID = '__caro_admin__';
 const ADMIN_USERNAME = String(process.env.CARO_ADMIN_USERNAME || 'admin').trim().toLocaleLowerCase('vi-VN').slice(0, 14) || 'admin';
 const ADMIN_NAME_KEY = ADMIN_USERNAME.normalize('NFKC').toLocaleLowerCase('vi-VN');
@@ -142,18 +156,53 @@ async function initializePersistence() {
   persistenceReady = true;
 }
 
-function persistState() {
-  if (!pool || !persistenceReady) return Promise.resolve(false);
-  const payload = JSON.stringify(persistentSnapshot());
-  persistQueue = persistQueue.catch(() => {}).then(async () => {
+function flushPersistQueue() {
+  if (!pool || !persistenceReady || persistWriting || !persistWaiters.length) return;
+  persistWriting = true;
+  const waiters = persistWaiters;
+  persistWaiters = [];
+
+  (async () => {
+    // Serialize at flush time, not when every caller queues, to avoid redundant CPU work.
+    const payload = JSON.stringify(persistentSnapshot());
     await pool.query(
       'INSERT INTO caro_state (state_key, payload, updated_at) VALUES ($1, $2::jsonb, NOW()) ON CONFLICT (state_key) DO UPDATE SET payload = EXCLUDED.payload, updated_at = NOW()',
       ['main', payload]
     );
-    return true;
+  })().then(() => {
+    for (const waiter of waiters) waiter.resolve(true);
+  }).catch(error => {
+    console.error('Could not save Caro state to PostgreSQL:', error.message);
+    for (const waiter of waiters) waiter.reject(error);
+  }).finally(() => {
+    persistWriting = false;
+    // Mutations that arrived during the write are saved in the next batch.
+    if (persistWaiters.length && !persistTimer) {
+      persistTimer = setTimeout(() => {
+        persistTimer = null;
+        flushPersistQueue();
+      }, PERSIST_BATCH_MS);
+    }
   });
-  persistQueue.catch(error => console.error('Could not save Caro state to PostgreSQL:', error.message));
-  return persistQueue;
+}
+
+function persistState(options = {}) {
+  if (!pool || !persistenceReady) return Promise.resolve(false);
+  const promise = new Promise((resolve, reject) => persistWaiters.push({ resolve, reject }));
+  if (persistTimer) {
+    clearTimeout(persistTimer);
+    persistTimer = null;
+  }
+  if (options && options.immediate === true) {
+    // If a write is already running, its finally block schedules this batch.
+    if (!persistWriting) flushPersistQueue();
+  } else if (!persistWriting) {
+    persistTimer = setTimeout(() => {
+      persistTimer = null;
+      flushPersistQueue();
+    }, PERSIST_BATCH_MS);
+  }
+  return promise;
 }
 
 function schedulePersist() {
@@ -696,10 +745,16 @@ io.on('connection', socket => {
         throw new Error('Mật khẩu phải có ít nhất 8 ký tự và tối đa 128 byte.');
       }
       if (key === ADMIN_NAME_KEY) throw new Error('Tên này được dành riêng cho quản trị viên.');
-      if (accountsByName.has(key)) throw new Error('Tên đăng nhập đã được sử dụng.');
+      if (accountsByName.has(key) || registeringNames.has(key)) throw new Error('Tên đăng nhập đã được sử dụng.');
+      registeringNames.add(key);
       const uid = 'u_' + crypto.randomBytes(18).toString('hex');
       const salt = crypto.randomBytes(16);
-      const passwordHash = crypto.scryptSync(password, salt, 64);
+      let passwordHash;
+      try {
+        passwordHash = await scryptAsync(password, salt, 64);
+      } finally {
+        registeringNames.delete(key);
+      }
       const account = { uid, name, key, salt: salt.toString('hex'), passwordHash: passwordHash.toString('hex'), createdAt: Date.now() };
       accountsByName.set(key, uid);
       accountsByUid.set(uid, account);
@@ -745,7 +800,7 @@ io.on('connection', socket => {
       if (bannedUids.has(uid)) throw new Error('Tài khoản đã bị khóa quản trị. Hãy liên hệ quản trị viên.');
       const salt = Buffer.from(account.salt, 'hex');
       const storedHash = Buffer.from(account.passwordHash, 'hex');
-      const suppliedHash = crypto.scryptSync(password, salt, storedHash.length);
+      const suppliedHash = await scryptAsync(password, salt, storedHash.length);
       if (storedHash.length !== suppliedHash.length || !crypto.timingSafeEqual(storedHash, suppliedHash)) {
         throw new Error('Tên đăng nhập hoặc mật khẩu không đúng.');
       }
@@ -1516,7 +1571,7 @@ async function startServer() {
 }
 
 async function shutdown() {
-  try { await persistState(); } catch (error) { console.error('Final state save failed:', error.message); }
+  try { await persistState({ immediate: true }); } catch (error) { console.error('Final state save failed:', error.message); }
   if (pool) await pool.end().catch(() => {});
   server.close(() => process.exit(0));
 }
