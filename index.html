@@ -641,6 +641,64 @@ body.study-modal-open{overflow:hidden}
 .menu-pop-actions button:hover{border-color:#a5bedf}
 .menu-pop-actions .menu-save{border-color:#2769c9;background:#2769c9;color:#fff}
 @media(max-width:520px){.menu-settings-card{padding:16px}}
+
+/* Player achievements */
+.achievement-panel{margin:12px 0;padding:11px;border:1px solid var(--ln);border-radius:9px;background:#f8fafc}
+.achievement-panel-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.achievement-panel-head strong{font-size:12px}
+.achievement-panel-head span{font-size:10px;font-weight:800;color:var(--blue);white-space:nowrap}
+.achievement-badges{display:grid;gap:7px;margin-top:9px}
+.achievement-badge{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:8px;padding:8px;border:1px solid #dfe5eb;border-radius:8px;background:#fff}
+.achievement-badge.locked{background:#f4f6f8;color:#697786}
+.achievement-badge.unlocked{border-color:#cad8ff;background:#f0f4ff}
+.achievement-icon{display:grid;place-items:center;width:32px;height:32px;border-radius:8px;background:#e9edf2;font-size:17px}
+.achievement-badge.unlocked .achievement-icon{background:#dce7ff}
+.achievement-copy{min-width:0}
+.achievement-copy strong,.achievement-copy small{display:block}
+.achievement-copy strong{font-size:10px;line-height:1.4}
+.achievement-copy small{margin-top:3px;color:var(--mut);font-size:9px;line-height:1.45}
+.achievement-state{font-size:9px;font-weight:800;color:#718094;white-space:nowrap}
+.achievement-badge.unlocked .achievement-state{color:#1c3fb7}
+.achievement-foot{margin:8px 0 0;color:var(--mut);font-size:9px;line-height:1.5}
+
+/* Lightweight victory animation: no external media or animation library needed. */
+.achievement-effect[hidden]{display:none!important}
+.achievement-effect{position:fixed;inset:0;z-index:1500;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:18px;background:rgba(8,14,27,.82);backdrop-filter:blur(7px)}
+.achievement-effect:before{content:"";position:absolute;inset:-20%;background:radial-gradient(circle at 50% 45%,rgba(43,91,181,.34),transparent 37%);opacity:0}
+.achievement-effect.boss-mode:before{background:radial-gradient(circle at 50% 45%,rgba(255,181,55,.24),transparent 38%)}
+.achievement-effect.active:before{animation:achievementLight 1.1s ease-out forwards}
+.achievement-effect-card{position:relative;z-index:2;width:min(520px,100%);padding:clamp(22px,5vw,38px) 20px 22px;border:1px solid rgba(255,255,255,.75);border-radius:19px;background:linear-gradient(145deg,#fbfdff,#e9eff8);color:#17253d;text-align:center;box-shadow:0 28px 90px rgba(0,0,0,.45);opacity:0;transform:translateY(24px) scale(.92)}
+.achievement-effect.active .achievement-effect-card{animation:achievementCardIn .55s cubic-bezier(.18,.85,.25,1.12) forwards}
+.achievement-effect-mark{display:grid;place-items:center;width:66px;height:66px;margin:0 auto 13px;border:2px solid #9eb9f1;border-radius:50%;background:radial-gradient(circle,#fff,#dce7ff);color:#1c3fb7;font-size:34px;box-shadow:0 0 0 8px rgba(159,188,244,.14),0 0 36px rgba(94,139,230,.3);animation:achievementMark 1.5s ease-in-out infinite}
+.achievement-effect.boss-mode .achievement-effect-mark{border-color:#e9bd66;background:radial-gradient(circle,#fff9e6,#f6d58f);color:#8b5600;box-shadow:0 0 0 8px rgba(255,199,91,.14),0 0 36px rgba(255,179,46,.28)}
+.achievement-effect-kicker{margin:0 0 9px;color:#4772c7;font-size:10px;font-weight:900;letter-spacing:.24em}
+.achievement-effect.boss-mode .achievement-effect-kicker{color:#a96a05}
+.achievement-effect-title{margin:0;color:#1d3155;font-size:clamp(24px,5vw,39px);font-weight:900;line-height:1.08;letter-spacing:-.04em;text-wrap:balance}
+.achievement-effect.boss-mode .achievement-effect-title{color:#693d00;text-shadow:0 1px 0 #fff2d2}
+.achievement-effect-subtitle{margin:12px 0 17px;color:#66768d;font-size:12px;line-height:1.6;font-weight:700;letter-spacing:.08em}
+.achievement-effect-awards{display:flex;justify-content:center;flex-wrap:wrap;gap:7px;margin:0 auto 19px}
+.achievement-effect-awards span{padding:7px 11px;border:1px solid #d4deec;border-radius:999px;background:#fff;color:#304b77;font-size:11px;font-weight:800}
+.achievement-effect.boss-mode .achievement-effect-awards span{border-color:#ead39f;background:#fff8e7;color:#845500}
+.achievement-effect-close{width:min(220px,100%);margin:0;padding:11px 15px;border:1px solid #1c3fb7;border-radius:9px;background:#1c3fb7;color:#fff;font-size:12px;font-weight:800}
+.achievement-effect.boss-mode .achievement-effect-close{border-color:#9a650a;background:#9a650a}
+.achievement-effect-particles{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.achievement-particle{position:absolute;left:50%;top:50%;color:#cfddff;font-size:clamp(16px,3vw,28px);opacity:0;text-shadow:0 0 18px rgba(126,166,255,.8)}
+.achievement-effect.boss-mode .achievement-particle{color:#ffdc8a;text-shadow:0 0 18px rgba(255,182,54,.75)}
+.achievement-effect.active .achievement-particle{animation:achievementParticle 1.8s ease-out both}
+.achievement-particle.p1{--px:-36vw;--py:-27vh;animation-delay:.08s!important}
+.achievement-particle.p2{--px:31vw;--py:-31vh;animation-delay:.14s!important}
+.achievement-particle.p3{--px:-40vw;--py:12vh;animation-delay:.2s!important}
+.achievement-particle.p4{--px:38vw;--py:15vh;animation-delay:.06s!important}
+.achievement-particle.p5{--px:-24vw;--py:34vh;animation-delay:.23s!important}
+.achievement-particle.p6{--px:22vw;--py:34vh;animation-delay:.16s!important}
+.achievement-particle.p7{--px:7vw;--py:-39vh;animation-delay:.12s!important}
+@keyframes achievementLight{0%{opacity:0;transform:scale(.6)}45%{opacity:1}100%{opacity:.7;transform:scale(1.1)}}
+@keyframes achievementCardIn{to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes achievementMark{50%{transform:scale(1.06) rotate(8deg)}}
+@keyframes achievementParticle{0%{opacity:0;transform:translate(-50%,-50%) scale(.3) rotate(0)}22%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--px)),calc(-50% + var(--py))) scale(1.15) rotate(150deg)}}
+@media(max-width:520px){.achievement-panel{padding:9px}.achievement-badge{grid-template-columns:31px minmax(0,1fr) auto;gap:6px;padding:7px}.achievement-icon{width:30px;height:30px}.achievement-state{font-size:8px}.achievement-effect-card{padding:25px 15px 18px}.achievement-effect-mark{width:58px;height:58px;font-size:29px}}
+@media(prefers-reduced-motion:reduce){.achievement-effect.active:before,.achievement-effect.active .achievement-effect-card,.achievement-effect.active .achievement-particle,.achievement-effect-mark{animation:none!important;opacity:1;transform:none}}
+
 </style>
 </head>
 <body>
@@ -664,6 +722,22 @@ body.study-modal-open{overflow:hidden}
   </section>
 
   <div id="ov"><div><h1>Caro <b>5</b></h1><p id="authHint">Đăng nhập để đồng bộ ELO và lịch sử đấu của bạn.</p><input id="nm" maxlength="14" placeholder="Tên đăng nhập (3–14 ký tự)" autocomplete="username"><div class="password-row"><input id="pw" type="password" minlength="8" maxlength="128" placeholder="Mật khẩu (ít nhất 8 ký tự)" autocomplete="current-password"><button id="togglePw" type="button" aria-label="Hiện mật khẩu" title="Hiện mật khẩu">👁️</button></div><div id="pwConfirmRow" class="password-row" hidden><input id="pwConfirm" type="password" minlength="8" maxlength="128" placeholder="Nhập lại mật khẩu" autocomplete="new-password"><button id="togglePwConfirm" type="button" aria-label="Hiện mật khẩu xác nhận" title="Hiện mật khẩu xác nhận">👁️</button></div><div id="nmEr" role="status" aria-live="polite"></div><button id="nmOk" class="pri">Đăng nhập</button><button id="bSwitchAuth" class="auth-switch" type="button">Chưa có tài khoản? Đăng ký</button></div></div>
+<div id="achievementEffect" class="achievement-effect" hidden role="status" aria-live="assertive">
+  <div class="achievement-effect-particles" aria-hidden="true">
+    <span class="achievement-particle p1">✦</span><span class="achievement-particle p2">✧</span>
+    <span class="achievement-particle p3">✦</span><span class="achievement-particle p4">✧</span>
+    <span class="achievement-particle p5">★</span><span class="achievement-particle p6">✦</span>
+    <span class="achievement-particle p7">✧</span>
+  </div>
+  <div class="achievement-effect-card">
+    <div class="achievement-effect-mark" aria-hidden="true">★</div>
+    <p id="achievementEffectKicker" class="achievement-effect-kicker">BOSS DEFEATED</p>
+    <h2 id="achievementEffectTitle" class="achievement-effect-title">TIÊU DIỆT THÀNH CÔNG</h2>
+    <p id="achievementEffectSubtitle" class="achievement-effect-subtitle">BOSS TUYỂN THỦ ĐÃ GỤC NGÃ</p>
+    <div id="achievementEffectAwards" class="achievement-effect-awards"></div>
+    <button id="achievementEffectClose" class="achievement-effect-close" type="button">Tiếp tục</button>
+  </div>
+</div>
 <main>
   <div class="paper"><canvas id="bd" aria-label="Bàn cờ Caro 15 x 15"></canvas></div>
   <aside>
@@ -674,6 +748,11 @@ body.study-modal-open{overflow:hidden}
       <div class="account-toolbar">
         <div id="accountAvatar" class="avatar avatar-large" aria-label="Ảnh đại diện">?</div>
         <button id="bProfile" type="button">Sửa hồ sơ</button>
+      </div>
+      <div id="achievementPanel" class="achievement-panel" aria-label="Danh hiệu người chơi">
+        <div class="achievement-panel-head"><strong>🏆 Danh hiệu</strong><span id="achievementStreak">Chuỗi thắng 0/5</span></div>
+        <div id="achievementBadges" class="achievement-badges"></div>
+        <p class="achievement-foot">Tiến độ danh hiệu được lưu trên thiết bị này.</p>
       </div>
       <button id="bLogout" class="auth-logout" type="button" hidden>Đăng xuất</button>
       <button id="bFind" class="pri">Ghép trận xếp hạng</button>
@@ -1383,6 +1462,7 @@ function ui(){
   $('adminSection').hidden=!me.isAdmin;
   renderLeaderboard();
   renderAccountSummary();
+  renderAchievements();
   renderMatchChat();
 }
 function renderTurnStatus(secondsLeft){
@@ -1419,6 +1499,88 @@ function setAvatarElement(element,avatar,name){
   else element.textContent=String(name||'?').trim().slice(0,1).toLocaleUpperCase('vi')||'?';
 }
 function renderAccountSummary(){setAvatarElement($('accountAvatar'),me.avatar,me.name)}
+
+function achievementStorageKey(){
+  const owner=String(me.uid||('guest:'+String(me.name||'người chơi').toLocaleLowerCase('vi-VN')));
+  return 'caroAchievementsV1_'+encodeURIComponent(owner);
+}
+function readAchievementState(){
+  const empty={streak:0,totalWins:0,unlocked:{bossSlayer:false,fiveWinStreak:false}};
+  try{
+    const saved=JSON.parse(localStorage.getItem(achievementStorageKey())||'{}');
+    return {
+      streak:Math.max(0,Math.floor(Number(saved.streak)||0)),
+      totalWins:Math.max(0,Math.floor(Number(saved.totalWins)||0)),
+      unlocked:{...empty.unlocked,...(saved.unlocked&&typeof saved.unlocked==='object'?saved.unlocked:{})}
+    };
+  }catch(_){return empty}
+}
+function renderAchievements(){
+  const list=$('achievementBadges'),streakLabel=$('achievementStreak');
+  if(!list||!streakLabel)return;
+  const state=readAchievementState();
+  const items=[
+    {id:'bossSlayer',icon:'♜',title:'Kẻ Diệt Boss Tuyển Thủ',description:'Thắng Boss Tuyệt Thủ từ 9500 ELO trở lên.',unlocked:!!state.unlocked.bossSlayer},
+    {id:'fiveWinStreak',icon:'🔥',title:'Chuỗi Thắng Bất Bại',description:'Giành 5 chiến thắng liên tiếp.',unlocked:!!state.unlocked.fiveWinStreak}
+  ];
+  list.innerHTML=items.map(item=>'<div class="achievement-badge '+(item.unlocked?'unlocked':'locked')+'"><span class="achievement-icon" aria-hidden="true">'+item.icon+'</span><span class="achievement-copy"><strong>'+item.title+'</strong><small>'+item.description+'</small></span><span class="achievement-state">'+(item.unlocked?'ĐÃ MỞ':'🔒')+'</span></div>').join('');
+  streakLabel.textContent=state.streak>=5?'🔥 '+state.streak+' thắng liền':'Chuỗi thắng '+state.streak+'/5';
+}
+let achievementEffectTimer=0;
+function closeAchievementEffect(){
+  const panel=$('achievementEffect');
+  if(achievementEffectTimer)clearTimeout(achievementEffectTimer);
+  achievementEffectTimer=0;
+  if(panel){panel.classList.remove('active');panel.hidden=true}
+}
+function showAchievementEffect(bossDefeated,unlockedTitles){
+  const panel=$('achievementEffect');
+  if(!panel)return;
+  const titles=Array.isArray(unlockedTitles)?unlockedTitles:[];
+  panel.classList.toggle('boss-mode',!!bossDefeated);
+  $('achievementEffectKicker').textContent=bossDefeated?'BOSS DEFEATED':'ACHIEVEMENT UNLOCKED';
+  $('achievementEffectTitle').textContent=bossDefeated?'TIÊU DIỆT THÀNH CÔNG':'CHUỖI THẮNG BẤT BẠI';
+  $('achievementEffectSubtitle').textContent=bossDefeated?'BOSS TUYỂN THỦ ĐÃ GỤC NGÃ':'5 CHIẾN THẮNG LIÊN TIẾP';
+  const displayTitles=titles.length?titles:(bossDefeated?['Kẻ Diệt Boss Tuyển Thủ']:['Chuỗi Thắng Bất Bại']);
+  $('achievementEffectAwards').innerHTML=displayTitles.map(title=>'<span>🏆 '+esc(title)+'</span>').join('');
+  panel.hidden=false;
+  panel.classList.remove('active');
+  void panel.offsetWidth;
+  panel.classList.add('active');
+  if(achievementEffectTimer)clearTimeout(achievementEffectTimer);
+  achievementEffectTimer=setTimeout(closeAchievementEffect,4800);
+}
+function processMatchAchievements(game){
+  if(!game||game.achievementsProcessed)return;
+  game.achievementsProcessed=true;
+  if(!me.name||me.isAdmin)return;
+  const state=readAchievementState();
+  const won=Number(game.winner)>=0&&Number(game.winner)===Number(game.mine);
+  const bossDefeated=won&&game.reason==='win'&&game.mode==='bot'&&Number(game.botElo)>=9500;
+  const newlyUnlocked=[];
+  if(won){
+    state.totalWins++;
+    state.streak++;
+    if(bossDefeated&&!state.unlocked.bossSlayer){
+      state.unlocked.bossSlayer=true;
+      newlyUnlocked.push('Kẻ Diệt Boss Tuyển Thủ');
+    }
+    if(state.streak>=5&&!state.unlocked.fiveWinStreak){
+      state.unlocked.fiveWinStreak=true;
+      newlyUnlocked.push('Chuỗi Thắng Bất Bại');
+    }
+  }else{
+    state.streak=0;
+  }
+  state.updatedAt=Date.now();
+  try{localStorage.setItem(achievementStorageKey(),JSON.stringify(state))}catch(error){console.warn('Không lưu được danh hiệu:',error)}
+  renderAchievements();
+  if(bossDefeated||newlyUnlocked.length)showAchievementEffect(bossDefeated,newlyUnlocked);
+}
+if($('achievementEffectClose'))$('achievementEffectClose').addEventListener('click',closeAchievementEffect);
+if($('achievementEffect'))$('achievementEffect').addEventListener('click',event=>{if(event.target===$('achievementEffect'))closeAchievementEffect()});
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&$('achievementEffect')&&!$('achievementEffect').hidden)closeAchievementEffect()});
+
 function renderPersonRow(person,mode){
   const p=person||{},name=String(p.name||'Người chơi'),uid=String(p.uid||''),avatar=safeAvatar(p.avatar);
   const avatarHtml='<span class="avatar avatar-small">'+(avatar?'<img src="'+avatar+'" alt="">':esc(name.slice(0,1).toLocaleUpperCase('vi')||'?'))+'</span>';
@@ -2133,7 +2295,7 @@ function startGame(mode){
   const botName=ranked?`Máy ${tier(botElo)} (${botElo})`:`Máy ${tier(botElo)} (${botElo} ELO)`;
   const mine=Math.random()<.5?0:1;
   const myPlayer={uid:me.uid||'',name:me.name,elo:me.elo},botPlayer={uid:'',name:botName,elo:botElo};
-  G={mode,mine,botElo,noise:botNoise(botElo),board:new Map(),turn:0,n:0,over:0,startedAt:now(),turnStartedAt:now(),names:mine===0?[me.name,botName]:[botName,me.name],players:mine===0?[myPlayer,botPlayer]:[botPlayer,myPlayer],moves:[],last:null,line:null,msg:'',winner:null,review:[]};
+  G={mode,mine,botElo,isBossMatch:mode==='bot'&&botElo>=9500,noise:botNoise(botElo),board:new Map(),turn:0,n:0,over:0,startedAt:now(),turnStartedAt:now(),names:mine===0?[me.name,botName]:[botName,me.name],players:mine===0?[myPlayer,botPlayer]:[botPlayer,myPlayer],moves:[],last:null,line:null,msg:'',winner:null,review:[]};
   $('review').hidden=true;$('reviewSummary').textContent='';$('reviewList').innerHTML='';$('tm').textContent='';
   resetCamera();setActive(true);ui();draw();stat();
   if(G.turn!==G.mine)setTimeout(botTurn,350);
@@ -2172,6 +2334,7 @@ function finishGame(winner,why){
   G.msg=resultText+(ratedOnline?' · Đang xác nhận ELO…':'');
   $('tm').textContent='';setActive(false);ui();draw();stat();showReview();
   const completed=G;
+  processMatchAchievements(completed);
   if(!ratedOnline){
     saveFinishedMatchHistory(completed).catch(error=>console.error('Không lưu được lịch sử:',error));
     return;
