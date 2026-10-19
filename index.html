@@ -1608,6 +1608,9 @@ function ui(){
   $('bBot').disabled=!me.name||!!(G&&!G.over)||finding;
   $('botEloRange').disabled=!!(G&&!G.over)||finding;
   $('botEloInput').disabled=!!(G&&!G.over)||finding;
+  $('bStartBot').disabled=!me.name||!!(G&&!G.over)||finding;
+  $('bStartChampionBot').disabled=!me.name||!!(G&&!G.over)||finding;
+  document.querySelectorAll('[data-play-view]').forEach(button=>{button.disabled=!!(G&&!G.over)||finding});
   const onlinePlaying=!!(G&&G.mode==='online'&&!G.over&&G.roomStatus==='play'&&Array.isArray(G.players)&&G.players.length===2);
   document.body.classList.toggle('online-match-active',onlinePlaying);
   $('matchActions').hidden=!onlinePlaying;
@@ -1857,7 +1860,10 @@ function historyDate(value){
   const date=new Date(Number(value));
   return Number.isFinite(date.getTime())?date.toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'Không rõ thời gian';
 }
-function coordinateName(move){return String.fromCharCode(65+Number(move.x))+String(N-Number(move.y))}
+function coordinateName(move){
+  if(G&&G.boardMode==='inf')return '('+Number(move.x)+', '+Number(move.y)+')';
+  return String.fromCharCode(65+Number(move.x))+String(N-Number(move.y));
+}
 function durationLabel(ms){
   const seconds=Math.max(0,Number(ms)||0)/1000;
   return seconds>=60?`${Math.floor(seconds/60)}m ${(seconds%60).toFixed(1)}s`:`${seconds.toFixed(1)}s`;
@@ -1957,6 +1963,7 @@ async function saveFinishedMatchHistory(game){
     opponentUid:opponent.uid||'',opponentName:opponent.name||'Đối thủ',opponentElo:Number(opponent.elo)||Number(game.oppElo)||Number(game.botElo)||1000,
     result, winnerName:result==='draw'?'Hòa':result==='win'?me.name:(opponent.name||'Đối thủ'),
     gameType:game.mode==='bot'?'Đấu máy':game.roomCode?'Phòng riêng':'Xếp hạng',
+    boardMode:game.boardMode==='inf'?'inf':'normal',
     reason:game.reason||'',moveCount:Array.isArray(game.moves)?game.moves.length:0,
     durationMs:Math.max(0,Date.now()-(Number(game.startedAt)||Date.now())),
     playerSide:Number(game.mine)||0,
@@ -2658,7 +2665,7 @@ async function cancelFind(showMessage=true){
 }
 async function openGame(gid){
   if(!db||!me.uid)throw new Error('Render chưa kết nối.');
-  if(G&&G.mode==='online'&&G.gid===String(gid)&&G.ref)return;
+  if(G&&G.mode==='online'&&G.gid===String(gid)&&G.ref){closePlayModeModal();return}
   if(G&&G.ref)G.ref.off();clearTimeout(findTimer);finding=false;if(inviteRef){inviteRef.off();inviteRef=null}
   $('bFind').textContent='Ghép trận xếp hạng';
   const ref=db.ref('games/'+gid),snap=await ref.once('value'),v=snap.val();
@@ -2835,6 +2842,7 @@ playModeModal.querySelectorAll('[data-board-picker]').forEach(picker=>{
     const button=event.target.closest('[data-board-choice]');
     if(!button)return;
     const mode=picker.dataset.boardPicker,choice=button.dataset.boardChoice==='inf'?'inf':'normal';
+    if(mode==='ranked'&&finding){$('playModeStatus').textContent='Huỷ tìm trận trước khi đổi bản đồ.';return}
     playBoardModes[mode]=choice;
     picker.querySelectorAll('[data-board-choice]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));
   });
@@ -3142,13 +3150,15 @@ const QUALITY={
   'Sai lầm nghiêm trọng':['blunder',25],'Siêu sai lầm':['maxblunder',8],'Bỏ lỡ chiến thắng':['missed',5]
 };
 function analyzeGame(){
-  const board=new Map(),out=[];
+  const board=new Map(),out=[],infinite=G.boardMode==='inf';
+  const modeCandidates=(position,side)=>infinite?candidatesInfinite(position,80,side):candidates(position);
+  const modeWinningMoves=(position,side)=>modeCandidates(position,side).filter(([x,y])=>wouldWin(position,x,y,side)).map(([x,y])=>x+','+y);
   for(let i=0;i<G.moves.length;i++){
-    const m=G.moves[i],p=m.p,key=m.x+','+m.y;const opts=candidates(board),ownWins=new Set(winningMoves(board,p)),oppWins=new Set(winningMoves(board,1-p));
+    const m=G.moves[i],p=m.p,key=m.x+','+m.y;const opts=modeCandidates(board,p),ownWins=new Set(modeWinningMoves(board,p)),oppWins=new Set(modeWinningMoves(board,1-p));
     if(!opts.some(([x,y])=>x===m.x&&y===m.y))opts.push([m.x,m.y]);
     let best=-Infinity;for(const[x,y]of opts)best=Math.max(best,scoreMove(board,x,y,p,oppWins));
     const played=scoreMove(board,m.x,m.y,p,oppWins),gap=Math.max(0,best-played);const after=new Map(board);after.set(key,p);
-    const opponentCanWin=winningMoves(after,1-p).length>0;const playedWins=wouldWin(board,m.x,m.y,p);let label;
+    const opponentCanWin=modeWinningMoves(after,1-p).length>0;const playedWins=wouldWin(board,m.x,m.y,p);let label;
     if(playedWins){label=oppWins.size&&!ownWins.size?'Thiên tài':'Nước thắng'}
     else if(ownWins.size&&!ownWins.has(key)){label='Bỏ lỡ chiến thắng'}
     else if(opponentCanWin){label=oppWins.size?'Siêu sai lầm':'Sai lầm nghiêm trọng'}
@@ -3170,7 +3180,7 @@ function showReplayPly(record,index){
   if(!moves.length){$('historyReplayFocus').textContent='Ván này chưa có dữ liệu nước đi.';return}
   if(Number(index)<0){
     G.board=new Map();G.last=null;G.line=null;G.replayIndex=-1;
-    cam.x=N/2;cam.y=N/2;draw();
+    cam.x=G&&G.boardMode==='inf'?.5:N/2;cam.y=G&&G.boardMode==='inf'?.5:N/2;draw();
     $('historyReplayFocus').textContent=`Vị trí ban đầu · 0/${moves.length} nước đi`;
     $('historyReplayMoves').querySelectorAll('[data-replay-ply]').forEach(button=>button.classList.remove('active'));
     updateReplayProgress();
@@ -3230,8 +3240,8 @@ function openSavedReplay(record){
   $('historyReplayInfo').textContent=`${historyDate(record.timestamp)} · ${esc(record.gameType||'Caro')} · Tổng thời gian: ${Number(record.durationMs)>0?durationLabel(record.durationMs):'—'}`;
   const gamePlayers=Array.isArray(record.players)&&record.players.length===2?record.players:[{name:record.names&&record.names[0]||record.playerName||me.name},{name:record.names&&record.names[1]||record.opponentName||'Đối thủ'}];
   const names=gamePlayers.map(p=>String(p.name||'Người chơi'));
-  G={mode:'replay',mine:Number(record.playerSide)||0,over:1,turn:-1,board:new Map(),moves,movesFull:moves,replayRecord:record,names,startedAt:Number(record.timestamp)||now(),last:null,line:null,msg:'Đang xem lại ván đấu',winner:Number.isInteger(record.winnerPiece)?record.winnerPiece:-1,review:[]};
-  cam.x=N/2;cam.y=N/2;
+  G={mode:'replay',boardMode:record.boardMode==='inf'?'inf':'normal',mine:Number(record.playerSide)||0,over:1,turn:-1,board:new Map(),moves,movesFull:moves,replayRecord:record,names,startedAt:Number(record.timestamp)||now(),last:null,line:null,msg:'Đang xem lại ván đấu',winner:Number.isInteger(record.winnerPiece)?record.winnerPiece:-1,review:[]};
+  resetCamera();
   $('review').hidden=true;
   $('historyReplayMoves').innerHTML=moves.map((m,i)=>{
     const evalLabel=m.evaluation||'Chưa có đánh giá';
@@ -3249,7 +3259,7 @@ function showReview(){
   $('reviewList').innerHTML=G.review.map(m=>`<li><button class="review-row" data-index="${m.index}" title="Xem nước đi ${m.index+1}"><span class="review-num">${m.index+1}.</span><b class="review-side ${m.p===0?'x':'o'}">${m.p===0?'X':'O'}</b><span class="review-coord">(${m.x}, ${m.y})</span><span class="tag tag-${m.cls}">${m.label}</span></button></li>`).join('');$('review').hidden=false;
 }
 async function submitAccuracyReport(game){
- if(!game||game.mode!=='online'||game.roomCode||!game.gid||!game.ratingConfirmed||!me.uid||!window.caroAuth||!Array.isArray(game.players)||!Array.isArray(game.review)||game.accuracyReportSent)return;
+ if(!game||game.mode!=='online'||game.boardMode==='inf'||game.roomCode||!game.gid||!game.ratingConfirmed||!me.uid||!window.caroAuth||!Array.isArray(game.players)||!Array.isArray(game.review)||game.accuracyReportSent)return;
  game.accuracyReportSent=true;const oi=1-Number(game.mine),op=game.players[oi];if(!op||!op.uid||op.uid===me.uid||game.moves.length<24)return;
  const moves=game.review.filter(m=>Number(m.p)===oi);if(moves.length<12)return;const accuracy=Math.round(moves.reduce((a,m)=>a+(Number(m.pct)||0),0)/moves.length);if(accuracy<99||accuracy>100)return;
  try{const result=await window.caroAuth.reportAccuracy({gid:game.gid,targetUid:op.uid,accuracy});if(result&&result.created&&G===game)$('reviewSummary').insertAdjacentHTML('beforeend','<div class="note">Đã gửi admin yêu cầu kiểm tra accuracy 99–100% của đối thủ; đây chưa phải kết luận gian lận.</div>')}catch(error){console.warn('Không gửi được yêu cầu kiểm tra:',error.message||error)}
