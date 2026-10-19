@@ -772,6 +772,67 @@ body.study-modal-open{overflow:hidden}
 @media(max-width:420px){.play-mode-grid{gap:8px}.play-mode-tile{padding:11px;min-height:132px}.board-mode-picker{gap:7px}.board-mode-option{gap:7px;padding:8px}.board-mode-graphic{width:40px;height:40px}.board-mode-graphic svg{width:34px;height:30px}.play-mode-card{border-radius:13px}}
 
 
+
+/* Player-vs-player strip and end-of-game result. Keep it separate from the board. */
+.match-hud{display:grid;grid-template-columns:minmax(0,1fr) 32px minmax(0,1fr);align-items:center;gap:8px;margin:0 0 8px;padding:8px;border:1px solid #dfe5eb;border-radius:10px;background:#fff}
+.match-hud[hidden]{display:none!important}
+.match-side{display:flex;align-items:center;gap:8px;min-width:0;padding:7px;border:1px solid #e2e8f0;border-radius:9px;background:#f8fafc}
+.match-side.is-x{border-color:#bdd0ff;background:#f0f4ff}
+.match-side.is-o{border-color:#f1c5c2;background:#fff3f2}
+.match-side-avatar{display:grid;place-items:center;flex:none;width:38px;height:38px;border:1px solid #d8e0e8;border-radius:50%;overflow:hidden;background:#fff;color:#5b6b7f;font-size:15px;font-weight:900}
+.match-side-avatar img{width:100%;height:100%;object-fit:cover}
+.match-side.is-x .match-side-avatar{border-color:#a9beff;color:#1c3fb7}
+.match-side.is-o .match-side-avatar{border-color:#efb1ad;color:#c92c27}
+.match-side-copy{min-width:0;flex:1}
+.match-side-copy strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:clamp(10px,1.5vw,13px);line-height:1.35;color:#253243}
+.match-side-copy small{display:block;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:#728091}
+.match-piece{display:inline-flex;align-items:center;justify-content:center;flex:none;min-width:22px;height:22px;padding:0 4px;border-radius:6px;font-size:12px;font-weight:900}
+.match-side.is-x .match-piece{background:#dce7ff;color:#1c3fb7}
+.match-side.is-o .match-piece{background:#ffe1df;color:#c92c27}
+.match-vs{font-size:11px;font-weight:900;text-align:center;letter-spacing:.06em;color:#8592a1}
+.match-result-overlay{position:fixed;inset:0;z-index:1600;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(11,18,31,.68);backdrop-filter:blur(6px)}
+.match-result-overlay[hidden]{display:none!important}
+.match-result-card{width:min(530px,100%);max-height:calc(100dvh - 32px);overflow:auto;padding:clamp(16px,4vw,25px);border:1px solid rgba(255,255,255,.8);border-radius:17px;background:#fff;box-shadow:0 25px 80px rgba(0,0,0,.32);color:#243247}
+.match-result-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.match-result-kicker{font-size:9px;font-weight:900;letter-spacing:.13em;color:#77869a}
+.match-result-spark{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:#edf3ff;color:#1c3fb7;font-size:19px}
+.match-result-card h2{margin:12px 0 0;font-size:clamp(24px,5vw,35px);font-weight:900;line-height:1.08;letter-spacing:-.045em;color:#202c3a}
+.match-result-subtitle{margin:7px 0 16px;font-size:13px;line-height:1.55;color:#657488}
+.match-result-players{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.match-result-player{display:grid;grid-template-columns:39px minmax(0,1fr);align-items:center;gap:8px;padding:11px;border:1px solid #e1e7ef;border-radius:11px;background:#f8fafc;min-width:0}
+.match-result-player.is-winner{border-color:#a8c2ff;background:#eff4ff}
+.match-result-player.is-loser{border-color:#f0c3c1;background:#fff5f4}
+.match-result-avatar{display:grid;place-items:center;overflow:hidden;width:39px;height:39px;border:1px solid #d7e0eb;border-radius:50%;background:#fff;color:#5e6d80;font-size:14px;font-weight:900}
+.match-result-avatar img{width:100%;height:100%;object-fit:cover}
+.match-result-info{min-width:0}
+.match-result-info>small,.match-result-info>strong{display:block;overflow-wrap:anywhere}
+.match-result-info>small{font-size:9px;font-weight:900;letter-spacing:.06em;color:#718095}
+.match-result-info>strong{margin-top:3px;font-size:11px;line-height:1.35;color:#263447}
+.match-result-info .result-elo{margin-top:5px;font-size:10px;letter-spacing:0;font-weight:600;color:#6c7b8e}
+.match-result-delta{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:8px;padding-top:8px;border-top:1px solid #e2e8f0}
+.match-result-delta small{font-size:9px;color:#78879a}
+.match-result-delta strong{font-size:15px;font-weight:900;white-space:nowrap}
+.match-result-delta strong.positive{color:#118352}
+.match-result-delta strong.negative{color:#c33732}
+.match-result-delta strong.neutral{color:#7b8795;font-size:10px}
+.match-result-status{margin:12px 0 0;font-size:10px;line-height:1.6;color:#7a8797}
+.match-result-close{display:block;width:100%;margin-top:15px;padding:11px;border:1px solid #1c3fb7;border-radius:9px;background:#1c3fb7;color:#fff;font-size:13px;font-weight:900}
+.match-result-close:hover{background:#17359d;color:#fff}
+@media(min-width:861px){body:not(.online-match-active) main>.paper{width:min(100%,calc(100dvh - 96px))}}
+@media(max-width:520px){
+  .match-hud{grid-template-columns:minmax(0,1fr) 23px minmax(0,1fr);gap:4px;padding:5px;margin-bottom:6px}
+  .match-side{gap:5px;padding:5px}
+  .match-side-avatar{width:30px;height:30px;font-size:12px}
+  .match-side-copy small{font-size:9px}
+  .match-piece{min-width:19px;height:19px;font-size:11px}
+  .match-result-players{gap:6px}
+  .match-result-player{grid-template-columns:30px minmax(0,1fr);gap:5px;padding:8px 6px}
+  .match-result-avatar{width:30px;height:30px;font-size:11px}
+  .match-result-info>strong{font-size:10px}
+  .match-result-delta strong{font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){.match-result-overlay{backdrop-filter:none}}
+
 </style>
 <style>
 /* Image-led controls and a consistent Vietnamese UI typeface. */
@@ -960,8 +1021,21 @@ button,input,select,textarea{font-family:var(--ui-font)!important;font-kerning:n
     <button id="achievementEffectClose" class="achievement-effect-close" type="button">Tiếp tục</button>
   </div>
 </div>
+<div id="matchResultModal" class="match-result-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="matchResultTitle">
+  <div class="match-result-card">
+    <div class="match-result-top"><span class="match-result-kicker">CARO 5 · KẾT QUẢ VÁN ĐẤU</span><span class="match-result-spark" aria-hidden="true">✦</span></div>
+    <h2 id="matchResultTitle">KẾT THÚC VÁN</h2>
+    <p id="matchResultSubtitle" class="match-result-subtitle"></p>
+    <div id="matchResultPlayers" class="match-result-players"></div>
+    <p id="matchResultStatus" class="match-result-status"></p>
+    <button id="matchResultClose" class="match-result-close" type="button">Tiếp tục</button>
+  </div>
+</div>
 <main>
-  <div class="paper"><canvas id="bd" aria-label="Bàn cờ Caro 15 x 15"></canvas></div>
+  <div class="paper">
+    <div id="matchHud" class="match-hud" hidden aria-live="polite"></div>
+    <canvas id="bd" aria-label="Bàn cờ Caro 15 x 15"></canvas>
+  </div>
   <aside>
     <section>
       <h1>Caro <b>5</b></h1>
@@ -1728,6 +1802,8 @@ function ui(){
   renderAccountSummary();
   renderAchievements();
   renderMatchChat();
+  renderMatchHud();
+  if(!$('matchResultModal').hidden&&G&&G.over)renderMatchResult(G);
 }
 function renderTurnStatus(secondsLeft){
   const status=$('turnStatus');
@@ -2766,6 +2842,85 @@ async function submitOnlineMove(x,y){
   try{await game.ref.update(update)}catch(e){await handleBackendFailure(e,'ghi nước đi')}
 }
 function botTurn(){if(!G||G.over||G.turn===G.mine)return;const p=1-G.mine,[x,y]=G.boardMode==='inf'?botMoveInfinite(G.board,p,G.noise,G.botElo):botMove(G.board,p,G.noise,G.botElo);applyMove(x,y,p)}
+
+function matchRatingMap(game, supplied){
+  if(supplied&&typeof supplied==='object')return supplied;
+  if(game&&game.ratingResult&&game.ratingResult.playerResults)return game.ratingResult.playerResults;
+  return null;
+}
+function matchPlayerName(game,index,player){
+  return String(player&&player.name||game&&game.names&&game.names[index]||((index===0)?'Người chơi X':'Người chơi O'));
+}
+function matchAvatarMarkup(player,name,isBot,large){
+  const avatar=safeAvatar(player&&player.avatar||(player&&player.uid&&player.uid===me.uid?me.avatar:''));
+  const className=large?'match-result-avatar':'match-side-avatar';
+  if(avatar)return '<span class="'+className+'"><img src="'+esc(avatar)+'" alt=""></span>';
+  const fallback=isBot?'🤖':(String(name||'?').trim().slice(0,1).toLocaleUpperCase('vi')||'?');
+  return '<span class="'+className+'">'+esc(fallback)+'</span>';
+}
+function renderMatchHud(){
+  const hud=$('matchHud');
+  if(!hud)return;
+  const game=G;
+  const players=game&&Array.isArray(game.players)?game.players:[];
+  const visible=!!(game&&game.mode!=='replay'&&players.length===2&&!(game.mode==='online'&&game.roomStatus==='waiting'));
+  hud.hidden=!visible;
+  if(!visible){hud.innerHTML='';return}
+  const ratings=matchRatingMap(game);
+  const side=index=>{
+    const p=players[index]||{},name=matchPlayerName(game,index,p);
+    const isBot=game.mode==='bot'&&index!==game.mine;
+    const rating=ratings&&p.uid&&ratings[p.uid]?Number(ratings[p.uid].elo):Number(p.elo);
+    const elo=Number.isFinite(rating)&&rating>0?rating:(isBot?Number(game.botElo)||1000:1000);
+    const sideName=index===0?'is-x':'is-o';
+    return '<div class="match-side '+sideName+'">'+
+      matchAvatarMarkup(p,name,isBot,false)+
+      '<div class="match-side-copy"><strong>'+esc(name)+'</strong><small>'+(isBot?'MÁY':'NGƯỜI CHƠI')+' · '+elo+' ELO</small></div>'+
+      '<span class="match-piece">'+(index===0?'X':'O')+'</span></div>';
+  };
+  hud.innerHTML=side(0)+'<div class="match-vs">VS</div>'+side(1);
+}
+function renderMatchResult(game,suppliedRatings,extraNote){
+  const modal=$('matchResultModal');
+  if(!modal||!game)return;
+  const players=Array.isArray(game.players)?game.players:[];
+  const ratings=matchRatingMap(game,suppliedRatings);
+  const winner=Number.isInteger(Number(game.winner))?Number(game.winner):-1;
+  const draw=winner===-1;
+  const winnerName=draw?'Hai bên':matchPlayerName(game,winner,players[winner]);
+  $('matchResultTitle').textContent=draw?'HÒA CỜ':winner===game.mine?'CHIẾN THẮNG!':'THẤT BẠI';
+  $('matchResultSubtitle').textContent=draw?'Hai bên không phân thắng bại.':winnerName+' giành chiến thắng.';
+  const rated=game.mode==='online'&&!game.roomCode;
+  $('matchResultPlayers').innerHTML=[0,1].map(index=>{
+    const p=players[index]||{},name=matchPlayerName(game,index,p),uid=String(p.uid||'');
+    const isBot=game.mode==='bot'&&index!==game.mine;
+    const isWinner=!draw&&winner===index;
+    const rating=ratings&&uid?ratings[uid]:null;
+    const ratingNow=rating&&Number.isFinite(Number(rating.elo))?Number(rating.elo):Number(p.elo)||(isBot?Number(game.botElo)||1000:1000);
+    const hasDelta=!!(rated&&rating&&Number.isFinite(Number(rating.elo))&&Number.isFinite(Number(rating.before)));
+    const delta=hasDelta?Number(rating.elo)-Number(rating.before):0;
+    const label=index===0?'X · XANH':'O · ĐỎ';
+    const cardClass='match-result-player'+(isWinner?' is-winner':!draw?' is-loser':'');
+    const deltaMarkup=hasDelta
+      ? '<strong class="'+(delta>0?'positive':delta<0?'negative':'neutral')+'">'+(delta>0?'+':'')+delta+' ELO</strong>'
+      : '<strong class="neutral">'+(rated?'Đang chờ':'Không tính ELO')+'</strong>';
+    return '<article class="'+cardClass+'">'+
+      matchAvatarMarkup(p,name,isBot,true)+
+      '<div class="match-result-info"><small>'+label+(isWinner?' · THẮNG':!draw?' · THUA':'')+'</small><strong>'+esc(name)+'</strong><small class="result-elo">'+ratingNow+' ELO</small></div>'+
+      '<div class="match-result-delta"><small>'+(isWinner?'Người thắng':!draw?'Người thua':'Kết quả')+'</small>'+deltaMarkup+'</div>'+
+      '</article>';
+  }).join('');
+  const defaultNote=rated
+    ?(ratings?'Điểm ELO đã được cập nhật bởi máy chủ.':'ELO đang chờ máy chủ xác nhận.')
+    :(game.mode==='bot'?'Đấu máy · ván này không tính ELO.':game.mode==='online'&&game.roomCode?'Phòng riêng · ván này không tính ELO.':'Ván đấu không tính ELO.');
+  $('matchResultStatus').textContent=extraNote||defaultNote;
+  modal.hidden=false;
+}
+function closeMatchResult(){
+  const modal=$('matchResultModal');
+  if(modal)modal.hidden=true;
+}
+
 function finishGame(winner,why){
   if(!G||G.over)return;
   G.over=1;G.winner=winner;G.reason=why;
@@ -2778,6 +2933,7 @@ function finishGame(winner,why){
   processMatchAchievements(completed);
   if(!ratedOnline){
     saveFinishedMatchHistory(completed).catch(error=>console.error('Không lưu được lịch sử:',error));
+    renderMatchResult(completed,null);
     return;
   }
   const oldProfile={elo:me.elo,w:me.w,l:me.l,d:me.d};
@@ -2785,6 +2941,7 @@ function finishGame(winner,why){
     completed.msg=resultText+' · Chưa xác nhận được ELO';
     stat();
     saveFinishedMatchHistory(completed).catch(error=>console.error('Không lưu được lịch sử:',error));
+    renderMatchResult(completed,null,'Máy chủ chưa xác nhận được ELO. Điểm chưa thay đổi.');
     return;
   }
   window.caroAuth.finishRanked({gid:completed.gid,winnerIndex:winner,reason:why}).then(result=>{
@@ -2794,7 +2951,10 @@ function finishGame(winner,why){
     const delta=Number(result.delta)||0;
     completed.msg=resultText+` · ${delta>=0?'+':''}${delta} ELO`;
     completed.ratingConfirmed=true;
+    if(result.playerResults&&typeof result.playerResults==='object')completed.ratingResult={playerResults:result.playerResults};
+    renderMatchHud();
     ui();stat();
+    renderMatchResult(completed,result.playerResults||null);
   }).catch(async error=>{
     me.elo=oldProfile.elo;me.w=oldProfile.w;me.l=oldProfile.l;me.d=oldProfile.d;
     try{
@@ -2807,6 +2967,7 @@ function finishGame(winner,why){
     completed.msg=resultText+' · ELO chưa được máy chủ xác nhận';
     $('st').textContent=completed.msg+' ('+(error.message||'lỗi máy chủ')+')';
     ui();
+    renderMatchResult(completed,null,'ELO chưa được xác nhận: '+(error.message||'lỗi máy chủ')+'. Điểm trong bảng chưa được tính.');
   }).finally(()=>{
     saveFinishedMatchHistory(completed).catch(error=>console.error('Không lưu được lịch sử:',error));
     submitAccuracyReport(completed);
@@ -2874,7 +3035,7 @@ function onGame(s){
   const keys=Object.keys(v.moves||{}).sort((a,b)=>Number(a)-Number(b));
   const moves=keys.map(k=>v.moves[k]).filter(Boolean),board=new Map();moves.forEach((m,i)=>board.set(m.x+','+m.y,Number.isInteger(m.p)?m.p:i%2));
   const last=moves[moves.length-1];const newMine=Array.isArray(v.p)?v.p.findIndex(q=>q.uid===me.uid):G.mine;
-  Object.assign(G,{boardMode:v.boardMode==='inf'?'inf':'normal',board,moves,n:moves.length,turn:Number(v.turn)||0,dl:Number(v.dl)||0,last:last?[last.x,last.y]:null,roomStatus:v.status,mine:newMine>=0?newMine:G.mine,names:Array.isArray(v.p)?v.p.map(q=>`${q.name} (${q.elo})`):G.names,players:Array.isArray(v.p)?v.p.map(q=>({uid:q.uid||'',name:q.name||'Người chơi',elo:Number(q.elo)||1000,avatar:safeAvatar(q.avatar)})):G.players,drawOffer:v.drawOffer||null,drawResponse:v.drawResponse||null,chat:updatedChat});
+  Object.assign(G,{boardMode:v.boardMode==='inf'?'inf':'normal',board,moves,n:moves.length,turn:Number(v.turn)||0,dl:Number(v.dl)||0,last:last?[last.x,last.y]:null,roomStatus:v.status,mine:newMine>=0?newMine:G.mine,names:Array.isArray(v.p)?v.p.map(q=>`${q.name} (${q.elo})`):G.names,players:Array.isArray(v.p)?v.p.map(q=>({uid:q.uid||'',name:q.name||'Người chơi',elo:Number(q.elo)||1000,avatar:safeAvatar(q.avatar)})):G.players,drawOffer:v.drawOffer||null,drawResponse:v.drawResponse||null,ratingResult:v.ratingResult||G.ratingResult||null,chat:updatedChat});
   if(moves.length>previousMoveCount)G.turnStartedAt=now();
   G.myElo=Number(v.p&&v.p[G.mine]&&v.p[G.mine].elo)||G.myElo||me.elo;
   G.oppElo=Number(v.p&&v.p[1-G.mine]&&v.p[1-G.mine].elo)||G.oppElo||1000;
@@ -3241,6 +3402,8 @@ $('bSaveAvatar').onclick=async()=>{
   }catch(error){$('profileStatus').textContent=error.message||'Không lưu được ảnh.'}
   finally{$('bSaveAvatar').disabled=false}
 };
+$('matchResultClose').onclick=closeMatchResult;
+$('matchResultModal').addEventListener('click',e=>{if(e.target===$('matchResultModal'))closeMatchResult()});
 $('bCloseProfile').onclick=()=>{$('profileModal').hidden=true};
 $('profileModal').addEventListener('click',e=>{if(e.target===$('profileModal'))$('profileModal').hidden=true});
 $('profileModal').addEventListener('keydown',e=>{if(e.key==='Escape')$('profileModal').hidden=true});
@@ -3991,7 +4154,7 @@ render();
   });
   $menu('menuXColor').addEventListener('input',e=>{settings.x=e.target.value;applySettings(true)});
   $menu('menuOColor').addEventListener('input',e=>{settings.o=e.target.value;applySettings(true)});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!panel.hidden)closeSettings()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!panel.hidden)closeSettings();if(e.key==='Escape'&&!$('matchResultModal').hidden)closeMatchResult()});
   window.addEventListener('caro:themechange',()=>window.dispatchEvent(new Event('resize')));
 })();
 </script>
