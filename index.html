@@ -718,6 +718,31 @@ body.study-modal-open{overflow:hidden}
 @media(prefers-reduced-motion:reduce){.achievement-effect.active:before,.achievement-effect.active .achievement-effect-card,.achievement-effect.active .achievement-particle,.achievement-effect-mark{animation:none!important;opacity:1;transform:none}}
 
 </style>
+<style>
+/* Image-led controls and a consistent Vietnamese UI typeface. */
+:root{--ui-font:'Be Vietnam Pro',system-ui,sans-serif}
+button,input,select,textarea{font-family:var(--ui-font)!important;font-kerning:normal;letter-spacing:normal}
+.settings-launch,.prestige-launch,#bOpenChat,.champion-bot-button{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.settings-launch,.prestige-launch{min-height:42px;padding:7px 12px;border-radius:10px;font-size:13px;font-weight:700;line-height:1.25}
+.settings-launch{margin:0 4px 8px 0}
+.prestige-launch{margin:0 0 8px}
+.button-image{display:block;width:24px;height:24px;flex:0 0 auto;object-fit:contain;pointer-events:none}
+.settings-launch .button-image,.prestige-launch .button-image{width:25px;height:25px}
+.champion-bot-button{flex-direction:row;gap:9px}
+#bOpenChat{gap:8px}
+.password-row button{display:flex;align-items:center;justify-content:center}
+.password-eye-image{width:25px;height:25px;transition:opacity .15s,transform .15s}
+.password-row button.is-visible .password-eye-image{opacity:.66;transform:scale(.94)}
+.prestige-trophy-image{width:34px;height:34px}
+.achievement-panel-head .achievement-title,.prestige-heading{display:flex;align-items:center;gap:7px}
+.inline-image{width:21px;height:21px}
+.achievement-panel-head .achievement-title{font-size:12px;font-weight:700}
+.prestige-heading{font-size:12px;color:#526176}
+.asset-attribution{margin:8px 0 0;color:#8390a0;font-size:9px;line-height:1.7;text-align:right}
+.asset-attribution a{color:#71829a;text-decoration:underline;text-underline-offset:2px}
+.asset-attribution a:hover{color:#1c3fb7}
+@media(max-width:520px){.button-image{width:22px;height:22px}.settings-launch .button-image,.prestige-launch .button-image{width:23px;height:23px}.settings-launch,.prestige-launch{min-height:40px;padding:7px 10px}}
+</style>
 </head>
 <body>
 <div id="gameLoader" role="status" aria-live="polite">
@@ -731,7 +756,7 @@ body.study-modal-open{overflow:hidden}
 
   <section id="menuSettings" class="menu-pop" role="dialog" aria-modal="true" aria-labelledby="menuSettingsTitle" hidden>
     <div class="menu-settings-card">
-    <div class="menu-pop-top"><div><small>PERSONALIZE</small><h3 id="menuSettingsTitle">Cài đặt giao diện</h3></div><button id="menuSettingsClose" class="menu-close" type="button" aria-label="Đóng cài đặt">×</button></div>
+    <div class="menu-pop-top"><div><small>CÀI ĐẶT CÁ NHÂN</small><h3 id="menuSettingsTitle">Cài đặt giao diện</h3></div><button id="menuSettingsClose" class="menu-close" type="button" aria-label="Đóng cài đặt">×</button></div>
     <p>Chọn màu quân cờ theo ý bạn. Cài đặt được lưu trên thiết bị này.</p>
     <label class="menu-color-row" for="menuXColor"><span><b class="menu-x-badge">X</b><span><strong>Màu quân X</strong><small>Quân đi trước</small></span></span><input id="menuXColor" type="color" value="#1c3fb7"></label>
     <label class="menu-color-row" for="menuOColor"><span><b class="menu-o-badge">O</b><span><strong>Màu quân O</strong><small>Quân đi sau</small></span></span><input id="menuOColor" type="color" value="#d8322b"></label>
@@ -746,7 +771,7 @@ body.study-modal-open{overflow:hidden}
         <button id="prestigeClose" class="menu-close" type="button" aria-label="Đóng cửa sổ danh vọng" title="Đóng">×</button>
       </div>
       <div class="prestige-player">
-        <div class="prestige-star" aria-hidden="true">★</div>
+        <div class="prestige-star" aria-hidden="true"><img class="button-image prestige-trophy-image" src="https://img.icons8.com/3d-fluency/96/trophy.png" alt=""></div>
         <div><small>NGƯỜI CHƠI</small><strong id="prestigeName">Khách</strong></div>
       </div>
       <div class="prestige-stats" aria-label="Thống kê danh vọng">
@@ -755,16 +780,16 @@ body.study-modal-open{overflow:hidden}
         <div class="prestige-stat"><small>THẮNG / THUA / HÒA</small><strong id="prestigeRecord">0 / 0 / 0</strong></div>
       </div>
       <div id="achievementPanel" class="achievement-panel" aria-label="Danh hiệu người chơi">
-        <div class="achievement-panel-head"><strong>🏆 Danh hiệu</strong><span id="achievementStreak">Chuỗi thắng 0/5</span></div>
+        <div class="achievement-panel-head"><strong class="achievement-title"><img class="button-image inline-image" src="https://img.icons8.com/3d-fluency/48/trophy.png" alt="">Danh hiệu</strong><span id="achievementStreak">Chuỗi thắng 0/5</span></div>
         <div id="achievementBadges" class="achievement-badges"></div>
         <p class="achievement-foot">Tiến độ danh hiệu được lưu trên thiết bị này.</p>
       </div>
-      <h4>🏅 Bảng xếp hạng</h4>
+      <h4 class="prestige-heading"><img class="button-image inline-image" src="https://img.icons8.com/3d-fluency/48/trophy.png" alt="">Bảng xếp hạng</h4>
       <ol id="prestigeLeaderboard" aria-label="Bảng xếp hạng người chơi"></ol>
       <p class="prestige-note">ELO và bậc được lấy từ hồ sơ hiện có. Chơi xếp hạng để cạnh tranh vị trí trên bảng.</p>
     </div>
   </section>
-  <div id="ov"><div><h1>Caro <b>5</b></h1><p id="authHint">Đăng nhập để đồng bộ ELO và lịch sử đấu của bạn.</p><input id="nm" maxlength="14" placeholder="Tên đăng nhập (3–14 ký tự)" autocomplete="username"><div class="password-row"><input id="pw" type="password" minlength="8" maxlength="128" placeholder="Mật khẩu (ít nhất 8 ký tự)" autocomplete="current-password"><button id="togglePw" type="button" aria-label="Hiện mật khẩu" title="Hiện mật khẩu">👁️</button></div><div id="pwConfirmRow" class="password-row" hidden><input id="pwConfirm" type="password" minlength="8" maxlength="128" placeholder="Nhập lại mật khẩu" autocomplete="new-password"><button id="togglePwConfirm" type="button" aria-label="Hiện mật khẩu xác nhận" title="Hiện mật khẩu xác nhận">👁️</button></div><div id="nmEr" role="status" aria-live="polite"></div><button id="nmOk" class="pri">Đăng nhập</button><button id="bSwitchAuth" class="auth-switch" type="button">Chưa có tài khoản? Đăng ký</button></div></div>
+  <div id="ov"><div><h1>Caro <b>5</b></h1><p id="authHint">Đăng nhập để đồng bộ ELO và lịch sử đấu của bạn.</p><input id="nm" maxlength="14" placeholder="Tên đăng nhập (3–14 ký tự)" autocomplete="username"><div class="password-row"><input id="pw" type="password" minlength="8" maxlength="128" placeholder="Mật khẩu (ít nhất 8 ký tự)" autocomplete="current-password"><button id="togglePw" type="button" aria-label="Hiện mật khẩu" title="Hiện mật khẩu"><img class="button-image password-eye-image" src="https://img.icons8.com/3d-fluency/48/eye.png" alt=""></button></div><div id="pwConfirmRow" class="password-row" hidden><input id="pwConfirm" type="password" minlength="8" maxlength="128" placeholder="Nhập lại mật khẩu" autocomplete="new-password"><button id="togglePwConfirm" type="button" aria-label="Hiện mật khẩu xác nhận" title="Hiện mật khẩu xác nhận"><img class="button-image password-eye-image" src="https://img.icons8.com/3d-fluency/48/eye.png" alt=""></button></div><div id="nmEr" role="status" aria-live="polite"></div><button id="nmOk" class="pri">Đăng nhập</button><button id="bSwitchAuth" class="auth-switch" type="button">Chưa có tài khoản? Đăng ký</button></div></div>
 <div id="achievementEffect" class="achievement-effect" hidden role="status" aria-live="assertive">
   <div class="achievement-effect-particles" aria-hidden="true">
     <span class="achievement-particle p1">✦</span><span class="achievement-particle p2">✧</span>
@@ -786,8 +811,8 @@ body.study-modal-open{overflow:hidden}
   <aside>
     <section>
       <h1>Caro <b>5</b></h1>
-      <button id="menuSettingsLaunch" class="settings-launch" type="button" aria-haspopup="dialog" aria-controls="menuSettings">⚙ Cài đặt</button>
-      <button id="prestigeLaunch" class="prestige-launch" type="button" aria-haspopup="dialog" aria-controls="prestigeModal">🏆 Danh vọng</button>
+      <button id="menuSettingsLaunch" class="settings-launch" type="button" aria-haspopup="dialog" aria-controls="menuSettings"><img class="button-image" src="https://img.icons8.com/3d-fluency/48/settings.png" alt=""><span>Cài đặt</span></button>
+      <button id="prestigeLaunch" class="prestige-launch" type="button" aria-haspopup="dialog" aria-controls="prestigeModal"><img class="button-image" src="https://img.icons8.com/3d-fluency/48/trophy.png" alt=""><span>Danh vọng</span></button>
       <div id="me"></div>
       <div class="account-toolbar">
         <div id="accountAvatar" class="avatar avatar-large" aria-label="Ảnh đại diện">?</div>
@@ -811,7 +836,7 @@ body.study-modal-open{overflow:hidden}
           <div id="botEloDesc" class="note">Khá · ELO máy chỉ điều chỉnh độ khó, không đổi ELO của bạn ở chế độ luyện.</div>
         </div>
         <button id="bStartBot" class="pri">Bắt đầu đấu máy</button>
-      <button id="bStartChampionBot" class="champion-bot-button" type="button">♟ Boss Tuyệt Thủ</button>
+      <button id="bStartChampionBot" class="champion-bot-button" type="button"><img class="button-image" src="https://img.icons8.com/3d-fluency/48/robot.png" alt=""><span>Boss Tuyệt Thủ</span></button>
       <p class="champion-bot-note">Tìm kiếm alpha-beta nhiều lượt, ưu tiên thắng ngay, chặn đòn bắt buộc và ghi nhớ thế cờ. Không có engine nào được bảo đảm tuyệt đối không sai.</p>
       </div>
       <button id="bCen" type="button">Về nước vừa đánh</button>
@@ -903,6 +928,7 @@ body.study-modal-open{overflow:hidden}
       <p>Caro 5 chạy trực tiếp trên trình duyệt, không cần cài ứng dụng. Mở game, đăng nhập để đồng bộ tài khoản và chọn cách chơi phù hợp.</p>
       <p><a href="./huong-dan-caro-5.html">Đọc hướng dẫn chơi Caro 5, luật thắng và mẹo chiến thuật →</a></p>
     </section>
+  <p class="asset-attribution">Hình minh họa: <a href="https://icons8.com/icon/xsg8DrPwYfql/settings" target="_blank" rel="noopener noreferrer">Cài đặt</a> · <a href="https://icons8.com/icon/MR39NpxEXFHr/trophy" target="_blank" rel="noopener noreferrer">Cúp</a> · <a href="https://icons8.com/icon/90rRYIGpsX1E/robot" target="_blank" rel="noopener noreferrer">Robot</a> · <a href="https://icons8.com/icon/hCvhdugyicF1/chat" target="_blank" rel="noopener noreferrer">Chat</a> · <a href="https://icons8.com/icon/e1GFi02rCDbK/eye" target="_blank" rel="noopener noreferrer">Mắt</a> · <a href="https://icons8.com" target="_blank" rel="noopener noreferrer">Icons8</a></p>
   </aside>
 </main>
 <button id="bOpenStudyFloating" class="study-float" type="button" aria-label="Mở sổ tay học Caro" title="Sổ tay Caro" hidden>
@@ -1109,7 +1135,7 @@ body.study-modal-open{overflow:hidden}
     <span id="turnClock">Còn 30 giây</span>
   </div>
   <div class="match-action-row">
-    <button id="bOpenChat" type="button">💬 Chat <span id="chatUnread" hidden>0</span></button>
+    <button id="bOpenChat" type="button"><img class="button-image" src="https://img.icons8.com/3d-fluency/48/chat.png" alt=""><span>Chat</span><span id="chatUnread" hidden>0</span></button>
     <button id="bOfferDraw" type="button">Xin hòa</button>
     <button id="bRes" type="button">Đầu hàng</button>
   </div>
@@ -3007,7 +3033,7 @@ function bindPasswordEye(inputId,buttonId,shownLabel,hiddenLabel){
   $(buttonId).onclick=()=>{
     const input=$(inputId),visible=input.type==='password';
     input.type=visible?'text':'password';
-    $(buttonId).textContent=visible?'🙈':'👁️';
+    $(buttonId).classList.toggle('is-visible',visible);
     $(buttonId).setAttribute('aria-label',visible?hiddenLabel:shownLabel);
     $(buttonId).title=visible?hiddenLabel:shownLabel;
   };
