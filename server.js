@@ -353,13 +353,14 @@ function recordLoginFailure(key) {
 }
 function clearLoginFailures(key){loginFailures.delete(key)}
 
-function hasFiveInMoves(moves, winner) {
+function hasFiveInMoves(moves, winner, boardMode = 'normal') {
   const board = new Map();
+  const infinite = boardMode === 'inf';
   const ordered = Object.entries(moves && typeof moves === 'object' ? moves : {}).sort((a,b)=>Number(a[0])-Number(b[0]));
   for (const [, move] of ordered) {
-    if (!move || !Number.isInteger(Number(move.x)) || !Number.isInteger(Number(move.y)) || !Number.isInteger(Number(move.p))) continue;
+    if (!move || !Number.isSafeInteger(Number(move.x)) || !Number.isSafeInteger(Number(move.y)) || !Number.isInteger(Number(move.p))) continue;
     const x=Number(move.x),y=Number(move.y),p=Number(move.p);
-    if(x<0||x>14||y<0||y>14||p<0||p>1)continue;
+    if(Math.abs(x)>100000||Math.abs(y)>100000||(!infinite&&(x<0||x>14||y<0||y>14))||p<0||p>1)continue;
     board.set(x+','+y,p);
     if(p===winner){
       for(const [dx,dy] of [[1,0],[0,1],[1,1],[1,-1]]){
@@ -494,8 +495,13 @@ function drainRankedQueue() {
     const available = [...rankedQueue.values()]
       .filter(entry => entry.socketIds.size > 0)
       .sort((a, b) => a.joinedAt - b.joinedAt);
-    if (available.length < 2) break;
-    const selected = available.slice(0, 2);
+    const compatiblePairs = ['normal', 'inf']
+      .map(boardMode => available.filter(entry => (entry.boardMode === 'inf' ? 'inf' : 'normal') === boardMode))
+      .filter(entries => entries.length >= 2)
+      .map(entries => entries.slice(0, 2))
+      .sort((a, b) => a[1].joinedAt - b[1].joinedAt);
+    if (!compatiblePairs.length) break;
+    const selected = compatiblePairs[0];
     for (const entry of selected) rankedQueue.delete(entry.uid);
 
     const players = selected.map(entry => {
@@ -518,6 +524,7 @@ function drainRankedQueue() {
     const createdAt = Date.now();
     data.games[gid] = {
       p: players,
+      boardMode: selected[0].boardMode === 'inf' ? 'inf' : 'normal',
       moves: {},
       turn: 0,
       status: 'play',
@@ -544,7 +551,7 @@ function validateGameRootPatch(gid, uid, patch) {
   if(playerIndex<0)throw new Error('Bạn không thuộc trận đấu này.');
   if(game.status!=='play')throw new Error('Trận đấu đã kết thúc hoặc không còn hoạt động.');
   if(!patch||typeof patch!=='object'||Array.isArray(patch))throw new Error('Dữ liệu nước đi không hợp lệ.');
-  if(['p','roomCode','createdAt','ratingResult','drawOffer','drawResponse','drawAgreedAt','chat'].some(field=>Object.prototype.hasOwnProperty.call(patch,field)))throw new Error('Không được sửa thông tin cố định hoặc trạng thái hòa của trận đấu.');
+  if(['p','roomCode','createdAt','boardMode','ratingResult','drawOffer','drawResponse','drawAgreedAt','chat'].some(field=>Object.prototype.hasOwnProperty.call(patch,field)))throw new Error('Không được sửa thông tin cố định hoặc trạng thái hòa của trận đấu.');
 
   const moveKeys=Object.keys(patch).filter(key=>key.startsWith('moves/'));
   if(Object.keys(patch).some(key=>key.startsWith('moves/')&&!/^moves\/\d+$/.test(key)))throw new Error('Chỉ được ghi từng nước đi theo thứ tự.');
@@ -556,12 +563,12 @@ function validateGameRootPatch(gid, uid, patch) {
     const existing=game.moves&&typeof game.moves==='object'?game.moves:{};
     if(index!==Object.keys(existing).length||Object.prototype.hasOwnProperty.call(existing,String(index)))throw new Error('Nước đi không đúng thứ tự.');
     if(playerIndex!==Number(game.turn)||!move||Number(move.p)!==playerIndex)throw new Error('Chưa đến lượt tài khoản này.');
-    const x=Number(move.x),y=Number(move.y);
-    if(!Number.isInteger(x)||!Number.isInteger(y)||x<0||x>14||y<0||y>14)throw new Error('Tọa độ nước đi không hợp lệ.');
+    const x=Number(move.x),y=Number(move.y),infinite=game.boardMode==='inf';
+    if(!Number.isSafeInteger(x)||!Number.isSafeInteger(y)||Math.abs(x)>100000||Math.abs(y)>100000||(!infinite&&(x<0||x>14||y<0||y>14)))throw new Error('Tọa độ nước đi không hợp lệ.');
     if(Object.values(existing).some(m=>m&&Number(m.x)===x&&Number(m.y)===y))throw new Error('Ô này đã có quân.');
     const completeMoves={...existing,[String(index)]:move};
     if(patch.status==='over'){
-      if(patch.why!=='win'||Number(patch.winner)!==playerIndex||!hasFiveInMoves(completeMoves,playerIndex))throw new Error('Máy chủ chưa xác nhận nước thắng hợp lệ.');
+      if(patch.why!=='win'||Number(patch.winner)!==playerIndex||!hasFiveInMoves(completeMoves,playerIndex,game.boardMode))throw new Error('Máy chủ chưa xác nhận nước thắng hợp lệ.');
       if('resignedBy' in patch)throw new Error('Dữ liệu kết thúc trận không hợp lệ.');
     }else{
       if('winner' in patch||'why' in patch||'resignedBy' in patch)throw new Error('Kết quả chỉ được đặt khi ván đấu thực sự kết thúc.');
@@ -857,7 +864,8 @@ io.on('connection', socket => {
         const result = {
           ok: true, status: 'matched', gid: activeMatch[0], position: 0,
           waiting: rankedQueue.size, activeGames: activeRankedGameCount(),
-          maxGames: MAX_ACTIVE_RANKED_GAMES
+          maxGames: MAX_ACTIVE_RANKED_GAMES,
+          boardMode: activeMatch[1].boardMode === 'inf' ? 'inf' : 'normal'
         };
         reply(ack, result);
         socket.emit('ranked:matched', { gid: activeMatch[0] });
@@ -865,11 +873,14 @@ io.on('connection', socket => {
       }
 
       pruneRankedQueue();
+      const requestedBoardMode = payload && payload.boardMode === 'inf' ? 'inf' : 'normal';
       let entry = rankedQueue.get(uid);
       if (!entry && rankedQueue.size >= MAX_RANKED_QUEUE) throw new Error('Hàng chờ đang quá đông. Hãy thử lại sau.');
       if (!entry) {
-        entry = { uid, joinedAt: Date.now(), socketIds: new Set() };
+        entry = { uid, joinedAt: Date.now(), socketIds: new Set(), boardMode: requestedBoardMode };
         rankedQueue.set(uid, entry);
+      } else {
+        entry.boardMode = requestedBoardMode;
       }
       entry.socketIds.add(socket.id);
       entry.disconnectedAt = 0;
@@ -1368,7 +1379,7 @@ io.on('connection', socket => {
       }
       const reason=String(payload&&payload.reason||game.why||'');
       if(reason==='win'){
-        if(!hasFiveInMoves(game.moves,winnerIndex))throw new Error('Máy chủ chưa xác nhận đủ 5 quân liên tiếp.');
+        if(!hasFiveInMoves(game.moves,winnerIndex,game.boardMode))throw new Error('Máy chủ chưa xác nhận đủ 5 quân liên tiếp.');
       }else if(reason==='resign'){
         if(winnerIndex===-1||!game.resignedBy||game.resignedBy!==game.p[1-winnerIndex]?.uid)throw new Error('Kết quả đầu hàng không hợp lệ.');
       }else if(reason==='timeout'){
@@ -1419,7 +1430,8 @@ io.on('connection', socket => {
       const createdAt=Date.now(),recent=(roomCreateEvents.get(uid)||[]).filter(t=>t>createdAt-5*60*1000);
       recent.push(createdAt);roomCreateEvents.set(uid,recent);
       if(recent.length===10)adminAudit.push({at:createdAt,action:'room_spam_warning',targetUid:uid,targetName:name,count:recent.length,reason:'10 phòng được tạo trong vòng 5 phút'});
-      data.games[code] = { roomCode: code, p: [{ uid, name, elo }], moves: {}, turn: 0, status: 'waiting', dl: 0, createdAt };
+      const boardMode = payload && payload.boardMode === 'inf' ? 'inf' : 'normal';
+      data.games[code] = { roomCode: code, boardMode, p: [{ uid, name, elo }], moves: {}, turn: 0, status: 'waiting', dl: 0, createdAt };
       version++;
       notifySubscribers('games/' + code);
       await persistState();
