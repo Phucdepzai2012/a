@@ -2152,7 +2152,7 @@ function candidates(b){
   b.forEach((v,k)=>{const[x,y]=k.split(',').map(Number);for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const xx=x+dx,yy=y+dy,key=xx+','+yy;if(xx>=0&&xx<N&&yy>=0&&yy<N&&!b.has(key))out.add(key)}});
   return [...out].map(k=>k.split(',').map(Number));
 }
-function candidatesInfinite(b){
+function candidatesInfinite(b,limit=Infinity,p=0){
   if(!b.size)return [[0,0]];
   const out=new Set();
   b.forEach((v,k)=>{
@@ -2163,7 +2163,9 @@ function candidatesInfinite(b){
       if(Math.abs(xx)<=100000&&Math.abs(yy)<=100000&&!b.has(key))out.add(key);
     }
   });
-  return [...out].map(k=>k.split(',').map(Number));
+  const moves=[...out].map(k=>k.split(',').map(Number));
+  if(moves.length>limit)return moves.map(([x,y])=>[x,y,scoreMove(b,x,y,p,new Set())]).sort((a,b)=>b[2]-a[2]).slice(0,limit).map(m=>[m[0],m[1]]);
+  return moves;
 }
 function botMoveInfinite(b,p,noise=0,elo=1500){
   let moves=candidatesInfinite(b);
@@ -2188,12 +2190,12 @@ function botMoveInfinite(b,p,noise=0,elo=1500){
   let best=-Infinity,choice=null;
   for(const [x,y,baseScore] of shortlist){
     const next=new Map(b);next.set(x+','+y,p);
-    const replies=candidatesInfinite(next);
+    const replies=candidatesInfinite(next,18,1-p);
     let replyBest=-Infinity;
     for(const [rx,ry] of replies){
       if(wouldWin(next,rx,ry,1-p)){replyBest=1e9;break}
       const afterReply=new Map(next);afterReply.set(rx+','+ry,1-p);
-      const followups=candidatesInfinite(afterReply);
+      const followups=candidatesInfinite(afterReply,8,p);
       let followBest=0;
       for(const [fx,fy] of followups){
         const value=wouldWin(afterReply,fx,fy,p)?1e8:scoreMove(afterReply,fx,fy,p,new Set());
@@ -2713,7 +2715,7 @@ function showRankedQueueResult(result){
   const max=Number(result.maxGames)||3;
   $('bFind').textContent='Huỷ tìm trận';
   $('bFind').disabled=false;
-  $('st').textContent='Đang chờ xếp hạng · vị trí '+position+'/'+waiting+' · '+active+'/'+max+' trận đang chạy.';
+  $('st').textContent='Đang chờ '+(pendingRankedBoardMode==='inf'?'xếp hạng · bàn INF':'xếp hạng · bàn 15 × 15')+' · vị trí '+position+'/'+waiting+' · '+active+'/'+max+' trận đang chạy.';
 }
 async function resumeRankedQueue(){
   if(!finding||queueJoinInFlight||!window.caroAuth)return;
@@ -2861,7 +2863,7 @@ if(window.caroRenderSocket){
     const waiting=Number(state.waiting)||1;
     const active=Number(state.activeGames)||0;
     const max=Number(state.maxGames)||3;
-    $('st').textContent='Đang chờ xếp hạng · vị trí '+position+'/'+waiting+' · '+active+'/'+max+' trận đang chạy.';
+    $('st').textContent='Đang chờ '+(pendingRankedBoardMode==='inf'?'xếp hạng · bàn INF':'xếp hạng · bàn 15 × 15')+' · vị trí '+position+'/'+waiting+' · '+active+'/'+max+' trận đang chạy.';
   });
   window.caroRenderSocket.on('ranked:matched',payload=>{
     if(!finding||!payload||!payload.gid)return;
