@@ -169,39 +169,23 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 @media(max-width:520px){.room-join-row{grid-template-columns:minmax(0,1fr) 92px}}
 @media(max-width:520px){body{padding:8px}main{gap:12px}.paper{padding:6px}.review-row{gap:4px}.tag{font-size:9px;padding:3px 4px}}
 
-/* Stable loading board: only the X/O marks animate; the grid remains fixed. */
-#gameLoader{position:fixed;inset:0;width:100%;height:100vh;height:100dvh;z-index:1000;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:clamp(14px,4vw,36px);background:radial-gradient(ellipse at 50% 36%,#fdfdfa 0%,#edf1f3 58%,#dce4e9 100%);transition:opacity .3s ease,visibility .3s ease}
+/* Original compact Caro loading panel: the grid stays fixed and X/O appear normally. */
+#gameLoader{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(228,233,236,.97);transition:opacity .28s ease,visibility .28s ease}
 #gameLoader.done{opacity:0;visibility:hidden;pointer-events:none}
 #gameLoader[hidden]{display:none}
-.loader-card{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(8px,2.2vh,20px);padding:0;background:transparent;border:0;border-radius:0;text-align:center;box-shadow:none}
-.loader-brand{margin:0;font:700 clamp(42px,7vw,68px)/.95 Caveat,cursive;color:var(--blue)}
+.loader-card{width:min(300px,100%);padding:22px 20px 18px;background:var(--paper);border:1px solid var(--ln);border-radius:12px;text-align:center;box-shadow:0 12px 35px rgba(27,36,48,.12)}
+.loader-brand{font:700 38px/1 Caveat,cursive;color:var(--blue);margin:0 0 7px}
 .loader-brand b{color:var(--red)}
-.loader-caption{font-size:clamp(13px,2vw,17px);color:var(--mut);margin:0}
-.loader-board{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:min(80vw,52vh,430px);width:min(80vw,52dvh,430px);aspect-ratio:1;padding:0;gap:0;background:
- linear-gradient(to right,transparent calc(33.333% - 1.5px),#b8c6d1 calc(33.333% - 1.5px),#b8c6d1 calc(33.333% + 1.5px),transparent calc(33.333% + 1.5px),transparent calc(66.666% - 1.5px),#b8c6d1 calc(66.666% - 1.5px),#b8c6d1 calc(66.666% + 1.5px),transparent calc(66.666% + 1.5px)),
- linear-gradient(to bottom,transparent calc(33.333% - 1.5px),#b8c6d1 calc(33.333% - 1.5px),#b8c6d1 calc(33.333% + 1.5px),transparent calc(33.333% + 1.5px),transparent calc(66.666% - 1.5px),#b8c6d1 calc(66.666% - 1.5px),#b8c6d1 calc(66.666% + 1.5px),transparent calc(66.666% + 1.5px))}
-.loader-cell{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;background:transparent;border:0;border-radius:0;color:transparent;font-size:0;line-height:1;opacity:0;transition:opacity .14s ease}
-.loader-cell.show{opacity:1}
+.loader-caption{font-size:12px;color:var(--mut);margin:0 0 15px}
+.loader-board{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;width:100%;aspect-ratio:7/5;padding:6px;background:#e9eef1;border:1px solid #d5dde2;border-radius:8px}
+.loader-cell{display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;background:#fff;border:1px solid #d8e0e5;border-radius:4px;color:transparent;font-size:clamp(15px,5vw,23px);font-weight:700;opacity:.45;transform:scale(.92);transition:opacity .15s ease,transform .15s ease}
+.loader-cell.show{opacity:1;transform:scale(1)}
 .loader-cell.mark-x{color:var(--blue)}
 .loader-cell.mark-o{color:var(--red)}
-.loader-cell.winner{background:transparent}
-#loaderWinLine{position:absolute;z-index:3;inset:0;width:100%;height:100%;overflow:visible;opacity:0;pointer-events:none}
-#loaderWinLine.show{opacity:1}
-#loaderWinLine path{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100;stroke-dashoffset:100}
-#loaderWinLine .win-outline{stroke:#fff;stroke-width:7.2}
-#loaderWinLine .win-blue{stroke:var(--blue);stroke-width:3.8}
-#loaderWinLine.show path{animation:loaderDraw .58s cubic-bezier(.2,.8,.2,1) forwards}
-@keyframes loaderDraw{to{stroke-dashoffset:0}}
-.loader-cell.mark-x:before,.loader-cell.mark-x:after{content:"";position:absolute;width:85%;height:10%;border-radius:999px;background:currentColor}
-.loader-cell.mark-x:before{transform:rotate(45deg)}
-.loader-cell.mark-x:after{transform:rotate(-45deg)}
-.loader-cell.mark-o:before{content:"";position:absolute;width:60%;height:60%;border:clamp(4px,2.5vw,14px) solid currentColor;border-radius:50%;}
-#loaderResult{display:block;min-height:24px;margin:0;font-size:clamp(13px,2.2vw,17px);font-weight:700;letter-spacing:.06em;color:var(--mut)}
+#loaderResult{display:block;min-height:22px;margin-top:13px;font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--mut)}
 .loader-dots:after{display:inline-block;width:1.5em;text-align:left;animation:loaderDots 1s steps(4,end) infinite;content:""}
 @keyframes loaderDots{0%{content:""}25%{content:"."}50%{content:".."}75%,100%{content:"..."}}
-@media(max-width:520px){.loader-card{gap:clamp(10px,2.5vh,20px)}.loader-board{width:min(82vw,48vh,360px);width:min(82vw,48dvh,360px)}}
-@media(orientation:landscape) and (max-height:520px){.loader-card{display:grid;grid-template-columns:auto minmax(150px,min(43vw,38vh));grid-template-rows:auto auto;align-content:center;justify-content:center;column-gap:clamp(18px,5vw,54px);row-gap:8px}.loader-brand,.loader-caption,#loaderResult{grid-column:1;align-self:end}.loader-caption{align-self:start}.loader-board{grid-column:2;grid-row:1 / span 3;width:min(43vw,74vh,340px);width:min(43vw,74dvh,340px)}}
-@media(prefers-reduced-motion:reduce){#gameLoader,.loader-cell{transition:none}#loaderWinLine path{animation:none;stroke-dashoffset:0}.loader-dots:after{animation:none;content:"..."}}
+@media(prefers-reduced-motion:reduce){#gameLoader,.loader-cell{transition:none}.loader-dots:after{animation:none;content:"..."}}
 
 /* During a live online match, keep the board and draw/resign controls only. */
 body.online-match-active{min-height:100vh;min-height:100dvh;padding:10px 10px 92px;align-items:center}
@@ -914,9 +898,9 @@ button,input,select,textarea{font-family:var(--ui-font)!important;font-kerning:n
 <div id="gameLoader" role="status" aria-live="polite">
   <div class="loader-card">
     <div class="loader-brand">Caro <b>5</b></div>
-    <p class="loader-caption">Đang khởi động ván XO...</p>
-    <div id="loaderBoard" class="loader-board" aria-hidden="true"><svg id="loaderWinLine" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="win-outline" d="M 50 16.7 L 50 83.3" pathLength="100"></path><path class="win-blue" d="M 50 16.7 L 50 83.3" pathLength="100"></path></svg></div>
-    <strong id="loaderResult">X ĐANG ĐÁNH<span class="loader-dots"></span></strong>
+    <p class="loader-caption">Chuẩn bị bàn cờ...</p>
+    <div id="loaderBoard" class="loader-board" aria-hidden="true"></div>
+    <strong id="loaderResult">ĐANG TẢI<span class="loader-dots"></span></strong>
   </div>
 </div>
 
@@ -2337,6 +2321,7 @@ function wouldWin(b,x,y,p){for(const[dx,dy]of D){let n=1;for(const s of[1,-1]){l
 const h=(x,y,k)=>{const s=Math.sin(x*12.9898+y*78.233+k*37.7)*43758.5453;return s-Math.floor(s)-.5};
 const cam={x:N/2,y:N/2,s:36};
 let drawFramePending=false;
+let winLineAnimation=null;
 function scheduleDraw(){
   if(drawFramePending)return;
   drawFramePending=true;
@@ -2405,8 +2390,16 @@ function draw(){
     let a=G.line[0],b=G.line[0],far=-1;
     for(const p of G.line)for(const q of G.line){const dd=(p[0]-q[0])**2+(p[1]-q[1])**2;if(dd>far){far=dd;a=p;b=q}}
     const x1=ox+(a[0]+.5)*c,y1=oy+(a[1]+.5)*c,x2=ox+(b[0]+.5)*c,y2=oy+(b[1]+.5)*c;
-    cx.save();cx.lineCap='round';cx.beginPath();cx.moveTo(x1,y1);cx.lineTo(x2,y2);cx.strokeStyle='rgba(255,255,255,.96)';cx.lineWidth=Math.max(5,c*.22);cx.stroke();
-    cx.beginPath();cx.moveTo(x1,y1);cx.lineTo(x2,y2);cx.strokeStyle=winningColor;cx.lineWidth=Math.max(2.5,c*.10);cx.stroke();cx.restore();
+    let progress=1;
+    if(winLineAnimation){
+      if(G.over&&G.reason==='win'){
+        progress=Math.max(0,Math.min(1,(Date.now()-winLineAnimation.started)/winLineAnimation.duration));
+        if(progress<1)scheduleDraw();else winLineAnimation=null;
+      }else winLineAnimation=null;
+    }
+    const endX=x1+(x2-x1)*progress,endY=y1+(y2-y1)*progress;
+    cx.save();cx.lineCap='round';cx.beginPath();cx.moveTo(x1,y1);cx.lineTo(endX,endY);cx.strokeStyle='rgba(255,255,255,.96)';cx.lineWidth=Math.max(5,c*.22);cx.stroke();
+    cx.beginPath();cx.moveTo(x1,y1);cx.lineTo(endX,endY);cx.strokeStyle=winningColor;cx.lineWidth=Math.max(2.5,c*.10);cx.stroke();cx.restore();
   }
 }
 /* ---------- Chấm điểm chiến thuật Caro ---------- */
@@ -2925,6 +2918,7 @@ function closeMatchResult(){
 
 function finishGame(winner,why){
   if(!G||G.over)return;
+  winLineAnimation=(why==='win'&&G.line&&G.line.length>=5)?{started:Date.now(),duration:620}:null;
   G.over=1;G.winner=winner;G.reason=why;
   const score=winner===-1?.5:winner===G.mine?1:0;
   const ratedOnline=G.mode==='online'&&!G.roomCode;
@@ -3732,47 +3726,42 @@ setInterval(()=>{
   const overlay=document.getElementById('gameLoader');
   const board=document.getElementById('loaderBoard');
   const result=document.getElementById('loaderResult');
-  const winLine=document.getElementById('loaderWinLine');
-  if(!overlay||!board||!result||!winLine)return;
-
+  if(!overlay||!board||!result)return;
   const cells=[];
-  for(let i=0;i<9;i++){
+  for(let i=0;i<35;i++){
     const cell=document.createElement('span');
     cell.className='loader-cell';
     board.appendChild(cell);
     cells.push(cell);
   }
-  board.appendChild(winLine);
-
-  /* Only the letters appear in sequence. The grid stays completely still. */
   const moves=[
-    {cell:1,p:'x'},{cell:0,p:'o'},
-    {cell:3,p:'x'},{cell:5,p:'o'},
-    {cell:4,p:'x'},{cell:6,p:'o'},
-    {cell:2,p:'x'},{cell:8,p:'o'},
-    {cell:7,p:'x'}
+    {x:1,y:2,p:'x'},{x:0,y:1,p:'o'},
+    {x:2,y:2,p:'x'},{x:3,y:1,p:'o'},
+    {x:3,y:2,p:'x'},{x:6,y:3,p:'o'},
+    {x:4,y:2,p:'x'},{x:0,y:3,p:'o'},
+    {x:5,y:2,p:'x'}
   ];
   let index=0;
   const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const interval=reduced?150:340;
+  const interval=reduced?55:175;
+  const hide=()=>{
+    overlay.classList.add('done');
+    setTimeout(()=>{overlay.hidden=true},reduced?300:380);
+  };
   result.innerHTML='ĐANG TẢI<span class="loader-dots"></span>';
-
   const step=()=>{
     if(index>=moves.length)return;
     const move=moves[index++];
-    const cell=cells[move.cell];
+    const cell=cells[move.y*7+move.x];
     cell.textContent=move.p==='x'?'X':'O';
     cell.classList.add('show',move.p==='x'?'mark-x':'mark-o');
     if(index===moves.length){
-      [1,4,7].forEach(i=>cells[i].classList.add('winner'));
-      winLine.classList.add('show');
-      setTimeout(()=>overlay.classList.add('done'),reduced?350:650);
-      setTimeout(()=>overlay.hidden=true,reduced?650:970);
+      setTimeout(hide,reduced?80:260);
     }else{
       setTimeout(step,interval);
     }
   };
-  setTimeout(step,reduced?60:220);
+  setTimeout(step,reduced?50:180);
 })();
 </script>
 
