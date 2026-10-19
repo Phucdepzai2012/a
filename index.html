@@ -2155,14 +2155,16 @@ function candidates(b){
 function candidatesInfinite(b,limit=Infinity,p=0){
   if(!b.size)return [[0,0]];
   const out=new Set();
-  b.forEach((v,k)=>{
-    const[x,y]=k.split(',').map(Number);
+  const stones=[...b.entries()];
+  const sources=Number.isFinite(limit)&&stones.length>12?stones.slice(-8):stones;
+  for(const [keyValue] of sources){
+    const[x,y]=keyValue.split(',').map(Number);
     for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){
       if(!dx&&!dy)continue;
       const xx=x+dx,yy=y+dy,key=xx+','+yy;
       if(Math.abs(xx)<=100000&&Math.abs(yy)<=100000&&!b.has(key))out.add(key);
     }
-  });
+  }
   const moves=[...out].map(k=>k.split(',').map(Number));
   if(moves.length>limit)return moves.map(([x,y])=>[x,y,scoreMove(b,x,y,p,new Set())]).sort((a,b)=>b[2]-a[2]).slice(0,limit).map(m=>[m[0],m[1]]);
   return moves;
