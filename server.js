@@ -376,19 +376,19 @@ function hasFiveInMoves(moves, winner, boardMode = 'normal') {
   return false;
 }
 
-function getAdminOverview() {
+function getAdminOverview(options = {}) {
   const reports = [...accuracyReports.entries()]
     .filter(([, report]) => report && report.status === 'pending')
     .map(([id, report]) => ({ id, ...report }))
     .sort((a, b) => Number(b.at) - Number(a.at));
   const reportedUids = new Set(reports.map(report => report.targetUid));
-  const users = [...accountsByUid.values()].map(account => {
+  const allUsers = [...accountsByUid.values()].map(account => {
     const profile = data.players[account.uid] || {};
     const ban = bannedUids.get(account.uid);
     return {
       uid: account.uid,
       name: account.name,
-      createdAt: account.createdAt,
+      createdAt: Number(account.createdAt) || 0,
       elo: Number(profile.elo) || 1000,
       w: Number(profile.w) || 0,
       l: Number(profile.l) || 0,
@@ -397,16 +397,57 @@ function getAdminOverview() {
       banReason: ban && ban.reason || '',
       reported: reportedUids.has(account.uid)
     };
-  }).sort((a, b) => Number(b.reported) - Number(a.reported) || Number(b.banned) - Number(a.banned) || b.elo - a.elo);
+  });
+
+  const search = String(options.search || '').trim().normalize('NFKC').toLocaleLowerCase('vi-VN').slice(0, 100);
+  const requestedMode = String(options.status || 'all');
+  const mode = ['all', 'active', 'reported', 'banned'].includes(requestedMode) ? requestedMode : 'all';
+  const allowedSorts = ['name', 'uid', 'createdAt', 'elo', 'w', 'l', 'd', 'banned', 'reported'];
+  const sortBy = allowedSorts.includes(String(options.sortBy || '')) ? String(options.sortBy) : 'createdAt';
+  const sortDir = options.sortDir === 'asc' ? 'asc' : 'desc';
+  const requestedPageSize = Number(options.pageSize);
+  const pageSize = [25, 50, 100].includes(requestedPageSize) ? requestedPageSize : 50;
+  const requestedPage = Math.max(1, Math.floor(Number(options.page) || 1));
+
+  const filtered = allUsers.filter(user => {
+    if (mode === 'active' && user.banned) return false;
+    if (mode === 'banned' && !user.banned) return false;
+    if (mode === 'reported' && !user.reported) return false;
+    if (!search) return true;
+    return user.name.normalize('NFKC').toLocaleLowerCase('vi-VN').includes(search) ||
+      user.uid.toLocaleLowerCase('vi-VN').includes(search);
+  });
+
+  const compare = (a, b) => {
+    let av = a[sortBy], bv = b[sortBy];
+    let result;
+    if (typeof av === 'number' && typeof bv === 'number') result = av - bv;
+    else if (typeof av === 'boolean' && typeof bv === 'boolean') result = Number(av) - Number(bv);
+    else result = String(av == null ? '' : av).localeCompare(String(bv == null ? '' : bv), 'vi', { numeric: true, sensitivity: 'base' });
+    if (!result) result = a.name.localeCompare(b.name, 'vi', { sensitivity: 'base' });
+    return sortDir === 'asc' ? result : -result;
+  };
+  filtered.sort(compare);
+  const totalFilteredAccounts = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(totalFilteredAccounts / pageSize));
+  const page = Math.min(requestedPage, totalPages);
+  const start = (page - 1) * pageSize;
+
   return {
     ok: true,
     configuredAdmin: !!(process.env.ADMIN || process.env.admin || process.env.CARO_ADMIN_PASSWORD),
     storageMode: persistenceReady ? 'postgres' : 'memory',
     persistentStorage: persistenceReady,
-    totalAccounts: users.length,
-    bannedAccounts: bannedUids.size,
+    totalAccounts: allUsers.length,
+    bannedAccounts: allUsers.filter(user => user.banned).length,
     totalReports: reports.length,
-    users: users.slice(0, 500),
+    totalFilteredAccounts,
+    page,
+    pageSize,
+    totalPages,
+    sortBy,
+    sortDir,
+    users: filtered.slice(start, start + pageSize),
     reports: reports.slice(0, 100),
     audit: adminAudit.slice(-100).reverse(),
     volatileStorage: !persistenceReady
@@ -1301,6 +1342,53 @@ io.on('connection', socket => {
       reply(ack, { ok: true, uid, banned: bannedUids.has(uid) });
     } catch (error) {
       reply(ack, { ok: false, error: error.message || 'Không thể khóa tài khoản.' });
+    }
+  });
+
+  socket.on('admin:bulk-ban', async (payload, ack) => {
+    try {
+      requireAdmin(payload);
+      if (!payload || typeof payload.banned !== 'boolean') throw new Error('Thao tác khóa/mở khóa không hợp lệ.');
+      if (!Array.isArray(payload.uids) || payload.uids.length < 1 || payload.uids.length > 100) {
+        throw new Error('Chọn từ 1 đến 100 tài khoản trong một lần thao tác.');
+      }
+      const uids = [...new Set(payload.uids.map(uid => String(uid || '').trim()))];
+      for (const uid of uids) {
+        if (!uid || uid === ADMIN_UID || !accountsByUid.has(uid)) throw new Error('Có tài khoản không tồn tại hoặc không được phép thao tác.');
+      }
+      const shouldBan = payload.banned;
+      const reason = String(payload.reason || 'Vi phạm quy định').trim().slice(0, 200) || 'Vi phạm quy định';
+      const changed = uids.filter(uid => shouldBan ? !bannedUids.has(uid) : bannedUids.has(uid));
+      if (!changed.length) {
+        reply(ack, { ok: true, changed: 0, banned: shouldBan });
+        return;
+      }
+
+      for (const uid of changed) {
+        const account = accountsByUid.get(uid);
+        if (shouldBan) {
+          bannedUids.set(uid, { reason, at: Date.now() });
+          for (const [token, sessionUid] of sessions.entries()) if (sessionUid === uid) sessions.delete(token);
+          rankedQueue.delete(uid);
+          for (const client of io.sockets.sockets.values()) {
+            if (client.data && client.data.uid === uid) {
+              client.emit('auth:revoked', { reason: 'Tài khoản đã bị khóa bởi quản trị viên.' });
+              client.disconnect(true);
+            }
+          }
+          notifyPresenceChange(uid);
+          adminAudit.push({ at: Date.now(), action: 'permanent_ban', targetUid: uid, targetName: account.name, reason });
+        } else {
+          bannedUids.delete(uid);
+          adminAudit.push({ at: Date.now(), action: 'unban', targetUid: uid, targetName: account.name, reason: 'Mở khóa theo quyết định quản trị' });
+        }
+      }
+      version++;
+      await persistState();
+      if (shouldBan) drainRankedQueue();
+      reply(ack, { ok: true, changed: changed.length, banned: shouldBan });
+    } catch (error) {
+      reply(ack, { ok: false, error: error.message || 'Không thể cập nhật hàng loạt tài khoản.' });
     }
   });
 
