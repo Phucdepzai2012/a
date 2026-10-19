@@ -770,6 +770,93 @@ body.study-modal-open{overflow:hidden}
 #playModeModal .mode-inline-note{margin:8px 0 0;color:#7c8999;font-size:10px;line-height:1.5}
 #playModeModal .mode-screen-title{margin:0;font-size:10px;font-weight:800;letter-spacing:.08em;color:#7d8a9a;text-transform:uppercase}
 @media(max-width:420px){.play-mode-grid{gap:8px}.play-mode-tile{padding:11px;min-height:132px}.board-mode-picker{gap:7px}.board-mode-option{gap:7px;padding:8px}.board-mode-graphic{width:40px;height:40px}.board-mode-graphic svg{width:34px;height:30px}.play-mode-card{border-radius:13px}}
+
+/* Danh vọng: cửa sổ kiểu bảng tính, có thanh tiêu đề và trang tính. */
+.prestige-pop{position:fixed;inset:0;z-index:1002;display:flex;align-items:center;justify-content:center;padding:clamp(8px,2.5vw,28px);background:rgba(28,38,33,.42);backdrop-filter:blur(2px)}
+.prestige-pop[hidden]{display:none!important}
+.prestige-card{display:flex;flex-direction:column;width:min(1040px,calc(100vw - 24px));height:min(760px,calc(100dvh - 24px));max-height:none;min-height:280px;overflow:hidden;padding:0;border:1px solid #aebbb2;border-radius:7px;background:#fff;color:#26332b;box-shadow:0 24px 80px rgba(0,0,0,.28)}
+.prestige-window-titlebar{display:flex;flex:0 0 auto;align-items:center;gap:11px;min-height:55px;padding:8px 12px;background:#217346;color:#fff}
+.prestige-app-mark{display:grid;place-items:center;flex:none;width:31px;height:31px;border:1px solid rgba(255,255,255,.6);border-radius:4px;background:#fff;color:#217346;font-size:20px;font-weight:900;line-height:1;box-shadow:inset -4px 0 0 #d5e9dc}
+.prestige-window-titlecopy{display:grid;gap:2px;min-width:0}
+.prestige-window-titlecopy strong{overflow:hidden;color:#fff;font-size:14px;font-weight:700;text-overflow:ellipsis;white-space:nowrap}
+.prestige-window-titlecopy small{color:#dceddf;font-size:9px;letter-spacing:.11em}
+#prestigeClose.prestige-window-close{display:grid;place-items:center;flex:none;width:42px;height:36px;margin:0 0 0 auto;padding:0;border:0;border-radius:4px;background:transparent;color:#fff;font-size:26px;font-weight:400;line-height:1}
+#prestigeClose.prestige-window-close:hover,#prestigeClose.prestige-window-close:focus-visible{background:#c42b1c;color:#fff;outline:none}
+.prestige-ribbon{display:flex;flex:0 0 auto;align-items:stretch;gap:0;min-height:39px;padding:0 12px;border-bottom:1px solid #d8dfd9;background:#f7f9f7;color:#4f5b51;font-size:11px}
+.prestige-ribbon-file,.prestige-ribbon-tab{display:flex;align-items:center;padding:0 13px;white-space:nowrap}
+.prestige-ribbon-file{color:#217346;font-weight:700}
+.prestige-ribbon-tab.active{border-bottom:2px solid #217346;color:#217346;font-weight:800}
+.prestige-ribbon-caption{align-self:center;margin-left:auto;color:#819087;font-size:10px}
+.prestige-formula-bar{display:flex;flex:0 0 auto;align-items:center;gap:0;height:32px;border-bottom:1px solid #d5ddd6;background:#fff;font-size:11px;color:#4b5a4e}
+.prestige-name-box{display:grid;place-items:center;align-self:stretch;width:60px;border-right:1px solid #d5ddd6;background:#f8faf8;color:#37493b;font-family:ui-monospace,Consolas,monospace}
+.prestige-fx{padding:0 13px;border-right:1px solid #e1e6e1;color:#217346;font-style:italic;font-weight:800}
+.prestige-formula-text{padding:0 12px;color:#536157}
+.prestige-sheet-body{flex:1 1 auto;min-height:0;overflow:auto;padding:16px clamp(10px,2vw,24px) 18px;background-color:#fff}
+.prestige-sheet-title{display:flex;align-items:center;gap:12px;margin:0 0 12px;padding:3px 0 12px;border-bottom:1px solid #d8e1d9}
+.prestige-row-number{display:grid;place-items:center;flex:none;min-width:30px;align-self:stretch;padding:0 8px;border-right:1px solid #d8e1d9;color:#7c897e;font:11px ui-monospace,Consolas,monospace}
+.prestige-sheet-title>div{display:grid;gap:3px}
+.prestige-sheet-title>div strong{color:#217346;font-size:13px;letter-spacing:.05em}
+.prestige-sheet-title>div small{color:#7d897f;font-size:10px}
+.prestige-player{display:flex;align-items:center;gap:11px;margin:0;padding:10px 12px;border:1px solid #cdd8ce;border-radius:0;background:#f7faf7}
+.prestige-star{width:37px;height:37px;border-radius:2px;background:#dcebdd;color:#217346}
+.prestige-player small,.prestige-stat small{color:#6d7a6f;font-size:9px;font-weight:800;letter-spacing:.08em}
+.prestige-player strong{color:#253b2c;font-size:14px}
+.prestige-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:0 0 14px;border-left:1px solid #cdd8ce}
+.prestige-stat{min-width:0;padding:10px 12px;border:0;border-right:1px solid #cdd8ce;border-bottom:1px solid #cdd8ce;border-radius:0;background:#fff}
+.prestige-stat strong{margin-top:4px;color:#253b2c;font-size:15px}
+#achievementPanel.achievement-panel{margin:0 0 16px;padding:0;border:1px solid #cdd8ce;border-radius:0;background:#fff}
+.achievement-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;border-bottom:1px solid #cdd8ce;background:#e5efe5}
+.achievement-panel-head .achievement-title{color:#315d3e}
+.achievement-panel-head #achievementStreak{color:#506754;font-size:10px}
+.achievement-badges{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0}
+.achievement-badge{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:8px;min-width:0;margin:0;padding:10px;border:0;border-right:1px solid #e0e6e0;border-bottom:1px solid #e0e6e0;border-radius:0;background:#fff;box-shadow:none}
+.achievement-badge:last-child{border-right:0}
+.achievement-badge .achievement-copy{min-width:0}
+.achievement-badge .achievement-copy strong{display:block;color:#334438;font-size:11px}
+.achievement-badge .achievement-copy small{display:block;margin-top:3px;color:#768277;font-size:9px;line-height:1.5}
+.achievement-badge .achievement-state{color:#68776a;font-size:9px;font-weight:800}
+.achievement-foot{margin:0!important;padding:8px 11px;border-top:1px solid #e0e6e0;color:#79857b!important;font-size:10px!important}
+.prestige-table-title{display:flex;align-items:center;gap:12px;margin:0;padding:8px 0;border-top:1px solid #d8e1d9}
+.prestige-table-title .prestige-row-number{align-self:stretch}
+.prestige-card h4.prestige-heading{display:flex;align-items:center;gap:6px;margin:0;color:#315d3e;font-size:12px}
+.prestige-table-head{display:grid;grid-template-columns:34px minmax(0,1.6fr) minmax(110px,1fr) 80px;border:1px solid #b9cbbd;border-bottom:0;background:#e3eee4;color:#315d3e;font-size:10px;font-weight:800}
+.prestige-table-head span{min-width:0;padding:9px 8px;border-right:1px solid #cbd8cc}
+.prestige-table-head span:first-child{text-align:center}
+.prestige-table-head span:last-child{border-right:0;text-align:right}
+#prestigeLeaderboard{max-height:none;overflow:visible;margin:0;padding:0;border:1px solid #c8d5ca;border-top:0;border-radius:0;counter-reset:r;list-style:none}
+#prestigeLeaderboard:empty:after{content:"Chưa có dữ liệu xếp hạng.";display:block;padding:16px;color:#7a877d;font-size:11px;text-align:center}
+#prestigeLeaderboard li{display:grid;grid-template-columns:34px minmax(0,1.6fr) minmax(110px,1fr) 80px;align-items:stretch;gap:0;min-width:0;padding:0;border-bottom:1px solid #e0e6e0;font-size:11px}
+#prestigeLeaderboard li:nth-child(even){background:#f8faf8}
+#prestigeLeaderboard li:last-child{border-bottom:0}
+#prestigeLeaderboard li::before{display:grid;place-items:center;grid-column:1;grid-row:1;min-width:0;padding:8px 3px;border-right:1px solid #dce4dd;background:#f1f5f1;color:#748176;content:counter(r);counter-increment:r;font:10px ui-monospace,Consolas,monospace}
+#prestigeLeaderboard li>span,#prestigeLeaderboard li>i,#prestigeLeaderboard li>b{display:flex;align-items:center;min-width:0;padding:8px;border-right:1px solid #e0e6e0}
+#prestigeLeaderboard li>span{grid-column:2;overflow-wrap:anywhere;color:#2e4132;font-weight:600}
+#prestigeLeaderboard li>i{grid-column:3;color:#627264;font-size:10px;font-style:normal}
+#prestigeLeaderboard li>b{grid-column:4;justify-content:flex-end;border-right:0;color:#217346;font-size:11px}
+.prestige-note{margin:10px 0 0!important;color:#7d897e!important;font-size:10px!important}
+.prestige-sheet-tabs{display:flex;flex:0 0 auto;align-items:center;gap:10px;min-height:35px;padding:0 12px;border-top:1px solid #cbd5cc;background:#f2f5f2;color:#647167;font-size:10px}
+.prestige-tab-arrow{font-size:17px}
+.prestige-sheet-tabs>strong{align-self:stretch;display:flex;align-items:center;padding:0 15px;border-top:2px solid #217346;background:#fff;color:#217346;font-size:11px}
+.prestige-tab-plus{font-size:18px;color:#526b56}
+.prestige-sheet-status{margin-left:auto;color:#7a867c}
+@media(max-width:600px){
+  .prestige-pop{padding:6px}
+  .prestige-card{width:calc(100vw - 12px);height:calc(100dvh - 12px);border-radius:5px}
+  .prestige-window-titlebar{min-height:49px;padding:7px 9px}
+  .prestige-ribbon{overflow-x:auto;padding:0 6px}
+  .prestige-ribbon-caption{display:none}
+  .prestige-ribbon-file,.prestige-ribbon-tab{padding:0 9px}
+  .prestige-sheet-body{padding:11px 9px}
+  .prestige-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .prestige-stat{padding:9px 6px}
+  .prestige-stat strong{font-size:12px}
+  .achievement-badges{grid-template-columns:1fr}
+  .achievement-badge{border-right:0}
+  .prestige-table-head{grid-template-columns:27px minmax(95px,1.25fr) minmax(90px,1fr) 55px}
+  #prestigeLeaderboard li{grid-template-columns:27px minmax(95px,1.25fr) minmax(90px,1fr) 55px}
+  .prestige-table-head span,#prestigeLeaderboard li>span,#prestigeLeaderboard li>i,#prestigeLeaderboard li>b{padding:8px 5px}
+}
+
 </style>
 <style>
 /* Image-led controls and a consistent Vietnamese UI typeface. */
@@ -853,10 +940,32 @@ button,input,select,textarea{font-family:var(--ui-font)!important;font-kerning:n
   </section>
 
   <section id="prestigeModal" class="prestige-pop" role="dialog" aria-modal="true" aria-labelledby="prestigeTitle" hidden>
-    <div class="prestige-card">
-      <div class="menu-pop-top">
-        <div><small>DANH VỌNG CARO 5</small><h3 id="prestigeTitle">Danh vọng</h3></div>
-        <button id="prestigeClose" class="menu-close" type="button" aria-label="Đóng cửa sổ danh vọng" title="Đóng">×</button>
+  <div class="prestige-card">
+    <div class="prestige-window-titlebar">
+      <div class="prestige-app-mark" aria-hidden="true">X</div>
+      <div class="prestige-window-titlecopy">
+        <strong id="prestigeTitle">Danh vọng - Caro 5</strong>
+        <small>BẢNG THỐNG KÊ NGƯỜI CHƠI</small>
+      </div>
+      <button id="prestigeClose" class="prestige-window-close" type="button" aria-label="Đóng cửa sổ danh vọng" title="Đóng cửa sổ">×</button>
+    </div>
+    <div class="prestige-ribbon" aria-hidden="true">
+      <span class="prestige-ribbon-file">Tệp</span>
+      <strong class="prestige-ribbon-tab active">Trang đầu</strong>
+      <span class="prestige-ribbon-tab">Chèn</span>
+      <span class="prestige-ribbon-tab">Dữ liệu</span>
+      <span class="prestige-ribbon-tab">Xem</span>
+      <span class="prestige-ribbon-caption">Caro 5 · Danh vọng</span>
+    </div>
+    <div class="prestige-formula-bar" aria-hidden="true">
+      <span class="prestige-name-box">A1</span>
+      <span class="prestige-fx">fx</span>
+      <span class="prestige-formula-text">Thống kê danh vọng</span>
+    </div>
+    <div class="prestige-sheet-body">
+      <div class="prestige-sheet-title">
+        <span class="prestige-row-number">1</span>
+        <div><strong>THỐNG KÊ DANH VỌNG</strong><small>Thông tin tài khoản và thành tích hiện tại</small></div>
       </div>
       <div class="prestige-player">
         <div class="prestige-star" aria-hidden="true"><svg class="button-image prestige-trophy-image" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v4.5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4v2a4 4 0 0 0 4 4M17 6h3v2a4 4 0 0 1-4 4M12 13.5V18m-4 2h8m-6-2h4"/></svg></div>
@@ -872,11 +981,19 @@ button,input,select,textarea{font-family:var(--ui-font)!important;font-kerning:n
         <div id="achievementBadges" class="achievement-badges"></div>
         <p class="achievement-foot">Tiến độ danh hiệu được lưu trên thiết bị này.</p>
       </div>
-      <h4 class="prestige-heading"><svg class="button-image inline-image" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v4.5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4v2a4 4 0 0 0 4 4M17 6h3v2a4 4 0 0 1-4 4M12 13.5V18m-4 2h8m-6-2h4"/></svg>Bảng xếp hạng</h4>
+      <div class="prestige-table-title"><span class="prestige-row-number">8</span><h4 class="prestige-heading"><svg class="button-image inline-image" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v4.5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4v2a4 4 0 0 0 4 4M17 6h3v2a4 4 0 0 1-4 4M12 13.5V18m-4 2h8m-6-2h4"/></svg>Bảng xếp hạng</h4></div>
+      <div class="prestige-table-head" aria-hidden="true"><span>#</span><span>Người chơi</span><span>Bậc xếp hạng</span><span>ELO</span></div>
       <ol id="prestigeLeaderboard" aria-label="Bảng xếp hạng người chơi"></ol>
       <p class="prestige-note">ELO và bậc được lấy từ hồ sơ hiện có. Chơi xếp hạng để cạnh tranh vị trí trên bảng.</p>
     </div>
-  </section>
+    <div class="prestige-sheet-tabs" aria-hidden="true">
+      <span class="prestige-tab-arrow">‹</span>
+      <strong>Danh vọng</strong>
+      <span class="prestige-tab-plus">+</span>
+      <span class="prestige-sheet-status">Sẵn sàng · Caro 5</span>
+    </div>
+  </div>
+</section>
 
 <section id="playModeModal" class="play-mode-modal" role="dialog" aria-modal="true" aria-labelledby="playModeTitle" hidden>
   <div class="play-mode-card">
