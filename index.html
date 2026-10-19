@@ -797,6 +797,40 @@ button,input,select,textarea{font-family:var(--ui-font)!important;font-kerning:n
 .asset-attribution a:hover{color:#1c3fb7}
 @media(max-width:520px){.button-image{width:22px;height:22px}.settings-launch .button-image,.prestige-launch .button-image{width:23px;height:23px}.settings-launch,.prestige-launch{min-height:40px;padding:7px 10px}}
 </style>
+<style>
+.admin-table-tools{display:grid;grid-template-columns:minmax(220px,1fr) minmax(145px,180px) 105px auto;gap:8px;margin:9px 0}
+.admin-table-tools input,.admin-table-tools select{box-sizing:border-box;width:100%;min-width:0;margin:0;padding:9px 10px;border:1px solid var(--ln);border-radius:7px;background:#fff;color:var(--ink);font:inherit;font-size:12px}
+.admin-table-tools button,.admin-bulk-toolbar button,.admin-pagination button{width:auto;margin:0;padding:8px 11px;border:1px solid var(--ln);border-radius:7px;background:#f2f5f8;color:var(--ink);font-size:11px;font-weight:700;white-space:nowrap}
+.admin-table-tools button{background:var(--blue);border-color:var(--blue);color:#fff}
+.admin-bulk-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0;padding:9px 10px;border:1px solid var(--ln);border-radius:8px;background:#f8fafc}
+.admin-bulk-toolbar label{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700}
+.admin-bulk-toolbar input{accent-color:var(--blue)}
+.admin-bulk-toolbar span{margin-right:auto;color:var(--mut);font-size:11px;font-variant-numeric:tabular-nums}
+.admin-bulk-toolbar button:disabled,.admin-pagination button:disabled{opacity:.45;cursor:not-allowed}
+.admin-table-wrap{max-width:100%;overflow:auto;border:1px solid var(--ln);border-radius:8px;background:#fff}
+.admin-table{width:100%;min-width:900px;border-collapse:separate;border-spacing:0;font-size:11px;text-align:left}
+.admin-table th{position:sticky;top:0;z-index:1;padding:0 9px;border-bottom:1px solid var(--ln);background:#eef2f7;color:#48586b;white-space:nowrap}
+.admin-table th button{display:block;width:auto;margin:0;padding:11px 0;border:0;background:transparent;color:inherit;font:inherit;font-weight:800;text-align:left;cursor:pointer}
+.admin-table th button:hover{color:var(--blue)}
+.admin-table td{padding:9px;border-bottom:1px solid #e8edf2;vertical-align:middle}
+.admin-table tbody tr:nth-child(even){background:#fafbfd}
+.admin-table tbody tr:hover{background:#f0f5ff}
+.admin-table tbody tr:last-child td{border-bottom:0}
+.admin-table .admin-check-cell{width:32px;text-align:center}
+.admin-table input[type=checkbox]{width:14px;height:14px;margin:0;accent-color:var(--blue)}
+.admin-account-name{font-weight:800;color:var(--ink);white-space:normal;overflow-wrap:anywhere}
+.admin-account-name small{display:block;margin-top:3px;color:var(--mut);font-size:10px;font-weight:400}
+.admin-uid{max-width:185px;color:var(--mut);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:10px;overflow-wrap:anywhere}
+.admin-number{font-variant-numeric:tabular-nums;white-space:nowrap}
+.admin-table .admin-pill{display:inline-block;white-space:nowrap}
+.admin-table .admin-action{padding:6px 8px;border-radius:6px;white-space:nowrap}
+.admin-table .admin-action.danger{background:#ffdede}
+.admin-empty{padding:22px!important;text-align:center;color:var(--mut)}
+.admin-pagination{display:flex;align-items:center;justify-content:center;gap:12px;margin:10px 0 18px}
+.admin-pagination span{min-width:95px;color:var(--mut);font-size:11px;text-align:center;font-variant-numeric:tabular-nums}
+@media(max-width:760px){.admin-table-tools{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.admin-table-tools input{grid-column:1/-1}.admin-table-tools button{width:100%}.admin-bulk-toolbar{gap:6px}.admin-bulk-toolbar span{width:100%;order:2}.admin-bulk-toolbar button{flex:1}.admin-table{min-width:820px}}
+</style>
+
 </head>
 <body>
 <div id="gameLoader" role="status" aria-live="polite">
@@ -999,8 +1033,39 @@ button,input,select,textarea{font-family:var(--ui-font)!important;font-kerning:n
       <div id="adminStats" class="review-summary"></div>
       <h2>Yêu cầu kiểm tra accuracy</h2><ol id="adminReports"></ol>
       <h2>Tài khoản</h2>
-      <div class="admin-filters"><input id="adminFilterInput" type="search" placeholder="Lọc tên hoặc UID"><select id="adminFilterMode"><option value="all">Tất cả</option><option value="active">Đang hoạt động</option><option value="reported">Có báo cáo</option><option value="banned">Đã khóa</option></select></div>
-      <ol id="adminUsers"></ol>
+      <div class="admin-table-tools">
+        <input id="adminFilterInput" type="search" placeholder="Tìm tên hoặc UID trên toàn bộ tài khoản" aria-label="Tìm tài khoản">
+        <select id="adminFilterMode" aria-label="Lọc tài khoản"><option value="all">Tất cả trạng thái</option><option value="active">Chưa khóa</option><option value="reported">Có báo cáo</option><option value="banned">Đã khóa</option></select>
+        <select id="adminPageSize" aria-label="Số dòng mỗi trang"><option value="25">25 dòng</option><option value="50" selected>50 dòng</option><option value="100">100 dòng</option></select>
+        <button id="bAdminExport" type="button">Xuất CSV</button>
+      </div>
+      <div class="admin-bulk-toolbar">
+        <label><input id="adminSelectPage" type="checkbox"> Chọn trang</label>
+        <span id="adminSelectedCount">0 đã chọn</span>
+        <button id="bAdminBulkBan" class="admin-action danger" type="button" disabled>Khóa đã chọn</button>
+        <button id="bAdminBulkUnban" class="admin-action" type="button" disabled>Mở khóa đã chọn</button>
+      </div>
+      <div id="adminTableMeta" class="note">Đang tải danh sách tài khoản…</div>
+      <div class="admin-table-wrap">
+        <table class="admin-table" aria-label="Bảng quản lý tài khoản">
+          <thead><tr>
+            <th class="admin-check-cell"></th>
+            <th><button type="button" data-admin-sort="name">Tài khoản ↕</button></th>
+            <th><button type="button" data-admin-sort="uid">UID ↕</button></th>
+            <th><button type="button" data-admin-sort="createdAt">Ngày tạo ↕</button></th>
+            <th><button type="button" data-admin-sort="elo">ELO ↕</button></th>
+            <th><span>Thắng / Thua / Hòa</span></th>
+            <th><button type="button" data-admin-sort="banned">Trạng thái ↕</button></th>
+            <th>Thao tác</th>
+          </tr></thead>
+          <tbody id="adminUsers"><tr><td colspan="8" class="admin-empty">Đang tải…</td></tr></tbody>
+        </table>
+      </div>
+      <div class="admin-pagination">
+        <button id="bAdminPrev" type="button">← Trước</button>
+        <span id="adminPageLabel">Trang 1 / 1</span>
+        <button id="bAdminNext" type="button">Sau →</button>
+      </div>
       <h2>Nhật ký quản trị</h2><ol id="adminAudit"></ol>
       <div class="note">Accuracy 99–100% chỉ là tín hiệu để admin xem xét, không tự kết luận gian lận. Khóa sẽ kéo dài đến khi admin mở khóa.</div>
     </section>
@@ -1501,8 +1566,9 @@ button,input,select,textarea{font-family:var(--ui-font)!important;font-kerning:n
         localStorage.removeItem('caroProfileSeason2');
       } catch (_) {}
     },
-    adminOverview: () => rpc('admin:overview', {}),
+    adminOverview: (options = {}) => rpc('admin:overview', options),
     adminBan: (uid,banned,reason) => rpc('admin:ban', {uid,banned,reason}),
+    adminBulkBan: (uids,banned,reason) => rpc('admin:bulk-ban', {uids,banned,reason}),
     adminResolveReport: (reportId,status) => rpc('admin:report:resolve', {reportId,status}),
     reportAccuracy: payload => rpc('accuracy:report', payload),
     finishRanked: payload => rpc('ranked:finish', payload),
@@ -1873,26 +1939,115 @@ function formatAdminDate(value){
   return Number.isFinite(date.getTime())?date.toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
 }
 let adminOverviewCache=null;
+let adminPage=1,adminPageSize=50,adminSortKey='createdAt',adminSortDir='desc',adminFilterTimer=null;
+const adminSelectedUids=new Set();
+function adminQueryFor(page=adminPage,pageSize=adminPageSize){
+ return {search:String($('adminFilterInput').value||''),status:$('adminFilterMode').value||'all',page,pageSize,sortBy:adminSortKey,sortDir:adminSortDir};
+}
+function updateAdminSelectionUI(){
+ const users=(adminOverviewCache&&adminOverviewCache.users)||[];
+ const currentUids=users.map(u=>u.uid);
+ const selectedOnPage=currentUids.filter(uid=>adminSelectedUids.has(uid)).length;
+ $('adminSelectedCount').textContent=adminSelectedUids.size+' đã chọn';
+ $('adminSelectPage').checked=currentUids.length>0&&selectedOnPage===currentUids.length;
+ $('adminSelectPage').indeterminate=selectedOnPage>0&&selectedOnPage<currentUids.length;
+ $('bAdminBulkBan').disabled=adminSelectedUids.size===0;
+ $('bAdminBulkUnban').disabled=adminSelectedUids.size===0;
+}
 function renderAdminUsers(){
- const d=adminOverviewCache||{},q=String($('adminFilterInput').value||'').trim().toLocaleLowerCase('vi-VN'),mode=$('adminFilterMode').value||'all',reported=new Set((d.reports||[]).map(r=>r.targetUid));
- const users=(d.users||[]).filter(u=>(mode!=='active'||!u.banned)&&(mode!=='banned'||u.banned)&&(mode!=='reported'||reported.has(u.uid)||u.reported)&&(!q||String(u.name||'').toLocaleLowerCase('vi-VN').includes(q)||String(u.uid||'').toLowerCase().includes(q)));
- $('adminUsers').innerHTML=users.map(u=>'<li><div class="admin-row"><div class="admin-detail"><b>'+esc(u.name)+'</b><small>'+(Number(u.elo)||1000)+' ELO · '+esc(u.uid)+'</small>'+(u.reported?'<small>Có báo cáo đang chờ.</small>':'')+(u.banned?'<small>Đã khóa: '+esc(u.banReason||'Vi phạm quy định')+'</small>':'')+'</div><span class="admin-pill '+(u.banned?'block':'')+'">'+(u.banned?'ĐÃ KHÓA':'HOẠT ĐỘNG')+'</span><button type="button" class="admin-action '+(u.banned?'':'danger')+'" data-admin-ban="'+esc(u.uid)+'" data-banned="'+(u.banned?'true':'false')+'">'+(u.banned?'Mở khóa':'Khóa vô thời hạn')+'</button></div></li>').join('')||'<li class="note">Không có tài khoản phù hợp.</li>';
+ const d=adminOverviewCache||{},users=d.users||[];
+ $('adminUsers').innerHTML=users.map(u=>{
+  const stats=[Number(u.w)||0,Number(u.l)||0,Number(u.d)||0].join(' / ');
+  const created=formatAdminDate(u.createdAt);
+  const status='<span class="admin-pill '+(u.banned?'block':'')+'">'+(u.banned?'ĐÃ KHÓA':'CHƯA KHÓA')+'</span>'+(u.reported?'<small class="admin-account-name"><small>Có báo cáo chờ</small></small>':'');
+  const reason=u.banned&&u.banReason?'<small class="admin-account-name"><small title="'+esc(u.banReason)+'">'+esc(u.banReason)+'</small></small>':'';
+  return '<tr><td class="admin-check-cell"><input type="checkbox" data-admin-select-uid="'+esc(u.uid)+'" aria-label="Chọn '+esc(u.name)+'" '+(adminSelectedUids.has(u.uid)?'checked':'')+'></td>'+
+   '<td><div class="admin-account-name">'+esc(u.name)+(u.reported?'<small>⚑ Có báo cáo</small>':'')+'</div></td>'+
+   '<td><div class="admin-uid" title="'+esc(u.uid)+'">'+esc(u.uid)+'</div></td>'+
+   '<td class="admin-number">'+esc(created)+'</td>'+
+   '<td class="admin-number"><b>'+(Number(u.elo)||1000)+'</b></td>'+
+   '<td class="admin-number">'+stats+'</td>'+
+   '<td>'+status+reason+'</td>'+
+   '<td><button type="button" class="admin-action '+(u.banned?'':'danger')+'" data-admin-ban="'+esc(u.uid)+'" data-banned="'+(u.banned?'true':'false')+'">'+(u.banned?'Mở khóa':'Khóa')+'</button></td></tr>';
+ }).join('')||'<tr><td colspan="8" class="admin-empty">Không có tài khoản phù hợp.</td></tr>';
+ const total=Number(d.totalFilteredAccounts)||0,page=Number(d.page)||1,size=Number(d.pageSize)||adminPageSize;
+ const first=total?(page-1)*size+1:0,last=Math.min(page*size,total);
+ $('adminTableMeta').textContent='Hiển thị '+first+'–'+last+' / '+total.toLocaleString('vi-VN')+' tài khoản khớp bộ lọc. Tổng hệ thống: '+(Number(d.totalAccounts)||0).toLocaleString('vi-VN')+'.';
+ $('adminPageLabel').textContent='Trang '+page+' / '+(Number(d.totalPages)||1);
+ $('bAdminPrev').disabled=page<=1;
+ $('bAdminNext').disabled=page>=(Number(d.totalPages)||1);
+ updateAdminSelectionUI();
 }
 function renderAdminOverview(data){
- adminOverviewCache=data||{};const reports=data.reports||[];
- $('adminStats').innerHTML='Tài khoản: <b>'+(Number(data.totalAccounts)||0)+'</b> · Đã khóa: <b>'+(Number(data.bannedAccounts)||0)+'</b> · Yêu cầu chờ: <b>'+reports.length+'</b>';
+ adminOverviewCache=data||{};
+ const reports=data.reports||[];
+ $('adminStats').innerHTML='Tài khoản: <b>'+(Number(data.totalAccounts)||0).toLocaleString('vi-VN')+'</b> · Đã khóa: <b>'+(Number(data.bannedAccounts)||0).toLocaleString('vi-VN')+'</b> · Báo cáo chờ: <b>'+(Number(data.totalReports)||reports.length).toLocaleString('vi-VN')+'</b> · Lưu trữ: <b>'+(data.persistentStorage?'ổn định':'tạm thời')+'</b>';
  $('adminReports').innerHTML=reports.map(r=>'<li><div class="admin-row"><span class="admin-pill warn">'+(Number(r.accuracy)||0)+'%</span><div class="admin-detail"><b>'+esc(r.targetName||'Người chơi')+'</b><small>'+(Number(r.targetMoves)||0)+' nước người chơi · '+(Number(r.totalMoves)||0)+' nước cả trận</small><small>'+esc(r.gameId||'—')+' · báo bởi '+esc(r.reporterName||'Người chơi')+'</small><small>'+formatAdminDate(r.at)+' · '+esc(r.reason||'Cần xem xét thủ công')+'</small><div class="admin-report-actions"><button class="admin-action" data-report-resolve="'+esc(r.id)+'" data-report-status="reviewed" type="button">Đã xem</button><button class="admin-action" data-report-resolve="'+esc(r.id)+'" data-report-status="dismissed" type="button">Bỏ qua</button></div></div></div></li>').join('')||'<li class="note">Chưa có yêu cầu kiểm tra.</li>';
  renderAdminUsers();
  $('adminAudit').innerHTML=(data.audit||[]).slice(0,30).map(a=>'<li><div class="admin-row"><div class="admin-detail"><b>'+esc(a.action||'Hoạt động')+'</b> · '+esc(a.targetName||a.targetUid||'—')+'<small>'+formatAdminDate(a.at)+' · '+esc(a.reason||'')+'</small></div></div></li>').join('')||'<li class="note">Chưa có nhật ký quản trị.</li>';
- $('adminStatus').textContent=data.configuredAdmin?'Đã xác thực admin ở máy chủ. Các yêu cầu cần được xem xét thủ công.':'Chưa cấu hình CARO_ADMIN_PASSWORD trên Render.';
+ $('adminStatus').textContent=data.configuredAdmin?'Đã xác thực admin ở máy chủ. Các thao tác hàng loạt được ghi vào nhật ký.':'Chưa cấu hình CARO_ADMIN_PASSWORD trên Render.';
 }
 async function loadAdminOverview(){
-  if(!me.isAdmin||!window.caroAuth){$('adminStatus').textContent='Không có quyền quản trị.';return}
-  $('adminStatus').textContent='Đang tải dữ liệu quản trị…';
-  $('bAdminRefresh').disabled=true;
-  try{const data=await window.caroAuth.adminOverview();renderAdminOverview(data)}
-  catch(error){$('adminStatus').textContent='Không tải được bảng quản trị: '+(error.message||error)}
-  finally{$('bAdminRefresh').disabled=false}
+ if(!me.isAdmin||!window.caroAuth){$('adminStatus').textContent='Không có quyền quản trị.';return}
+ $('adminStatus').textContent='Đang tải dữ liệu quản trị…';
+ $('bAdminRefresh').disabled=true;
+ adminSelectedUids.clear();
+ try{
+  const data=await window.caroAuth.adminOverview(adminQueryFor());
+  if(!data||data.ok===false)throw new Error(data&&data.error||'Không tải được danh sách tài khoản.');
+  adminPage=Number(data.page)||1;
+  renderAdminOverview(data);
+ }catch(error){$('adminStatus').textContent='Không tải được bảng quản trị: '+(error.message||error)}
+ finally{$('bAdminRefresh').disabled=false}
+}
+async function exportAdminAccounts(){
+ if(!me.isAdmin||!window.caroAuth)return;
+ const button=$('bAdminExport');button.disabled=true;
+ const originalText=button.textContent;button.textContent='Đang xuất…';
+ try{
+  const query=adminQueryFor(1,100);
+  const first=await window.caroAuth.adminOverview(query);
+  if(!first||first.ok===false)throw new Error(first&&first.error||'Không tải được danh sách xuất.');
+  const rows=[...(first.users||[])];
+  const totalPages=Number(first.totalPages)||1;
+  for(let start=2;start<=totalPages;start+=4){
+   const requests=[];
+   for(let page=start;page<Math.min(start+4,totalPages+1);page++)requests.push(window.caroAuth.adminOverview({...query,page}));
+   const pages=await Promise.all(requests);
+   for(const result of pages){
+    if(!result||result.ok===false)throw new Error(result&&result.error||'Không thể lấy đủ dữ liệu để xuất.');
+    rows.push(...(result.users||[]));
+   }
+  }
+  const safeCell=value=>{
+   let cell=String(value==null?'':value);
+   if(/^[\t\r ]*[=+\-@]/.test(cell))cell="'"+cell;
+   return '"'+cell.replace(/"/g,'""')+'"';
+  };
+  const table=[['Tên tài khoản','UID','Ngày tạo','ELO','Thắng','Thua','Hòa','Trạng thái','Lý do khóa','Báo cáo']];
+  rows.forEach(u=>table.push([u.name,u.uid,Number(u.createdAt)?new Date(Number(u.createdAt)).toISOString():'',Number(u.elo)||1000,Number(u.w)||0,Number(u.l)||0,Number(u.d)||0,u.banned?'Đã khóa':'Chưa khóa',u.banReason||'',u.reported?'Có':'Không']));
+  const csv='\ufeff'+table.map(row=>row.map(safeCell).join(',')).join('\r\n');
+  const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  const link=document.createElement('a');link.href=url;link.download='caro-tai-khoan-'+new Date().toISOString().slice(0,10)+'.csv';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  $('adminStatus').textContent='Đã xuất '+rows.length.toLocaleString('vi-VN')+' tài khoản theo bộ lọc hiện tại.';
+ }catch(error){$('adminStatus').textContent='Xuất CSV thất bại: '+(error.message||error)}
+ finally{button.disabled=false;button.textContent=originalText}
+}
+async function bulkUpdateAdminAccounts(shouldBan){
+ if(!me.isAdmin||!window.caroAuth)return;
+ const uids=[...adminSelectedUids];
+ if(!uids.length)return;
+ const verb=shouldBan?'khóa':'mở khóa';
+ if(!window.confirm('Bạn muốn '+verb+' '+uids.length+' tài khoản đã chọn?'))return;
+ let reason='Mở khóa theo quyết định quản trị';
+ if(shouldBan)reason=(window.prompt('Lý do khóa các tài khoản đã chọn:','Vi phạm quy định')||'Vi phạm quy định').trim().slice(0,200)||'Vi phạm quy định';
+ const buttons=[$('bAdminBulkBan'),$('bAdminBulkUnban')];buttons.forEach(button=>button.disabled=true);
+ try{
+  const result=await window.caroAuth.adminBulkBan(uids,shouldBan,reason);
+  if(!result||result.ok===false)throw new Error(result&&result.error||'Thao tác hàng loạt thất bại.');
+  $('adminStatus').textContent='Đã '+verb+' '+(Number(result.changed)||0)+' tài khoản.';
+  await loadAdminOverview();
+ }catch(error){$('adminStatus').textContent='Không thể '+verb+': '+(error.message||error);updateAdminSelectionUI()}
 }
 function renderHistory(records,uid,name){
   currentHistoryUid=uid;
@@ -3070,12 +3225,43 @@ $('profileModal').addEventListener('keydown',e=>{if(e.key==='Escape')$('profileM
 
 $('bHistorySearch').onclick=searchPlayerHistory;
 $('bAdminRefresh').onclick=loadAdminOverview;
-$('adminFilterInput').addEventListener('input',renderAdminUsers);
-$('adminFilterMode').addEventListener('change',renderAdminUsers);
-$('adminUsers').addEventListener('click',async e=>{
- const btn=e.target.closest('[data-admin-ban]');if(!btn||!me.isAdmin||!window.caroAuth)return;const uid=btn.dataset.adminBan,ban=btn.dataset.banned!=='true';if(ban&&!window.confirm('Khóa tài khoản vô thời hạn? Admin có thể mở khóa sau.'))return;const reason=ban?(window.prompt('Lý do khóa:','Yêu cầu admin kiểm tra dấu hiệu bất thường')||'Vi phạm quy định'):'Mở khóa theo quyết định quản trị';btn.disabled=true;try{await window.caroAuth.adminBan(uid,ban,reason);await loadAdminOverview()}catch(error){$('adminStatus').textContent='Không thực hiện được: '+(error.message||error);btn.disabled=false}
+$('bAdminExport').onclick=exportAdminAccounts;
+$('adminFilterInput').addEventListener('input',()=>{
+ clearTimeout(adminFilterTimer);
+ adminFilterTimer=setTimeout(()=>{adminPage=1;loadAdminOverview()},280);
 });
-$('adminReports').addEventListener('click',async e=>{const btn=e.target.closest('[data-report-resolve]');if(!btn||!me.isAdmin||!window.caroAuth)return;btn.disabled=true;try{await window.caroAuth.adminResolveReport(btn.dataset.reportResolve,btn.dataset.reportStatus);await loadAdminOverview()}catch(error){$('adminStatus').textContent='Không xử lý được: '+(error.message||error);btn.disabled=false}});
+$('adminFilterMode').addEventListener('change',()=>{adminPage=1;loadAdminOverview()});
+$('adminPageSize').addEventListener('change',()=>{adminPageSize=Number($('adminPageSize').value)||50;adminPage=1;loadAdminOverview()});
+$('bAdminPrev').onclick=()=>{if(adminPage>1){adminPage--;loadAdminOverview()}};
+$('bAdminNext').onclick=()=>{if(adminOverviewCache&&adminPage<(Number(adminOverviewCache.totalPages)||1)){adminPage++;loadAdminOverview()}};
+$('adminSelectPage').addEventListener('change',()=>{
+ const users=(adminOverviewCache&&adminOverviewCache.users)||[];
+ users.forEach(u=>{if($('adminSelectPage').checked)adminSelectedUids.add(u.uid);else adminSelectedUids.delete(u.uid)});
+ renderAdminUsers();
+});
+$('adminUsers').addEventListener('change',e=>{
+ const input=e.target.closest('[data-admin-select-uid]');if(!input)return;
+ if(input.checked)adminSelectedUids.add(input.dataset.adminSelectUid);else adminSelectedUids.delete(input.dataset.adminSelectUid);
+ updateAdminSelectionUI();
+});
+$('bAdminBulkBan').onclick=()=>bulkUpdateAdminAccounts(true);
+$('bAdminBulkUnban').onclick=()=>bulkUpdateAdminAccounts(false);
+document.querySelectorAll('[data-admin-sort]').forEach(button=>button.addEventListener('click',()=>{
+ const key=button.dataset.adminSort;
+ if(adminSortKey===key)adminSortDir=adminSortDir==='asc'?'desc':'asc';
+ else{adminSortKey=key;adminSortDir=key==='name'||key==='uid'?'asc':'desc'}
+ adminPage=1;loadAdminOverview();
+}));
+$('adminUsers').addEventListener('click',async e=>{
+ const btn=e.target.closest('[data-admin-ban]');if(!btn||!me.isAdmin||!window.caroAuth)return;
+ const uid=btn.dataset.adminBan,ban=btn.dataset.banned!=='true';
+ if(ban&&!window.confirm('Khóa tài khoản '+uid+' vô thời hạn?'))return;
+ const reason=ban?(window.prompt('Lý do khóa:','Vi phạm quy định')||'Vi phạm quy định'):'Mở khóa theo quyết định quản trị';
+ btn.disabled=true;
+ try{const result=await window.caroAuth.adminBan(uid,ban,reason);if(!result||result.ok===false)throw new Error(result&&result.error||'Thao tác thất bại.');await loadAdminOverview()}
+ catch(error){$('adminStatus').textContent='Không thực hiện được: '+(error.message||error);btn.disabled=false}
+});
+$('adminReports').addEventListener('click',async e=>{const btn=e.target.closest('[data-report-resolve]');if(!btn||!me.isAdmin||!window.caroAuth)return;btn.disabled=true;try{const result=await window.caroAuth.adminResolveReport(btn.dataset.reportResolve,btn.dataset.reportStatus);if(!result||result.ok===false)throw new Error(result&&result.error||'Không xử lý được yêu cầu.');await loadAdminOverview()}catch(error){$('adminStatus').textContent='Không xử lý được: '+(error.message||error);btn.disabled=false}});
 $('historyPlayerInput').addEventListener('keydown',e=>{if(e.key==='Enter')searchPlayerHistory()});
 $('bMyHistory').onclick=()=>loadHistoryByUid(me.uid,me.name).catch(error=>{$('historyStatus').textContent=error.message||String(error)});
 $('bShareHistory').onclick=async()=>{
