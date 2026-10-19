@@ -613,6 +613,26 @@ body.study-modal-open{overflow:hidden}
 /* Compact settings dialog; the game itself stays visible and accessible. */
 .settings-launch{display:inline-flex;align-items:center;gap:6px;width:auto;margin:0 0 8px;padding:7px 10px;border:1px solid var(--ln);border-radius:8px;background:#f5f8fb;color:var(--ink);font-size:12px;font-weight:700}
 .settings-launch:hover{background:#eaf0f7}
+.prestige-launch{display:inline-flex;align-items:center;gap:6px;width:auto;margin:0 0 8px 5px;padding:7px 10px;border:1px solid #e1c77b;border-radius:8px;background:#fff8e5;color:#805b08;font-size:12px;font-weight:800}
+.prestige-launch:hover{background:#fff0c4}
+.prestige-pop{position:fixed;inset:0;z-index:1002;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(18,28,42,.58);backdrop-filter:blur(4px)}
+.prestige-pop[hidden]{display:none!important}
+.prestige-card{width:min(470px,100%);max-height:calc(100dvh - 32px);overflow:auto;padding:20px;border:1px solid #dbe4ee;border-radius:15px;background:#fff;color:#243247;box-shadow:0 18px 55px rgba(10,24,43,.24)}
+.prestige-player{display:flex;align-items:center;gap:11px;margin-top:15px;padding:12px;border:1px solid #eadfbf;border-radius:11px;background:linear-gradient(110deg,#fff9e9,#fff)}
+.prestige-star{display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:12px;background:#f8e7ad;color:#94680a;font-size:22px}
+.prestige-player small,.prestige-stat small{display:block;color:#798597;font-size:9px;font-weight:800;letter-spacing:.08em}
+.prestige-player strong{display:block;overflow-wrap:anywhere;margin-top:3px;color:#283447;font-size:15px}
+.prestige-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:9px}
+.prestige-stat{min-width:0;padding:11px 8px;border:1px solid #e0e7ef;border-radius:10px;background:#f8fafc}
+.prestige-stat strong{display:block;overflow-wrap:anywhere;margin-top:5px;color:#26374b;font-size:15px;font-weight:900}
+.prestige-card h4{margin:18px 0 7px;font-size:12px;color:#526176}
+#prestigeLeaderboard{max-height:290px;overflow-y:auto;margin:0;padding:0;counter-reset:r;list-style:none}
+#prestigeLeaderboard:empty:after{content:"Bảng xếp hạng đang tải hoặc chưa có dữ liệu.";display:block;padding:13px;border-radius:8px;background:#f5f7fa;color:#7a8797;font-size:12px;text-align:center}
+#prestigeLeaderboard li{align-items:center;gap:8px;padding:9px 3px;font-size:12px}
+#prestigeLeaderboard li b{font-size:12px;color:#26374b}
+.prestige-note{margin:12px 0 0!important;font-size:10px!important;line-height:1.6!important}
+@media(max-width:520px){.prestige-card{padding:15px}.prestige-launch{margin-left:0}.prestige-stats{gap:6px}.prestige-stat{padding:9px 6px}.prestige-stat strong{font-size:13px}}
+
 .menu-pop[hidden]{display:none!important}
 #menuSettings.menu-pop{position:fixed;inset:0;z-index:1001;display:flex;align-items:center;justify-content:center;transform:none;width:auto;max-height:none;overflow:auto;padding:16px;border:0;border-radius:0;background:rgba(18,28,42,.48);color:#243247;box-shadow:none}
 #menuSettings.menu-pop[hidden]{display:none!important}
@@ -721,6 +741,26 @@ body.study-modal-open{overflow:hidden}
       </div>
   </section>
 
+  <section id="prestigeModal" class="prestige-pop" role="dialog" aria-modal="true" aria-labelledby="prestigeTitle" hidden>
+    <div class="prestige-card">
+      <div class="menu-pop-top">
+        <div><small>DANH VỌNG CARO 5</small><h3 id="prestigeTitle">Danh vọng</h3></div>
+        <button id="prestigeClose" class="menu-close" type="button" aria-label="Đóng cửa sổ danh vọng" title="Đóng">×</button>
+      </div>
+      <div class="prestige-player">
+        <div class="prestige-star" aria-hidden="true">★</div>
+        <div><small>NGƯỜI CHƠI</small><strong id="prestigeName">Khách</strong></div>
+      </div>
+      <div class="prestige-stats" aria-label="Thống kê danh vọng">
+        <div class="prestige-stat"><small>ELO</small><strong id="prestigeElo">—</strong></div>
+        <div class="prestige-stat"><small>BẬC</small><strong id="prestigeTier">—</strong></div>
+        <div class="prestige-stat"><small>THẮNG / THUA / HÒA</small><strong id="prestigeRecord">0 / 0 / 0</strong></div>
+      </div>
+      <h4>🏅 Bảng xếp hạng</h4>
+      <ol id="prestigeLeaderboard" aria-label="Bảng xếp hạng người chơi"></ol>
+      <p class="prestige-note">ELO và bậc được lấy từ hồ sơ hiện có. Chơi xếp hạng để cạnh tranh vị trí trên bảng.</p>
+    </div>
+  </section>
   <div id="ov"><div><h1>Caro <b>5</b></h1><p id="authHint">Đăng nhập để đồng bộ ELO và lịch sử đấu của bạn.</p><input id="nm" maxlength="14" placeholder="Tên đăng nhập (3–14 ký tự)" autocomplete="username"><div class="password-row"><input id="pw" type="password" minlength="8" maxlength="128" placeholder="Mật khẩu (ít nhất 8 ký tự)" autocomplete="current-password"><button id="togglePw" type="button" aria-label="Hiện mật khẩu" title="Hiện mật khẩu">👁️</button></div><div id="pwConfirmRow" class="password-row" hidden><input id="pwConfirm" type="password" minlength="8" maxlength="128" placeholder="Nhập lại mật khẩu" autocomplete="new-password"><button id="togglePwConfirm" type="button" aria-label="Hiện mật khẩu xác nhận" title="Hiện mật khẩu xác nhận">👁️</button></div><div id="nmEr" role="status" aria-live="polite"></div><button id="nmOk" class="pri">Đăng nhập</button><button id="bSwitchAuth" class="auth-switch" type="button">Chưa có tài khoản? Đăng ký</button></div></div>
 <div id="achievementEffect" class="achievement-effect" hidden role="status" aria-live="assertive">
   <div class="achievement-effect-particles" aria-hidden="true">
@@ -744,6 +784,7 @@ body.study-modal-open{overflow:hidden}
     <section>
       <h1>Caro <b>5</b></h1>
       <button id="menuSettingsLaunch" class="settings-launch" type="button" aria-haspopup="dialog" aria-controls="menuSettings">⚙ Cài đặt</button>
+      <button id="prestigeLaunch" class="prestige-launch" type="button" aria-haspopup="dialog" aria-controls="prestigeModal">🏆 Danh vọng</button>
       <div id="me"></div>
       <div class="account-toolbar">
         <div id="accountAvatar" class="avatar avatar-large" aria-label="Ảnh đại diện">?</div>
@@ -3451,5 +3492,54 @@ render();
 })();
 </script>
 
+<script>
+(() => {
+  const modal = document.getElementById('prestigeModal');
+  const launch = document.getElementById('prestigeLaunch');
+  const close = document.getElementById('prestigeClose');
+  if (!modal || !launch || !close) return;
+
+  function refreshPrestige() {
+    let player = null;
+    try { if (typeof me !== 'undefined') player = me; } catch (_) {}
+    const signedIn = Boolean(player && player.name);
+    const elo = signedIn ? Math.max(0, Math.floor(Number(player.elo) || 1000)) : null;
+    document.getElementById('prestigeName').textContent = signedIn ? String(player.name) : 'Chưa đăng nhập';
+    document.getElementById('prestigeElo').textContent = signedIn ? String(elo) : '—';
+    let playerTier = '—';
+    try { if (signedIn && typeof tier === 'function') playerTier = tier(elo); } catch (_) {}
+    document.getElementById('prestigeTier').textContent = playerTier;
+    document.getElementById('prestigeRecord').textContent = signedIn
+      ? [Number(player.w) || 0, Number(player.l) || 0, Number(player.d) || 0].join(' / ')
+      : '—';
+
+    const source = document.getElementById('lb');
+    const target = document.getElementById('prestigeLeaderboard');
+    target.replaceChildren();
+    if (source) {
+      for (const item of Array.from(source.children)) target.appendChild(item.cloneNode(true));
+    }
+  }
+
+  function openPrestige() {
+    refreshPrestige();
+    modal.hidden = false;
+    close.focus();
+  }
+  function closePrestige() {
+    modal.hidden = true;
+    launch.focus();
+  }
+
+  launch.addEventListener('click', openPrestige);
+  close.addEventListener('click', closePrestige);
+  modal.addEventListener('click', event => {
+    if (event.target === modal) closePrestige();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && !modal.hidden) closePrestige();
+  });
+})();
+</script>
 </body>
 </html>
