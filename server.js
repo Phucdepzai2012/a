@@ -473,12 +473,15 @@ function broadcastRankedQueueStatus() {
   pruneRankedQueue();
   const entries = [...rankedQueue.values()].sort((a, b) => a.joinedAt - b.joinedAt);
   const activeGames = activeRankedGameCount();
-  entries.forEach((entry, index) => {
+  entries.forEach(entry => {
+    const boardMode = entry.boardMode === 'inf' ? 'inf' : 'normal';
+    const compatible = entries.filter(item => (item.boardMode === 'inf' ? 'inf' : 'normal') === boardMode);
     const status = {
-      position: index + 1,
-      waiting: entries.length,
+      position: compatible.findIndex(item => item.uid === entry.uid) + 1,
+      waiting: compatible.length,
       activeGames,
-      maxGames: MAX_ACTIVE_RANKED_GAMES
+      maxGames: MAX_ACTIVE_RANKED_GAMES,
+      boardMode
     };
     for (const socketId of entry.socketIds) {
       const client = io.sockets.sockets.get(socketId);
@@ -887,16 +890,19 @@ io.on('connection', socket => {
       drainRankedQueue();
 
       const matched = findActiveRankedGame(uid);
-      const ordered = [...rankedQueue.values()].sort((a, b) => a.joinedAt - b.joinedAt);
+      const ordered = [...rankedQueue.values()]
+        .filter(item => (item.boardMode === 'inf' ? 'inf' : 'normal') === requestedBoardMode)
+        .sort((a, b) => a.joinedAt - b.joinedAt);
       const position = ordered.findIndex(item => item.uid === uid);
       reply(ack, {
         ok: true,
         status: matched ? 'matched' : 'queued',
         gid: matched ? matched[0] : null,
         position: position >= 0 ? position + 1 : 0,
-        waiting: rankedQueue.size,
+        waiting: ordered.length,
         activeGames: activeRankedGameCount(),
-        maxGames: MAX_ACTIVE_RANKED_GAMES
+        maxGames: MAX_ACTIVE_RANKED_GAMES,
+        boardMode: requestedBoardMode
       });
     } catch (error) {
       reply(ack, { ok: false, error: error.message || 'Không thể vào hàng chờ xếp hạng.' });
