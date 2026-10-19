@@ -727,6 +727,7 @@ button,input,select,textarea{font-family:var(--ui-font)!important;font-kerning:n
 .settings-launch{margin:0 4px 8px 0}
 .prestige-launch{margin:0 0 8px}
 .button-image{display:block;width:24px;height:24px;flex:0 0 auto;object-fit:contain;pointer-events:none}
+.prestige-star .prestige-trophy-image{width:31px;height:31px}
 .settings-launch .button-image,.prestige-launch .button-image{width:25px;height:25px}
 .champion-bot-button{flex-direction:row;gap:9px}
 #bOpenChat{gap:8px}
@@ -771,7 +772,7 @@ button,input,select,textarea{font-family:var(--ui-font)!important;font-kerning:n
         <button id="prestigeClose" class="menu-close" type="button" aria-label="Đóng cửa sổ danh vọng" title="Đóng">×</button>
       </div>
       <div class="prestige-player">
-        <div class="prestige-star" aria-hidden="true"><img class="button-image prestige-trophy-image" src="https://img.icons8.com/3d-fluency/96/trophy.png" alt=""></div>
+        <div class="prestige-star" aria-hidden="true"><svg class="button-image prestige-trophy-image" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v4.5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4v2a4 4 0 0 0 4 4M17 6h3v2a4 4 0 0 1-4 4M12 13.5V18m-4 2h8m-6-2h4"/></svg></div>
         <div><small>NGƯỜI CHƠI</small><strong id="prestigeName">Khách</strong></div>
       </div>
       <div class="prestige-stats" aria-label="Thống kê danh vọng">
@@ -780,16 +781,16 @@ button,input,select,textarea{font-family:var(--ui-font)!important;font-kerning:n
         <div class="prestige-stat"><small>THẮNG / THUA / HÒA</small><strong id="prestigeRecord">0 / 0 / 0</strong></div>
       </div>
       <div id="achievementPanel" class="achievement-panel" aria-label="Danh hiệu người chơi">
-        <div class="achievement-panel-head"><strong class="achievement-title"><img class="button-image inline-image" src="https://img.icons8.com/3d-fluency/48/trophy.png" alt="">Danh hiệu</strong><span id="achievementStreak">Chuỗi thắng 0/5</span></div>
+        <div class="achievement-panel-head"><strong class="achievement-title"><svg class="button-image inline-image" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v4.5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4v2a4 4 0 0 0 4 4M17 6h3v2a4 4 0 0 1-4 4M12 13.5V18m-4 2h8m-6-2h4"/></svg>Danh hiệu</strong><span id="achievementStreak">Chuỗi thắng 0/5</span></div>
         <div id="achievementBadges" class="achievement-badges"></div>
         <p class="achievement-foot">Tiến độ danh hiệu được lưu trên thiết bị này.</p>
       </div>
-      <h4 class="prestige-heading"><img class="button-image inline-image" src="https://img.icons8.com/3d-fluency/48/trophy.png" alt="">Bảng xếp hạng</h4>
+      <h4 class="prestige-heading"><svg class="button-image inline-image" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v4.5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4v2a4 4 0 0 0 4 4M17 6h3v2a4 4 0 0 1-4 4M12 13.5V18m-4 2h8m-6-2h4"/></svg>Bảng xếp hạng</h4>
       <ol id="prestigeLeaderboard" aria-label="Bảng xếp hạng người chơi"></ol>
       <p class="prestige-note">ELO và bậc được lấy từ hồ sơ hiện có. Chơi xếp hạng để cạnh tranh vị trí trên bảng.</p>
     </div>
   </section>
-  <div id="ov"><div><h1>Caro <b>5</b></h1><p id="authHint">Đăng nhập để đồng bộ ELO và lịch sử đấu của bạn.</p><input id="nm" maxlength="14" placeholder="Tên đăng nhập (3–14 ký tự)" autocomplete="username"><div class="password-row"><input id="pw" type="password" minlength="8" maxlength="128" placeholder="Mật khẩu (ít nhất 8 ký tự)" autocomplete="current-password"><button id="togglePw" type="button" aria-label="Hiện mật khẩu" title="Hiện mật khẩu"><img class="button-image password-eye-image" src="https://img.icons8.com/3d-fluency/48/eye.png" alt=""></button></div><div id="pwConfirmRow" class="password-row" hidden><input id="pwConfirm" type="password" minlength="8" maxlength="128" placeholder="Nhập lại mật khẩu" autocomplete="new-password"><button id="togglePwConfirm" type="button" aria-label="Hiện mật khẩu xác nhận" title="Hiện mật khẩu xác nhận"><img class="button-image password-eye-image" src="https://img.icons8.com/3d-fluency/48/eye.png" alt=""></button></div><div id="nmEr" role="status" aria-live="polite"></div><button id="nmOk" class="pri">Đăng nhập</button><button id="bSwitchAuth" class="auth-switch" type="button">Chưa có tài khoản? Đăng ký</button></div></div>
+  <div id="ov"><div><h1>Caro <b>5</b></h1><p id="authHint">Đăng nhập để đồng bộ ELO và lịch sử đấu của bạn.</p><input id="nm" maxlength="14" placeholder="Tên đăng nhập (3–14 ký tự)" autocomplete="username"><div class="password-row"><input id="pw" type="password" minlength="8" maxlength="128" placeholder="Mật khẩu (ít nhất 8 ký tự)" autocomplete="current-password"><button id="togglePw" type="button" aria-label="Hiện mật khẩu" title="Hiện mật khẩu"><svg class="button-image password-eye-image" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="3"/></svg></button></div><div id="pwConfirmRow" class="password-row" hidden><input id="pwConfirm" type="password" minlength="8" maxlength="128" placeholder="Nhập lại mật khẩu" autocomplete="new-password"><button id="togglePwConfirm" type="button" aria-label="Hiện mật khẩu xác nhận" title="Hiện mật khẩu xác nhận"><svg class="button-image password-eye-image" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="3"/></svg></button></div><div id="nmEr" role="status" aria-live="polite"></div><button id="nmOk" class="pri">Đăng nhập</button><button id="bSwitchAuth" class="auth-switch" type="button">Chưa có tài khoản? Đăng ký</button></div></div>
 <div id="achievementEffect" class="achievement-effect" hidden role="status" aria-live="assertive">
   <div class="achievement-effect-particles" aria-hidden="true">
     <span class="achievement-particle p1">✦</span><span class="achievement-particle p2">✧</span>
@@ -811,8 +812,8 @@ button,input,select,textarea{font-family:var(--ui-font)!important;font-kerning:n
   <aside>
     <section>
       <h1>Caro <b>5</b></h1>
-      <button id="menuSettingsLaunch" class="settings-launch" type="button" aria-haspopup="dialog" aria-controls="menuSettings"><img class="button-image" src="https://img.icons8.com/3d-fluency/48/settings.png" alt=""><span>Cài đặt</span></button>
-      <button id="prestigeLaunch" class="prestige-launch" type="button" aria-haspopup="dialog" aria-controls="prestigeModal"><img class="button-image" src="https://img.icons8.com/3d-fluency/48/trophy.png" alt=""><span>Danh vọng</span></button>
+      <button id="menuSettingsLaunch" class="settings-launch" type="button" aria-haspopup="dialog" aria-controls="menuSettings"><svg class="button-image" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2h4l.55 2.45a8.1 8.1 0 0 1 1.85.77l2.3-1.05 2.2 3.82-1.8 1.72c.1.7.1 1.42 0 2.13l1.8 1.72-2.2 3.82-2.3-1.05a8.1 8.1 0 0 1-1.85.77L14 19.55h-4l-.55-2.45a8.1 8.1 0 0 1-1.85-.77l-2.3 1.05-2.2-3.82 1.8-1.72a7.8 7.8 0 0 1 0-2.13L3.1 8l2.2-3.82 2.3 1.05a8.1 8.1 0 0 1 1.85-.77L10 2Z"/><circle cx="12" cy="10.5" r="2.7"/></svg><span>Cài đặt</span></button>
+      <button id="prestigeLaunch" class="prestige-launch" type="button" aria-haspopup="dialog" aria-controls="prestigeModal"><svg class="button-image" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v4.5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4v2a4 4 0 0 0 4 4M17 6h3v2a4 4 0 0 1-4 4M12 13.5V18m-4 2h8m-6-2h4"/></svg><span>Danh vọng</span></button>
       <div id="me"></div>
       <div class="account-toolbar">
         <div id="accountAvatar" class="avatar avatar-large" aria-label="Ảnh đại diện">?</div>
@@ -836,7 +837,7 @@ button,input,select,textarea{font-family:var(--ui-font)!important;font-kerning:n
           <div id="botEloDesc" class="note">Khá · ELO máy chỉ điều chỉnh độ khó, không đổi ELO của bạn ở chế độ luyện.</div>
         </div>
         <button id="bStartBot" class="pri">Bắt đầu đấu máy</button>
-      <button id="bStartChampionBot" class="champion-bot-button" type="button"><img class="button-image" src="https://img.icons8.com/3d-fluency/48/robot.png" alt=""><span>Boss Tuyệt Thủ</span></button>
+      <button id="bStartChampionBot" class="champion-bot-button" type="button"><svg class="button-image" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M9 3h6"/><rect x="4.5" y="6" width="15" height="13" rx="3"/><circle cx="9" cy="11.5" r=".8" fill="currentColor"/><circle cx="15" cy="11.5" r=".8" fill="currentColor"/><path d="M8.5 15h7M2.5 10v5M21.5 10v5"/></svg><span>Boss Tuyệt Thủ</span></button>
       <p class="champion-bot-note">Tìm kiếm alpha-beta nhiều lượt, ưu tiên thắng ngay, chặn đòn bắt buộc và ghi nhớ thế cờ. Không có engine nào được bảo đảm tuyệt đối không sai.</p>
       </div>
       <button id="bCen" type="button">Về nước vừa đánh</button>
@@ -928,7 +929,6 @@ button,input,select,textarea{font-family:var(--ui-font)!important;font-kerning:n
       <p>Caro 5 chạy trực tiếp trên trình duyệt, không cần cài ứng dụng. Mở game, đăng nhập để đồng bộ tài khoản và chọn cách chơi phù hợp.</p>
       <p><a href="./huong-dan-caro-5.html">Đọc hướng dẫn chơi Caro 5, luật thắng và mẹo chiến thuật →</a></p>
     </section>
-  <p class="asset-attribution">Hình minh họa: <a href="https://icons8.com/icon/xsg8DrPwYfql/settings" target="_blank" rel="noopener noreferrer">Cài đặt</a> · <a href="https://icons8.com/icon/MR39NpxEXFHr/trophy" target="_blank" rel="noopener noreferrer">Cúp</a> · <a href="https://icons8.com/icon/90rRYIGpsX1E/robot" target="_blank" rel="noopener noreferrer">Robot</a> · <a href="https://icons8.com/icon/hCvhdugyicF1/chat" target="_blank" rel="noopener noreferrer">Chat</a> · <a href="https://icons8.com/icon/e1GFi02rCDbK/eye" target="_blank" rel="noopener noreferrer">Mắt</a> · <a href="https://icons8.com" target="_blank" rel="noopener noreferrer">Icons8</a></p>
   </aside>
 </main>
 <button id="bOpenStudyFloating" class="study-float" type="button" aria-label="Mở sổ tay học Caro" title="Sổ tay Caro" hidden>
@@ -1135,7 +1135,7 @@ button,input,select,textarea{font-family:var(--ui-font)!important;font-kerning:n
     <span id="turnClock">Còn 30 giây</span>
   </div>
   <div class="match-action-row">
-    <button id="bOpenChat" type="button"><img class="button-image" src="https://img.icons8.com/3d-fluency/48/chat.png" alt=""><span>Chat</span><span id="chatUnread" hidden>0</span></button>
+    <button id="bOpenChat" type="button"><svg class="button-image" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.7 8.7 0 0 1-3.7-.8L4 20l1.3-3.4A7.1 7.1 0 0 1 4 11.5 7.5 7.5 0 0 1 12 4a7.5 7.5 0 0 1 8 7.5Z"/><path d="M8.5 11h7M8.5 14h4"/></svg><span>Chat</span><span id="chatUnread" hidden>0</span></button>
     <button id="bOfferDraw" type="button">Xin hòa</button>
     <button id="bRes" type="button">Đầu hàng</button>
   </div>
@@ -1559,10 +1559,16 @@ function safeAvatar(value){const avatar=String(value||'');return avatar.length<1
 function setAvatarElement(element,avatar,name){
   if(!element)return;
   const safe=safeAvatar(avatar);
-  if(safe)element.innerHTML='<img src="'+safe+'" alt="">';
+  if(safe)element.innerHTML='<img src="'+safe+'" data-fallback="'+esc(String(name||'?').trim().slice(0,1).toLocaleUpperCase('vi')||'?')+'" alt="">';
   else element.textContent=String(name||'?').trim().slice(0,1).toLocaleUpperCase('vi')||'?';
 }
 function renderAccountSummary(){setAvatarElement($('accountAvatar'),me.avatar,me.name)}
+document.addEventListener('error',event=>{
+  const image=event.target;
+  if(!(image instanceof HTMLImageElement)||!image.closest('.avatar'))return;
+  const avatar=image.closest('.avatar');
+  avatar.textContent=image.dataset.fallback||'?';
+},true);
 
 function achievementStorageKey(){
   const owner=String(me.uid||('guest:'+String(me.name||'người chơi').toLocaleLowerCase('vi-VN')));
@@ -1647,7 +1653,7 @@ document.addEventListener('keydown',event=>{if(event.key==='Escape'&&$('achievem
 
 function renderPersonRow(person,mode){
   const p=person||{},name=String(p.name||'Người chơi'),uid=String(p.uid||''),avatar=safeAvatar(p.avatar);
-  const avatarHtml='<span class="avatar avatar-small">'+(avatar?'<img src="'+avatar+'" alt="">':esc(name.slice(0,1).toLocaleUpperCase('vi')||'?'))+'</span>';
+  const avatarHtml='<span class="avatar avatar-small">'+(avatar?'<img src="'+avatar+'" data-fallback="'+esc(name.slice(0,1).toLocaleUpperCase('vi')||'?')+'" alt="">':esc(name.slice(0,1).toLocaleUpperCase('vi')||'?'))+'</span>';
   let action='<span class="social-empty">—</span>';
   if(mode==='search'){
     if(p.relationship==='self')action='<span class="social-empty">Bạn</span>';
@@ -3300,7 +3306,7 @@ if(tierImageRoot){
         ctx.fillStyle='#a96b00';ctx.font='bold 11px Arial,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('★',x,y+.2);
       }
     }
-    try{return canvas.toDataURL('image/png');}catch(_){return '';}
+    try{return canvas.toDataURL('image/png');}catch(_){return fallback;}
   }
   function tierCard(item){
     return '<button type="button" class="tier-piece'+(selectedTierPiece===item.id?' is-selected':'')+'" draggable="true" data-tier-piece="'+esc(item.id)+'" aria-label="Chọn ảnh: '+esc(item.title)+'" title="'+esc(item.title)+'"><img draggable="false" src="'+(tierImageCache.get(item.id)||'')+'" alt="Sơ đồ bàn cờ Caro 15 x 15: '+esc(item.title)+'"><span>'+esc(item.title)+'</span><small>'+esc(item.tag)+'</small></button>';
