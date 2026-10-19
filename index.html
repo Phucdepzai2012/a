@@ -717,6 +717,58 @@ body.study-modal-open{overflow:hidden}
 @media(max-width:520px){.achievement-panel{padding:9px}.achievement-badge{grid-template-columns:31px minmax(0,1fr) auto;gap:6px;padding:7px}.achievement-icon{width:30px;height:30px}.achievement-state{font-size:8px}.achievement-effect-card{padding:25px 15px 18px}.achievement-effect-mark{width:58px;height:58px;font-size:29px}}
 @media(prefers-reduced-motion:reduce){.achievement-effect.active:before,.achievement-effect.active .achievement-effect-card,.achievement-effect.active .achievement-particle,.achievement-effect-mark{animation:none!important;opacity:1;transform:none}}
 
+
+/* Compact play-mode picker: readable on desktop and mobile. */
+.play-mode-modal{position:fixed;inset:0;z-index:1003;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(18,28,42,.58);backdrop-filter:blur(5px)}
+.play-mode-modal[hidden]{display:none!important}
+.play-mode-card{width:min(570px,100%);max-height:calc(100dvh - 32px);overflow:auto;padding:clamp(16px,3.5vw,24px);border:1px solid #dbe4ee;border-radius:16px;background:#fff;color:#243247;box-shadow:0 18px 55px rgba(10,24,43,.25)}
+.play-mode-head,.play-subhead{display:flex;align-items:flex-start;gap:12px}
+.play-mode-head{justify-content:space-between}
+.play-mode-head small{font-size:10px;letter-spacing:.12em;font-weight:800;color:#2769c9}
+.play-mode-head h2{margin:4px 0 0;font-size:25px;line-height:1.2;letter-spacing:-.04em;color:#243247}
+.play-mode-head .menu-close{flex:none}
+.play-mode-intro,.play-subhead p{margin:9px 0 16px;color:#748196;font-size:12px;line-height:1.6}
+.play-mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.play-mode-tile{display:flex;align-items:flex-start;flex-direction:column;gap:8px;min-width:0;min-height:142px;margin:0;padding:14px;text-align:left;border:1px solid #e0e7ef;border-radius:12px;background:#fafbfd;color:#26374b;transition:border-color .15s,background .15s,transform .15s}
+.play-mode-tile:hover{border-color:#93b2d7;background:#f3f7fc}
+.play-mode-tile:active{transform:translateY(1px)}
+.play-mode-art{display:grid;place-items:center;width:38px;height:38px;border-radius:10px;background:#eaf1fb;color:#2458a8}
+.play-mode-art svg{width:23px;height:23px}
+.play-mode-tile strong{font-size:13px;line-height:1.35}
+.play-mode-tile small{color:#7c8999;font-size:11px;line-height:1.5;font-weight:400}
+.play-mode-view[hidden]{display:none!important}
+.play-subhead{align-items:center;margin-bottom:12px}
+.play-subhead .back-button{flex:none;width:36px;height:36px;margin:0;padding:0;border:1px solid #dbe3ec;border-radius:9px;background:#f5f7fa;color:#42536a;font-size:19px}
+.play-subhead h3{margin:0;color:#26374b;font-size:19px;letter-spacing:-.025em}
+.play-subhead p{margin:4px 0 0}
+.board-mode-label{margin:14px 0 7px;color:#56677c;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.board-mode-picker{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:8px 0 15px}
+.board-mode-option{display:flex;align-items:center;gap:10px;min-width:0;margin:0;padding:10px;border:1px solid #dfe6ef;border-radius:11px;background:#fff;color:#34465d;text-align:left}
+.board-mode-option[aria-pressed=true]{border-color:#3975c6;background:#f0f6ff;box-shadow:inset 0 0 0 1px #3975c6}
+.board-mode-graphic{display:grid;place-items:center;flex:none;width:50px;height:45px;border-radius:8px;background:#f2f6fa;color:#436584}
+.board-mode-graphic svg{width:42px;height:35px}
+.board-mode-option[aria-pressed=true] .board-mode-graphic{background:#e0edff;color:#2458a8}
+.board-mode-option strong{display:block;font-size:12px;line-height:1.35}
+.board-mode-option small{display:block;margin-top:3px;color:#7c8999;font-size:10px;line-height:1.4}
+.play-mode-controls{margin-top:12px}
+.play-mode-controls>button,.play-mode-controls .room-join-row button{margin:0}
+#playModeStatus{min-height:1.25em;margin:10px 0 0;color:#68788c;font-size:12px;line-height:1.5}
+#playModeStatus:empty{display:none}
+#playBotSlot #botPanel{margin-top:0}
+#playBotSlot .bot-settings{margin-top:8px}
+#playBotSlot #bStartBot,#playBotSlot #bStartChampionBot{margin-top:9px}
+#playRoomActions #bCreateRoom{width:100%;margin:0}
+#playJoinActions #bShowJoinRoom{display:none}
+#playJoinActions #joinRoomPanel{display:block!important;margin-top:0}
+#playJoinActions #joinRoomPanel[hidden]{display:none!important}
+#playJoinActions .room-join-row{grid-template-columns:minmax(0,1fr) 112px}
+#playJoinActions .room-join-row input,#playJoinActions .room-join-row button{margin:0}
+.play-mode-launch{display:flex;justify-content:center;align-items:center;gap:9px;margin:8px 0 10px;padding:12px;background:#1c3fb7;border-color:#1c3fb7;color:#fff;font-size:14px}
+.play-mode-launch:hover{background:#17369e}
+.play-mode-launch svg{width:19px;height:19px}
+#playModeModal .mode-inline-note{margin:8px 0 0;color:#7c8999;font-size:10px;line-height:1.5}
+#playModeModal .mode-screen-title{margin:0;font-size:10px;font-weight:800;letter-spacing:.08em;color:#7d8a9a;text-transform:uppercase}
+@media(max-width:420px){.play-mode-grid{gap:8px}.play-mode-tile{padding:11px;min-height:132px}.board-mode-picker{gap:7px}.board-mode-option{gap:7px;padding:8px}.board-mode-graphic{width:40px;height:40px}.board-mode-graphic svg{width:34px;height:30px}.play-mode-card{border-radius:13px}}
 </style>
 <style>
 /* Image-led controls and a consistent Vietnamese UI typeface. */
@@ -790,6 +842,57 @@ button,input,select,textarea{font-family:var(--ui-font)!important;font-kerning:n
       <p class="prestige-note">ELO và bậc được lấy từ hồ sơ hiện có. Chơi xếp hạng để cạnh tranh vị trí trên bảng.</p>
     </div>
   </section>
+
+<section id="playModeModal" class="play-mode-modal" role="dialog" aria-modal="true" aria-labelledby="playModeTitle" hidden>
+  <div class="play-mode-card">
+    <div class="play-mode-head">
+      <div><small>CARO 5 · CHỌN CHẾ ĐỘ</small><h2 id="playModeTitle">Bạn muốn chơi kiểu nào?</h2></div>
+      <button id="playModeClose" class="menu-close" type="button" aria-label="Đóng cửa sổ chơi" title="Đóng">×</button>
+    </div>
+    <p class="play-mode-intro">Chọn chế độ, sau đó chọn bàn thường 15 × 15 hoặc bàn vô hạn (INF).</p>
+    <p id="playModeStatus" role="status" aria-live="polite"></p>
+    <div id="playMenuHome" class="play-mode-view">
+      <div class="play-mode-grid">
+        <button class="play-mode-tile" type="button" data-play-view="ranked"><span class="play-mode-art" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v4.5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4v2a4 4 0 0 0 4 4M17 6h3v2a4 4 0 0 1-4 4M12 13.5V18m-4 2h8m-6-2h4"/></svg></span><strong>Xếp hạng</strong><small>Ghép người chơi thật, kết quả tính ELO.</small></button>
+        <button class="play-mode-tile" type="button" data-play-view="bot"><span class="play-mode-art" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="7" width="15" height="13" rx="3"/><path d="M12 3v4M9 3h6M8.5 12h.01M15.5 12h.01M9 16h6M2.5 10v5M21.5 10v5"/></svg></span><strong>Đấu máy</strong><small>Tự chọn độ khó và luyện tập, không cộng ELO.</small></button>
+        <button class="play-mode-tile" type="button" data-play-view="room"><span class="play-mode-art" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v9a2.5 2.5 0 0 1-2.5 2.5H13l-4 4v-4H6.5A2.5 2.5 0 0 1 4 14.5v-9Z"/><path d="M8 8h8M8 12h5"/></svg></span><strong>Tạo phòng</strong><small>Mời bạn bè, chơi thường hoặc chọn map INF.</small></button>
+        <button class="play-mode-tile" type="button" data-play-view="join"><span class="play-mode-art" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h5v5M19 4l-8 8"/><path d="M18 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5"/></svg></span><strong>Vào phòng</strong><small>Nhập mã phòng bạn bè gửi cho bạn.</small></button>
+      </div>
+    </div>
+    <div id="playRankedSetup" class="play-mode-view" hidden>
+      <div class="play-subhead"><button class="back-button" type="button" data-play-back aria-label="Quay lại">‹</button><div><h3>Ghép trận xếp hạng</h3><p>Đấu người thật; kết quả hợp lệ sẽ được tính ELO.</p></div></div>
+      <div class="board-mode-label">Chọn bản đồ</div>
+      <div class="board-mode-picker" data-board-picker="ranked">
+        <button type="button" class="board-mode-option" data-board-choice="normal" aria-pressed="true"><span class="board-mode-graphic" aria-hidden="true"><svg viewBox="0 0 48 40" fill="none" stroke="currentColor" stroke-width="1.1"><rect x="5" y="3" width="38" height="34" rx="2"/><path d="M14.5 3v34M24 3v34M33.5 3v34M5 11.5h38M5 20h38M5 28.5h38"/></svg></span><span><strong>Bàn thường</strong><small>15 × 15 ô</small></span></button>
+        <button type="button" class="board-mode-option" data-board-choice="inf" aria-pressed="false"><span class="board-mode-graphic" aria-hidden="true"><svg viewBox="0 0 48 40" fill="none" stroke="currentColor" stroke-width="1.1"><path d="M3 10h42M3 20h42M3 30h42M12 3v34M24 3v34M36 3v34"/><path d="M15 20h18" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="20" r="5" fill="currentColor" stroke="none"/></svg></span><span><strong>Bàn vô hạn · INF</strong><small>Không giới hạn 15 × 15</small></span></button>
+      </div>
+      <div id="playRankedActions" class="play-mode-controls"></div><p class="mode-inline-note">Bạn chỉ được ghép với người chọn cùng loại bản đồ.</p>
+    </div>
+    <div id="playBotSetup" class="play-mode-view" hidden>
+      <div class="play-subhead"><button class="back-button" type="button" data-play-back aria-label="Quay lại">‹</button><div><h3>Đấu máy</h3><p>Chỉnh độ khó, chọn bản đồ rồi bắt đầu chơi.</p></div></div>
+      <div class="board-mode-label">Chọn bản đồ</div>
+      <div class="board-mode-picker" data-board-picker="bot">
+        <button type="button" class="board-mode-option" data-board-choice="normal" aria-pressed="true"><span class="board-mode-graphic" aria-hidden="true"><svg viewBox="0 0 48 40" fill="none" stroke="currentColor" stroke-width="1.1"><rect x="5" y="3" width="38" height="34" rx="2"/><path d="M14.5 3v34M24 3v34M33.5 3v34M5 11.5h38M5 20h38M5 28.5h38"/></svg></span><span><strong>Bàn thường</strong><small>15 × 15 ô</small></span></button>
+        <button type="button" class="board-mode-option" data-board-choice="inf" aria-pressed="false"><span class="board-mode-graphic" aria-hidden="true"><svg viewBox="0 0 48 40" fill="none" stroke="currentColor" stroke-width="1.1"><path d="M3 10h42M3 20h42M3 30h42M12 3v34M24 3v34M36 3v34"/><path d="M15 20h18" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="20" r="5" fill="currentColor" stroke="none"/></svg></span><span><strong>Bàn vô hạn · INF</strong><small>Đi đến mọi hướng</small></span></button>
+      </div>
+      <div id="playBotSlot"></div>
+    </div>
+    <div id="playRoomSetup" class="play-mode-view" hidden>
+      <div class="play-subhead"><button class="back-button" type="button" data-play-back aria-label="Quay lại">‹</button><div><h3>Tạo phòng riêng</h3><p>Không cộng ELO. Bạn bè vào bằng mã phòng.</p></div></div>
+      <div class="board-mode-label">Chọn bản đồ cho phòng</div>
+      <div class="board-mode-picker" data-board-picker="room">
+        <button type="button" class="board-mode-option" data-board-choice="normal" aria-pressed="true"><span class="board-mode-graphic" aria-hidden="true"><svg viewBox="0 0 48 40" fill="none" stroke="currentColor" stroke-width="1.1"><rect x="5" y="3" width="38" height="34" rx="2"/><path d="M14.5 3v34M24 3v34M33.5 3v34M5 11.5h38M5 20h38M5 28.5h38"/></svg></span><span><strong>Bàn thường</strong><small>15 × 15 ô</small></span></button>
+        <button type="button" class="board-mode-option" data-board-choice="inf" aria-pressed="false"><span class="board-mode-graphic" aria-hidden="true"><svg viewBox="0 0 48 40" fill="none" stroke="currentColor" stroke-width="1.1"><path d="M3 10h42M3 20h42M3 30h42M12 3v34M24 3v34M36 3v34"/><path d="M15 20h18" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="20" r="5" fill="currentColor" stroke="none"/></svg></span><span><strong>Bàn vô hạn · INF</strong><small>Đi đến mọi hướng</small></span></button>
+      </div>
+      <div id="playRoomActions" class="play-mode-controls"></div>
+    </div>
+    <div id="playJoinSetup" class="play-mode-view" hidden>
+      <div class="play-subhead"><button class="back-button" type="button" data-play-back aria-label="Quay lại">‹</button><div><h3>Vào phòng bạn bè</h3><p>Map sẽ theo loại mà chủ phòng đã chọn.</p></div></div>
+      <div id="playJoinActions" class="play-mode-controls"></div>
+    </div>
+  </div>
+</section>
+
   <div id="ov"><div><h1>Caro <b>5</b></h1><p id="authHint">Đăng nhập để đồng bộ ELO và lịch sử đấu của bạn.</p><input id="nm" maxlength="14" placeholder="Tên đăng nhập (3–14 ký tự)" autocomplete="username"><div class="password-row"><input id="pw" type="password" minlength="8" maxlength="128" placeholder="Mật khẩu (ít nhất 8 ký tự)" autocomplete="current-password"><button id="togglePw" type="button" aria-label="Hiện mật khẩu" title="Hiện mật khẩu"><svg class="button-image password-eye-image" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="3"/></svg></button></div><div id="pwConfirmRow" class="password-row" hidden><input id="pwConfirm" type="password" minlength="8" maxlength="128" placeholder="Nhập lại mật khẩu" autocomplete="new-password"><button id="togglePwConfirm" type="button" aria-label="Hiện mật khẩu xác nhận" title="Hiện mật khẩu xác nhận"><svg class="button-image password-eye-image" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="3"/></svg></button></div><div id="nmEr" role="status" aria-live="polite"></div><button id="nmOk" class="pri">Đăng nhập</button><button id="bSwitchAuth" class="auth-switch" type="button">Chưa có tài khoản? Đăng ký</button></div></div>
 <div id="achievementEffect" class="achievement-effect" hidden role="status" aria-live="assertive">
   <div class="achievement-effect-particles" aria-hidden="true">
@@ -814,6 +917,7 @@ button,input,select,textarea{font-family:var(--ui-font)!important;font-kerning:n
       <h1>Caro <b>5</b></h1>
       <button id="menuSettingsLaunch" class="settings-launch" type="button" aria-haspopup="dialog" aria-controls="menuSettings"><svg class="button-image" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2h4l.55 2.45a8.1 8.1 0 0 1 1.85.77l2.3-1.05 2.2 3.82-1.8 1.72c.1.7.1 1.42 0 2.13l1.8 1.72-2.2 3.82-2.3-1.05a8.1 8.1 0 0 1-1.85.77L14 19.55h-4l-.55-2.45a8.1 8.1 0 0 1-1.85-.77l-2.3 1.05-2.2-3.82 1.8-1.72a7.8 7.8 0 0 1 0-2.13L3.1 8l2.2-3.82 2.3 1.05a8.1 8.1 0 0 1 1.85-.77L10 2Z"/><circle cx="12" cy="10.5" r="2.7"/></svg><span>Cài đặt</span></button>
       <button id="prestigeLaunch" class="prestige-launch" type="button" aria-haspopup="dialog" aria-controls="prestigeModal"><svg class="button-image" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v4.5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4v2a4 4 0 0 0 4 4M17 6h3v2a4 4 0 0 1-4 4M12 13.5V18m-4 2h8m-6-2h4"/></svg><span>Danh vọng</span></button>
+      <button id="playModeLaunch" class="play-mode-launch" type="button" aria-haspopup="dialog" aria-controls="playModeModal"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h4m-2-2v4M15 10h.01M18 13h.01"/><path d="M7 6.5h10a4 4 0 0 1 3.8 5.2l-1.2 3.8a2 2 0 0 1-3.2.9l-2.5-2.1h-3.8l-2.5 2.1a2 2 0 0 1-3.2-.9l-1.2-3.8A4 4 0 0 1 7 6.5Z"/></svg><span>Chơi ngay</span></button>
       <div id="me"></div>
       <div class="account-toolbar">
         <div id="accountAvatar" class="avatar avatar-large" aria-label="Ảnh đại diện">?</div>
@@ -1401,7 +1505,7 @@ button,input,select,textarea{font-family:var(--ui-font)!important;font-kerning:n
     adminResolveReport: (reportId,status) => rpc('admin:report:resolve', {reportId,status}),
     reportAccuracy: payload => rpc('accuracy:report', payload),
     finishRanked: payload => rpc('ranked:finish', payload),
-    joinRankedQueue: () => rpc('ranked:queue:join', {}),
+    joinRankedQueue: payload => rpc('ranked:queue:join', payload || {}),
     cancelRankedQueue: () => rpc('ranked:queue:cancel', {}),
     offerDraw: payload => rpc('draw:offer', payload),
     respondDraw: payload => rpc('draw:respond', payload),
