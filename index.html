@@ -184,7 +184,7 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 .loader-cell.mark-o{color:var(--red)}
 #loaderWinLine{position:absolute;inset:0;z-index:4;display:block;width:100%;height:100%;overflow:visible;opacity:0;pointer-events:none}
 #loaderWinLine.show{opacity:1}
-#loaderWinLine path{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1000;stroke-dashoffset:1000}
+#loaderWinLine path{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100;stroke-dashoffset:100}
 #loaderWinLine .win-outline{stroke:#fff;stroke-width:7}
 #loaderWinLine .win-stroke{stroke:var(--blue);stroke-width:3.5}
 #loaderWinLine.show path{animation:loaderWinDraw .62s cubic-bezier(.2,.8,.2,1) forwards}
@@ -908,8 +908,8 @@ button,input,select,textarea{font-family:var(--ui-font)!important;font-kerning:n
     <p class="loader-caption">Chuẩn bị bàn cờ...</p>
     <div id="loaderBoard" class="loader-board" aria-hidden="true">
       <svg id="loaderWinLine" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-        <path class="win-outline"></path>
-        <path class="win-stroke"></path>
+        <path class="win-outline" pathLength="100" d="M 20 50 C 27 46, 32 54, 39 50 S 52 47, 59 50 S 72 54, 80 50"></path>
+        <path class="win-stroke" pathLength="100" d="M 20 50 C 27 46, 32 54, 39 50 S 52 47, 59 50 S 72 54, 80 50"></path>
       </svg>
     </div>
     <strong id="loaderResult">ĐANG TẢI<span class="loader-dots"></span></strong>
@@ -3766,26 +3766,7 @@ setInterval(()=>{
   };
 
   function drawWinLine(){
-    const boardRect=board.getBoundingClientRect();
-    const offsets=[0,-10,10,-10,0];
-    const points=[15,16,17,18,19].map((cellIndex,i)=>{
-      const rect=cells[cellIndex].getBoundingClientRect();
-      return {
-        x:rect.left+rect.width/2-boardRect.left,
-        y:rect.top+rect.height/2-boardRect.top+offsets[i]
-      };
-    });
-    winLine.setAttribute('viewBox',`0 0 ${boardRect.width} ${boardRect.height}`);
-
-    let path=`M ${points[0].x-7} ${points[0].y+2}`;
-    for(let i=1;i<points.length;i++){
-      const previous=points[i-1],point=points[i];
-      const middle=(previous.x+point.x)/2;
-      path+=` C ${middle-5} ${previous.y-5}, ${middle+6} ${point.y+5}, ${point.x} ${point.y}`;
-    }
-    path+=` Q ${points[4].x+4} ${points[4].y-3}, ${points[4].x+8} ${points[4].y+1}`;
-    winLine.querySelector('.win-outline').setAttribute('d',path);
-    winLine.querySelector('.win-stroke').setAttribute('d',path);
+    // The winning stroke is defined in SVG markup, so it never depends on layout measurements.
     winLine.classList.add('show');
   }
 
