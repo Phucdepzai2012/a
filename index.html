@@ -918,6 +918,19 @@ button,input,select,textarea{font-family:var(--ui-font)!important;font-kerning:n
 @media(max-width:760px){.admin-table-tools{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.admin-table-tools input{grid-column:1/-1}.admin-table-tools button{width:100%}.admin-bulk-toolbar{gap:6px}.admin-bulk-toolbar span{width:100%;order:2}.admin-bulk-toolbar button{flex:1}.admin-table{min-width:820px}}
 </style>
 
+<style>
+.admin-backdrop[hidden]{display:none!important}
+.admin-backdrop:not([hidden]){position:fixed;inset:0;z-index:10000;background:rgba(7,13,25,.68);backdrop-filter:blur(3px)}
+#adminSection[hidden]{display:none!important}
+#adminSection:not([hidden]){position:fixed;z-index:10001;top:3vh;left:50%;transform:translateX(-50%);width:min(1320px,calc(100vw - 24px));max-height:94vh;overflow:auto;box-sizing:border-box;margin:0;padding:18px;background:#fff;color:var(--ink,#172033);border:1px solid var(--ln,#dce3ec);border-radius:14px;box-shadow:0 18px 60px rgba(0,0,0,.28)}
+.admin-modal-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--ln,#dce3ec)}
+.admin-modal-header h2{margin:0;font-size:20px}
+.admin-modal-header p{margin:4px 0 0;font-size:12px;color:var(--mut,#647384)}
+.admin-close{flex:none;width:auto;margin:0;padding:8px 12px;background:#f2f5f8;border:1px solid var(--ln,#dce3ec);color:var(--ink,#172033);font-weight:700}
+.admin-open-button{width:100%;margin:6px 0 0;padding:9px 12px;background:#172d58;color:#fff;border:1px solid #172d58;font-weight:700}
+.admin-open-button[hidden]{display:none!important}
+@media(max-width:760px){#adminSection:not([hidden]){top:8px;max-height:calc(100dvh - 16px);width:calc(100vw - 16px);padding:12px;border-radius:10px}.admin-modal-header h2{font-size:17px}.admin-modal-header{align-items:flex-start}.admin-close{padding:7px 9px;font-size:11px}}
+</style>
 </head>
 <body>
 <div id="gameLoader" role="status" aria-live="polite">
@@ -1076,6 +1089,7 @@ button,input,select,textarea{font-family:var(--ui-font)!important;font-kerning:n
         <button id="bProfile" type="button">Sửa hồ sơ</button>
       </div>
       <button id="bLogout" class="auth-logout" type="button" hidden>Đăng xuất</button>
+      <button id="bAdminOpen" class="admin-open-button" type="button" hidden aria-haspopup="dialog" aria-controls="adminSection">Quản lý người chơi</button>
       <button id="bFind" class="pri">Ghép trận xếp hạng</button>
       <div class="quick-actions">
         <button id="bBot">Đấu máy</button>
@@ -1143,8 +1157,9 @@ button,input,select,textarea{font-family:var(--ui-font)!important;font-kerning:n
       <ol id="historyList"></ol>
       <div class="note">Lịch sử được chia sẻ công khai. Máy chủ hiện lưu trong RAM nên dữ liệu có thể mất khi Render khởi động lại hoặc deploy.</div>
     </section>
-    <section id="adminSection" hidden>
-      <h2>Quản trị máy chủ</h2>
+    <div id="adminBackdrop" class="admin-backdrop" hidden aria-hidden="true"></div>
+    <section id="adminSection" hidden role="dialog" aria-modal="true" aria-labelledby="adminModalTitle">
+      <div class="admin-modal-header"><div><h2 id="adminModalTitle">Quản trị máy chủ</h2><p>Quản lý tài khoản, trạng thái và báo cáo người chơi.</p></div><button id="bAdminClose" class="admin-close" type="button" aria-label="Đóng cửa sổ quản trị">Đóng ✕</button></div>
       <div id="adminStatus" class="note">Chỉ dành cho admin.</div>
       <button id="bAdminRefresh" class="pri" type="button">Làm mới</button>
       <div id="adminStats" class="review-summary"></div>
@@ -1739,6 +1754,7 @@ const tier=e=>TIERS.find(t=>e>=t[0])[1];
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 let profile={};try{profile=JSON.parse(localStorage.getItem('caroProfileSeason2')||'{}')}catch{}
+let adminPanelOpen=false;
 let me={uid:null,name:(localStorage.getItem('caroSessionToken')?localStorage.getItem('caroName'):'')||'',elo:Number(profile.elo)||1000,w:Number(profile.w)||0,l:Number(profile.l)||0,d:Number(profile.d)||0,isAdmin:localStorage.getItem('caroRole')==='admin'};
 let G=null,finding=false,findTimer=null,inviteRef=null,db=null,activeBackend=null,activeBackendIndex=-1,backendCandidates=[],serverOffset=0,switchingBackend=false,onlineLeaderboard=[],profileRef=null,leaderboardRef=null,serverOffsetRef=null,duplicateBackupConfig=false,currentHistoryUid=null,historyRecordsByKey=new Map(),historyReplayReturnGame=null;
 let queueJoinInFlight=false,openingMatchedGid='';
@@ -1818,7 +1834,11 @@ function ui(){
   else if(G&&G.drawResponse&&!G.drawResponse.accepted&&G.drawResponse.uid===me.uid)drawStatus='Bạn đã từ chối lời xin hòa.';
   $('drawActionStatus').textContent=drawStatus;
   $('bLogout').hidden=!localStorage.getItem('caroSessionToken');
-  $('adminSection').hidden=!me.isAdmin;
+  if(!me.isAdmin)adminPanelOpen=false;
+  $('bAdminOpen').hidden=!me.isAdmin;
+  $('adminSection').hidden=!(me.isAdmin&&adminPanelOpen);
+  $('adminBackdrop').hidden=!(me.isAdmin&&adminPanelOpen);
+  document.body.style.overflow=adminPanelOpen&&me.isAdmin?'hidden':'';
   renderLeaderboard();
   renderAccountSummary();
   renderAchievements();
@@ -3341,6 +3361,11 @@ $('profileModal').addEventListener('click',e=>{if(e.target===$('profileModal'))$
 $('profileModal').addEventListener('keydown',e=>{if(e.key==='Escape')$('profileModal').hidden=true});
 
 $('bHistorySearch').onclick=searchPlayerHistory;
+const closeAdminPanel=()=>{adminPanelOpen=false;$('adminSection').hidden=true;$('adminBackdrop').hidden=true;document.body.style.overflow=''};
+$('bAdminOpen').onclick=()=>{if(!me.isAdmin)return;adminPanelOpen=true;ui();loadAdminOverview()};
+$('bAdminClose').onclick=closeAdminPanel;
+$('adminBackdrop').onclick=closeAdminPanel;
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&adminPanelOpen)closeAdminPanel()});
 $('bAdminRefresh').onclick=loadAdminOverview;
 $('bAdminExport').onclick=exportAdminAccounts;
 $('adminFilterInput').addEventListener('input',()=>{
