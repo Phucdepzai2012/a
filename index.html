@@ -3767,7 +3767,7 @@ setInterval(()=>{
 
   function drawWinLine(){
     const boardRect=board.getBoundingClientRect();
-    const offsets=[2,-4,3,-3,2];
+    const offsets=[0,-10,10,-10,0];
     const points=[15,16,17,18,19].map((cellIndex,i)=>{
       const rect=cells[cellIndex].getBoundingClientRect();
       return {
