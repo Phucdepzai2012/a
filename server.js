@@ -1468,7 +1468,7 @@ io.on('connection', socket => {
       if(game.ratingResult){
         const profile=data.players[callerUid]||{};
         const prior=game.ratingResult.playerResults[callerUid];
-        reply(ack,{ok:true,elo:Number(profile.elo)||1000,w:Number(profile.w)||0,l:Number(profile.l)||0,d:Number(profile.d)||0,delta:prior?prior.elo-prior.before:0,alreadyApplied:true});
+        reply(ack,{ok:true,elo:Number(profile.elo)||1000,w:Number(profile.w)||0,l:Number(profile.l)||0,d:Number(profile.d)||0,delta:prior?prior.elo-prior.before:0,alreadyApplied:true,playerResults:game.ratingResult.playerResults});
         return;
       }
       const reason=String(payload&&payload.reason||game.why||'');
@@ -1502,7 +1502,7 @@ io.on('connection', socket => {
       await persistState();
       drainRankedQueue();
       const result=playerResults[callerUid];
-      reply(ack,{ok:true,elo:result.elo,w:result.w,l:result.l,d:result.d,delta:result.elo-result.before,alreadyApplied:false});
+      reply(ack,{ok:true,elo:result.elo,w:result.w,l:result.l,d:result.d,delta:result.elo-result.before,alreadyApplied:false,playerResults:game.ratingResult.playerResults});
     }catch(error){reply(ack,{ok:false,error:error.message||'Không thể cập nhật ELO xếp hạng.'})}
   });
 
