@@ -1558,6 +1558,8 @@ let profile={};try{profile=JSON.parse(localStorage.getItem('caroProfileSeason2')
 let me={uid:null,name:(localStorage.getItem('caroSessionToken')?localStorage.getItem('caroName'):'')||'',elo:Number(profile.elo)||1000,w:Number(profile.w)||0,l:Number(profile.l)||0,d:Number(profile.d)||0,isAdmin:localStorage.getItem('caroRole')==='admin'};
 let G=null,finding=false,findTimer=null,inviteRef=null,db=null,activeBackend=null,activeBackendIndex=-1,backendCandidates=[],serverOffset=0,switchingBackend=false,onlineLeaderboard=[],profileRef=null,leaderboardRef=null,serverOffsetRef=null,duplicateBackupConfig=false,currentHistoryUid=null,historyRecordsByKey=new Map(),historyReplayReturnGame=null;
 let queueJoinInFlight=false,openingMatchedGid='';
+let pendingRankedBoardMode='normal',selectedBoardMode='normal';
+const playBoardModes={ranked:'normal',bot:'normal',room:'normal'};
 let chatPanelOpen=false,chatUnread=0,chatRenderFingerprint='',selectedAvatarData=null,socialBusy=false;
 let drawOfferCooldownUntil=0,drawCooldownOwner='';
 const now=()=>Date.now()+serverOffset;
@@ -1589,7 +1591,11 @@ function updateDrawCooldownButton(){
 }
 setInterval(updateDrawCooldownButton,1000);
 const cv=$('bd'),cx=cv.getContext('2d');
-function resetCamera(){cam.x=cam.y=N/2;cam.s=Math.min(36,Math.max(12,(cv.clientWidth-16)/N));}
+function resetCamera(){
+  const infinite=!!(G&&G.boardMode==='inf');
+  cam.x=cam.y=infinite?.5:N/2;
+  cam.s=Math.min(36,Math.max(12,(cv.clientWidth-16)/N));
+}
 function saveProfile(){localStorage.setItem('caroName',me.name);localStorage.setItem('caroProfileSeason2',JSON.stringify({elo:me.elo,w:me.w,l:me.l,d:me.d}))}
 function ui(){
   $('me').textContent=me.name?`${me.name} · ${tier(me.elo)} · ${me.elo} ELO · ${me.w}T ${me.l}B ${me.d}H`:'Hãy đặt tên để lưu thành tích';
@@ -2059,6 +2065,10 @@ async function handleBackendFailure(error,where='kết nối') {
   switchingBackend=false;return false;
 }
 /* ---------- Luật và đồ họa bàn cờ: giữ nguyên kiểu vẽ bản gốc ---------- */
+function withinBoard(x,y,boardMode=G&&G.boardMode){
+  if(!Number.isSafeInteger(x)||!Number.isSafeInteger(y)||Math.abs(x)>100000||Math.abs(y)>100000)return false;
+  return boardMode==='inf'||(x>=0&&x<N&&y>=0&&y<N);
+}
 function win(b,x,y){const p=b.get(x+','+y);for(const[dx,dy]of D){const L=[[x,y]];for(const s of[1,-1]){let i=x+dx*s,j=y+dy*s;while(b.get(i+','+j)===p){L.push([i,j]);i+=dx*s;j+=dy*s}}if(L.length>=5)return L}return null}
 function wouldWin(b,x,y,p){for(const[dx,dy]of D){let n=1;for(const s of[1,-1]){let i=x+dx*s,j=y+dy*s;while(b.get(i+','+j)===p){n++;i+=dx*s;j+=dy*s}}if(n>=5)return true}return false}
 const h=(x,y,k)=>{const s=Math.sin(x*12.9898+y*78.233+k*37.7)*43758.5453;return s-Math.floor(s)-.5};
@@ -2076,22 +2086,33 @@ function draw(){
   cx.setTransform(d,0,0,d,0,0);
   cx.clearRect(0,0,W,H);
   const c=cam.s,ox=W/2-cam.x*c,oy=H/2-cam.y*c;
+  const infinite=!!(G&&G.boardMode==='inf');
   cx.strokeStyle='#9fc3dc';cx.lineWidth=1;cx.beginPath();
-  for(let i=0;i<=N;i++){const X=Math.round(ox+i*c)+.5;cx.moveTo(X,oy);cx.lineTo(X,oy+N*c)}
-  for(let j=0;j<=N;j++){const Y=Math.round(oy+j*c)+.5;cx.moveTo(ox,Y);cx.lineTo(ox+N*c,Y)}
-  cx.stroke();cx.strokeStyle='#789bb3';cx.lineWidth=1.5;cx.strokeRect(ox,oy,N*c,N*c);
-  // Coordinate labels like a chessboard: columns A-O and rows 1-15.
-  cx.save();
-  cx.fillStyle='#667381';
-  cx.font=`700 ${Math.max(8,Math.min(12,c*.24))}px 'Be Vietnam Pro',system-ui,sans-serif`;
-  cx.textAlign='center';cx.textBaseline='middle';
-  for(let i=0;i<N;i++){
-    cx.fillText(String.fromCharCode(65+i),ox+(i+.5)*c,oy+Math.max(5,c*.14));
-    cx.fillText(String(N-i),ox+Math.max(5,c*.14),oy+(i+.5)*c);
+  if(infinite){
+    const minX=Math.floor(cam.x-W/(2*c))-1,maxX=Math.ceil(cam.x+W/(2*c))+1;
+    const minY=Math.floor(cam.y-H/(2*c))-1,maxY=Math.ceil(cam.y+H/(2*c))+1;
+    for(let i=minX;i<=maxX;i++){const X=Math.round(ox+i*c)+.5;cx.moveTo(X,0);cx.lineTo(X,H)}
+    for(let j=minY;j<=maxY;j++){const Y=Math.round(oy+j*c)+.5;cx.moveTo(0,Y);cx.lineTo(W,Y)}
+  }else{
+    for(let i=0;i<=N;i++){const X=Math.round(ox+i*c)+.5;cx.moveTo(X,oy);cx.lineTo(X,oy+N*c)}
+    for(let j=0;j<=N;j++){const Y=Math.round(oy+j*c)+.5;cx.moveTo(ox,Y);cx.lineTo(ox+N*c,Y)}
   }
-  cx.restore();
+  cx.stroke();
+  if(!infinite){
+    cx.strokeStyle='#789bb3';cx.lineWidth=1.5;cx.strokeRect(ox,oy,N*c,N*c);
+    // Coordinate labels like a chessboard: columns A-O and rows 1-15.
+    cx.save();
+    cx.fillStyle='#667381';
+    cx.font=`700 ${Math.max(8,Math.min(12,c*.24))}px 'Be Vietnam Pro',system-ui,sans-serif`;
+    cx.textAlign='center';cx.textBaseline='middle';
+    for(let i=0;i<N;i++){
+      cx.fillText(String.fromCharCode(65+i),ox+(i+.5)*c,oy+Math.max(5,c*.14));
+      cx.fillText(String(N-i),ox+Math.max(5,c*.14),oy+(i+.5)*c);
+    }
+    cx.restore();
+  }
   if(!G)return;
-  const cell=(x,y,f)=>{if(x<0||x>=N||y<0||y>=N)return;cx.fillStyle=f;cx.fillRect(ox+x*c+1,oy+y*c+1,c-1,c-1)};
+  const cell=(x,y,f)=>{if(!infinite&&(x<0||x>=N||y<0||y>=N))return;cx.fillStyle=f;cx.fillRect(ox+x*c+1,oy+y*c+1,c-1,c-1)};
   if(G.last)cell(G.last[0],G.last[1],'rgba(255,214,10,.45)');
   const style=getComputedStyle(document.documentElement);
   const markX=style.getPropertyValue('--blue').trim()||'#1c3fb7';
@@ -2104,7 +2125,8 @@ function draw(){
   cx.lineCap='round';cx.lineWidth=Math.max(2,c*.1);
   G.board.forEach((v,k)=>{
     const[x,y]=k.split(',').map(Number);
-    if(x<0||x>=N||y<0||y>=N)return;
+    if(!infinite&&(x<0||x>=N||y<0||y>=N))return;
+    if(infinite&&(x<cam.x-W/(2*c)-2||x>cam.x+W/(2*c)+2||y<cam.y-H/(2*c)-2||y>cam.y+H/(2*c)+2))return;
     const px=ox+(x+.5)*c,py=oy+(y+.5)*c,r=c*.3,q=c*.07;cx.beginPath();
     if(v===0){
       cx.strokeStyle=markX;cx.shadowBlur=0;
@@ -2129,6 +2151,61 @@ function candidates(b){
   const out=new Set();if(!b.size)return [[Math.floor(N/2),Math.floor(N/2)]];
   b.forEach((v,k)=>{const[x,y]=k.split(',').map(Number);for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const xx=x+dx,yy=y+dy,key=xx+','+yy;if(xx>=0&&xx<N&&yy>=0&&yy<N&&!b.has(key))out.add(key)}});
   return [...out].map(k=>k.split(',').map(Number));
+}
+function candidatesInfinite(b){
+  if(!b.size)return [[0,0]];
+  const out=new Set();
+  b.forEach((v,k)=>{
+    const[x,y]=k.split(',').map(Number);
+    for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){
+      if(!dx&&!dy)continue;
+      const xx=x+dx,yy=y+dy,key=xx+','+yy;
+      if(Math.abs(xx)<=100000&&Math.abs(yy)<=100000&&!b.has(key))out.add(key);
+    }
+  });
+  return [...out].map(k=>k.split(',').map(Number));
+}
+function botMoveInfinite(b,p,noise=0,elo=1500){
+  let moves=candidatesInfinite(b);
+  if(!b.size)return [0,0];
+  const immediate=moves.find(([x,y])=>wouldWin(b,x,y,p));
+  if(immediate)return immediate;
+  const opponentWins=moves.filter(([x,y])=>wouldWin(b,x,y,1-p));
+  if(opponentWins.length){
+    const blocks=opponentWins.map(([x,y])=>[x,y,scoreMove(b,x,y,p,new Set())]).sort((a,b)=>b[2]-a[2]);
+    return [blocks[0][0],blocks[0][1]];
+  }
+  const rankedAll=moves.map(([x,y])=>[x,y,scoreMove(b,x,y,p,new Set())]).sort((a,b)=>b[2]-a[2]);
+  const ranked=rankedAll.slice(0,Math.min(180,rankedAll.length));
+  moves=ranked.map(m=>[m[0],m[1]]);
+  if(moves.length>1&&Math.random()<botMistakeChance(elo))return moves[Math.floor(Math.random()*moves.length)];
+  if(elo<3000){
+    const best=ranked[0][2],pool=noise>0?ranked.filter(m=>m[2]>=best-noise).slice(0,12):ranked.filter(m=>m[2]===best);
+    const choice=pool[Math.floor(Math.random()*pool.length)]||ranked[0];
+    return [choice[0],choice[1]];
+  }
+  const shortlist=ranked.slice(0,elo>=7000?12:8);
+  let best=-Infinity,choice=null;
+  for(const [x,y,baseScore] of shortlist){
+    const next=new Map(b);next.set(x+','+y,p);
+    const replies=candidatesInfinite(next);
+    let replyBest=-Infinity;
+    for(const [rx,ry] of replies){
+      if(wouldWin(next,rx,ry,1-p)){replyBest=1e9;break}
+      const afterReply=new Map(next);afterReply.set(rx+','+ry,1-p);
+      const followups=candidatesInfinite(afterReply);
+      let followBest=0;
+      for(const [fx,fy] of followups){
+        const value=wouldWin(afterReply,fx,fy,p)?1e8:scoreMove(afterReply,fx,fy,p,new Set());
+        if(value>followBest)followBest=value;
+      }
+      const response=scoreMove(next,rx,ry,1-p,new Set())-followBest*.55;
+      if(response>replyBest)replyBest=response;
+    }
+    const score=baseScore-replyBest*.9;
+    if(score>best){best=score;choice=[x,y]}
+  }
+  return choice||[ranked[0][0],ranked[0][1]];
 }
 function ev(b,x,y,p){let t=0;for(const[dx,dy]of D){let n=1,o=0;for(const s of[1,-1]){let i=x+dx*s,j=y+dy*s;while(b.get(i+','+j)===p){n++;i+=dx*s;j+=dy*s}if(!b.has(i+','+j))o++}
   t+=n>=5?100000:n===4?(o===2?10000:o?1000:0):n===3?(o===2?500:o?60:0):n===2?(o===2?40:o?5:0):1}return t}
@@ -2460,8 +2537,9 @@ function botNoise(elo){return clamp((3000-Math.min(3000,elo))*2.4,0,7198)}
 function botMistakeChance(elo){const n=clamp(Number(elo)||1,1,10000);if(n>=3000)return 0;const weakness=(3000-n)/2999;return .42*weakness*weakness}
 function botDifficultyText(elo){return elo<=300?'Rất dễ':elo<=700?'Dễ':elo<=1100?'Bình thường':elo<=1500?'Khá':elo<=2000?'Khó':elo<=2500?'Rất khó':elo<4000?'Cực khó':elo<7000?'Siêu khó':elo<9500?'Thần cấp':'Máy tuyển thủ · tìm kiếm sâu'}
 function updateBotEloDisplay(elo){const n=clamp(Math.round(Number(elo)||1),1,10000);$('botEloLabel').textContent=`${n} ELO`;$('botEloDesc').textContent=`${botDifficultyText(n)} · ELO máy chỉ điều chỉnh độ khó, không đổi ELO của bạn ở chế độ luyện.`;return n}
-function startGame(mode){
-  if(!me.name){showOv();return}
+function startGame(mode,boardMode='normal'){
+  if(!me.name){closePlayModeModal();showOv();return}
+  closePlayModeModal();
   if(G&&G.ref){try{G.ref.off()}catch{}}
   finding=false;clearTimeout(findTimer);if(inviteRef){inviteRef.off();inviteRef=null}$('bFind').textContent='Ghép trận xếp hạng';
   const ranked=mode==='ranked';
@@ -2469,21 +2547,21 @@ function startGame(mode){
   const botName=ranked?`Máy ${tier(botElo)} (${botElo})`:`Máy ${tier(botElo)} (${botElo} ELO)`;
   const mine=Math.random()<.5?0:1;
   const myPlayer={uid:me.uid||'',name:me.name,elo:me.elo},botPlayer={uid:'',name:botName,elo:botElo};
-  G={mode,mine,botElo,isBossMatch:mode==='bot'&&botElo>=9500,noise:botNoise(botElo),board:new Map(),turn:0,n:0,over:0,startedAt:now(),turnStartedAt:now(),names:mine===0?[me.name,botName]:[botName,me.name],players:mine===0?[myPlayer,botPlayer]:[botPlayer,myPlayer],moves:[],last:null,line:null,msg:'',winner:null,review:[]};
+  G={mode,boardMode:boardMode==='inf'?'inf':'normal',mine,botElo,isBossMatch:mode==='bot'&&botElo>=9500,noise:botNoise(botElo),board:new Map(),turn:0,n:0,over:0,startedAt:now(),turnStartedAt:now(),names:mine===0?[me.name,botName]:[botName,me.name],players:mine===0?[myPlayer,botPlayer]:[botPlayer,myPlayer],moves:[],last:null,line:null,msg:'',winner:null,review:[]};
   $('review').hidden=true;$('reviewSummary').textContent='';$('reviewList').innerHTML='';$('tm').textContent='';
   resetCamera();setActive(true);ui();draw();stat();
   if(G.turn!==G.mine)setTimeout(botTurn,350);
 }
 function applyMove(x,y,p){
   if(!G||G.over||G.board.has(x+','+y))return false;
-  if(x<0||x>=N||y<0||y>=N)return false;
+  if(!withinBoard(x,y))return false;
   const moveAt=now(),elapsedMs=Math.max(0,moveAt-(Number(G.turnStartedAt)||moveAt));
   G.board.set(x+','+y,p);G.moves.push({x,y,p,t:moveAt,elapsedMs});G.last=[x,y];G.n++;
   const line=win(G.board,x,y);if(line){G.line=line;finishGame(p,'win');return true}
   G.turn=1-p;G.turnStartedAt=moveAt;draw();stat();return true;
 }
 function playerMove(x,y){
-  if(!G||G.over||G.turn!==G.mine||x<0||x>=N||y<0||y>=N||G.board.has(x+','+y))return;
+  if(!G||G.over||G.turn!==G.mine||!withinBoard(x,y)||G.board.has(x+','+y))return;
   if(G.mode==='online'&&G.roomStatus!=='play')return;
   if(G.mode==='online'){submitOnlineMove(x,y);return}
   if(!applyMove(x,y,G.mine))return;
@@ -2498,7 +2576,7 @@ async function submitOnlineMove(x,y){
   G.turn=-1;stat();
   try{await game.ref.update(update)}catch(e){await handleBackendFailure(e,'ghi nước đi')}
 }
-function botTurn(){if(!G||G.over||G.turn===G.mine)return;const p=1-G.mine,[x,y]=botMove(G.board,p,G.noise,G.botElo);applyMove(x,y,p)}
+function botTurn(){if(!G||G.over||G.turn===G.mine)return;const p=1-G.mine,[x,y]=G.boardMode==='inf'?botMoveInfinite(G.board,p,G.noise,G.botElo):botMove(G.board,p,G.noise,G.botElo);applyMove(x,y,p)}
 function finishGame(winner,why){
   if(!G||G.over)return;
   G.over=1;G.winner=winner;G.reason=why;
@@ -2580,9 +2658,11 @@ async function openGame(gid){
   $('bFind').textContent='Ghép trận xếp hạng';
   const ref=db.ref('games/'+gid),snap=await ref.once('value'),v=snap.val();
   if(!v||!Array.isArray(v.p))throw new Error('Không tìm thấy ván đấu.');
+  closePlayModeModal();
   const mine=v.p.findIndex(q=>q.uid===me.uid);if(mine<0)throw new Error('Ván đấu không thuộc tài khoản này.');
   chatPanelOpen=false;chatUnread=0;chatRenderFingerprint='';
-  G={mode:'online',gid,ref,mine,board:new Map(),turn:Number(v.turn)||0,n:0,over:0,startedAt:Number(v.createdAt)||now(),turnStartedAt:now(),dl:v.dl||now()+TURN,names:v.p.map(q=>`${q.name} (${q.elo})`),players:v.p.map(q=>({uid:q.uid||'',name:q.name||'Người chơi',elo:Number(q.elo)||1000,avatar:safeAvatar(q.avatar)})),myElo:Number(v.p[mine].elo)||me.elo,oppElo:Number(v.p[1-mine]?.elo)||1000,moves:[],last:null,line:null,msg:'',winner:null,review:[],roomStatus:v.status,roomCode:/^[0-9]{4}$/.test(gid)?gid:null,drawOffer:v.drawOffer||null,drawResponse:v.drawResponse||null,chat:Array.isArray(v.chat)?v.chat:[]};
+  closePlayModeModal();
+  G={mode:'online',gid,ref,boardMode:v.boardMode==='inf'?'inf':'normal',mine,board:new Map(),turn:Number(v.turn)||0,n:0,over:0,startedAt:Number(v.createdAt)||now(),turnStartedAt:now(),dl:v.dl||now()+TURN,names:v.p.map(q=>`${q.name} (${q.elo})`),players:v.p.map(q=>({uid:q.uid||'',name:q.name||'Người chơi',elo:Number(q.elo)||1000,avatar:safeAvatar(q.avatar)})),myElo:Number(v.p[mine].elo)||me.elo,oppElo:Number(v.p[1-mine]?.elo)||1000,moves:[],last:null,line:null,msg:'',winner:null,review:[],roomStatus:v.status,roomCode:/^[0-9]{4}$/.test(gid)?gid:null,drawOffer:v.drawOffer||null,drawResponse:v.drawResponse||null,chat:Array.isArray(v.chat)?v.chat:[]};
   await db.ref('invite/'+me.uid).remove().catch(()=>{});setActive(true);resetCamera();ui();draw();stat();
   ref.on('value',onGame,e=>handleBackendFailure(e,'đồng bộ ván đấu'));
 }
@@ -2606,7 +2686,7 @@ function onGame(s){
   const keys=Object.keys(v.moves||{}).sort((a,b)=>Number(a)-Number(b));
   const moves=keys.map(k=>v.moves[k]).filter(Boolean),board=new Map();moves.forEach((m,i)=>board.set(m.x+','+m.y,Number.isInteger(m.p)?m.p:i%2));
   const last=moves[moves.length-1];const newMine=Array.isArray(v.p)?v.p.findIndex(q=>q.uid===me.uid):G.mine;
-  Object.assign(G,{board,moves,n:moves.length,turn:Number(v.turn)||0,dl:Number(v.dl)||0,last:last?[last.x,last.y]:null,roomStatus:v.status,mine:newMine>=0?newMine:G.mine,names:Array.isArray(v.p)?v.p.map(q=>`${q.name} (${q.elo})`):G.names,players:Array.isArray(v.p)?v.p.map(q=>({uid:q.uid||'',name:q.name||'Người chơi',elo:Number(q.elo)||1000,avatar:safeAvatar(q.avatar)})):G.players,drawOffer:v.drawOffer||null,drawResponse:v.drawResponse||null,chat:updatedChat});
+  Object.assign(G,{boardMode:v.boardMode==='inf'?'inf':'normal',board,moves,n:moves.length,turn:Number(v.turn)||0,dl:Number(v.dl)||0,last:last?[last.x,last.y]:null,roomStatus:v.status,mine:newMine>=0?newMine:G.mine,names:Array.isArray(v.p)?v.p.map(q=>`${q.name} (${q.elo})`):G.names,players:Array.isArray(v.p)?v.p.map(q=>({uid:q.uid||'',name:q.name||'Người chơi',elo:Number(q.elo)||1000,avatar:safeAvatar(q.avatar)})):G.players,drawOffer:v.drawOffer||null,drawResponse:v.drawResponse||null,chat:updatedChat});
   if(moves.length>previousMoveCount)G.turnStartedAt=now();
   G.myElo=Number(v.p&&v.p[G.mine]&&v.p[G.mine].elo)||G.myElo||me.elo;
   G.oppElo=Number(v.p&&v.p[1-G.mine]&&v.p[1-G.mine].elo)||G.oppElo||1000;
@@ -2641,7 +2721,7 @@ async function resumeRankedQueue(){
   try{
     let result;
     try{
-      result=await window.caroAuth.joinRankedQueue();
+      result=await window.caroAuth.joinRankedQueue({boardMode:pendingRankedBoardMode});
     }catch(firstError){
       if(!finding)return;
       if(!window.caroRenderSocket||!window.caroRenderSocket.connected){
@@ -2651,7 +2731,7 @@ async function resumeRankedQueue(){
         return;
       }
       // Retrying this idempotent request recovers a match if its acknowledgement was lost.
-      try{result=await window.caroAuth.joinRankedQueue()}
+      try{result=await window.caroAuth.joinRankedQueue({boardMode:pendingRankedBoardMode})}
       catch(secondError){
         if(!finding)return;
         if(!window.caroRenderSocket||!window.caroRenderSocket.connected){
@@ -2674,9 +2754,10 @@ async function resumeRankedQueue(){
     queueJoinInFlight=false;
   }
 }
-async function startMatchmaking(){
+async function startMatchmaking(boardMode=pendingRankedBoardMode){
   if(finding){await cancelFind();return}
-  if(!me.name){showOv();return}
+  pendingRankedBoardMode=boardMode==='inf'?'inf':'normal';
+  if(!me.name){closePlayModeModal();showOv();return}
   if(!db||!me.uid||!window.caroAuth){$('st').textContent='Không thể ghép người thật: Render chưa kết nối. Hãy kiểm tra máy chủ.';return}
   finding=true;
   $('bFind').textContent='Huỷ tìm trận';
@@ -2686,11 +2767,11 @@ async function startMatchmaking(){
   await resumeRankedQueue();
 }
 async function createRoom(){
-  if(!me.name){showOv();return}
+  if(!me.name){closePlayModeModal();showOv();return}
   if(G&&!G.over){$('st').textContent='Hãy kết thúc ván hiện tại trước khi tạo phòng mới.';return}
   if(!db||!me.uid||!window.caroRenderRooms){$('st').textContent='Render chưa kết nối. Hãy thử lại sau.';return}
   $('st').textContent='Đang tạo phòng…';
-  try{const result=await window.caroRenderRooms.create({uid:me.uid,name:me.name,elo:me.elo});await openGame(String(result.code));}
+  try{const result=await window.caroRenderRooms.create({uid:me.uid,name:me.name,elo:me.elo,boardMode:selectedBoardMode});await openGame(String(result.code));}
   catch(e){$('st').textContent='Tạo phòng lỗi: '+(e.message||e);ui()}
 }
 async function joinRoom(){
@@ -2703,6 +2784,70 @@ async function joinRoom(){
   try{await window.caroRenderRooms.join({code,uid:me.uid,name:me.name,elo:me.elo});await openGame(code);}
   catch(e){$('st').textContent='Vào phòng lỗi: '+(e.message||e);ui()}
 }
+
+/* Unified play menu: re-use the existing gameplay controls inside focused subviews. */
+const playModeModal=$('playModeModal');
+let activePlayView='home';
+const playViewElements={home:$('playMenuHome'),ranked:$('playRankedSetup'),bot:$('playBotSetup'),room:$('playRoomSetup'),join:$('playJoinSetup')};
+$('playRankedActions').appendChild($('bFind'));
+$('playBotSlot').appendChild($('botPanel'));
+$('playRoomActions').appendChild($('bCreateRoom'));
+$('playJoinActions').appendChild($('bShowJoinRoom'));
+$('playJoinActions').appendChild($('joinRoomPanel'));
+$('botPanel').hidden=true;
+$('joinRoomPanel').hidden=true;
+function showPlayView(view){
+  if(!Object.prototype.hasOwnProperty.call(playViewElements,view))view='home';
+  activePlayView=view;
+  playModeModal.hidden=false;
+  Object.entries(playViewElements).forEach(([key,element])=>{element.hidden=key!==view});
+  $('botPanel').hidden=view!=='bot';
+  $('joinRoomPanel').hidden=view!=='join';
+  $('bShowJoinRoom').hidden=true;
+  $('playModeTitle').textContent=view==='home'?'Bạn muốn chơi kiểu nào?':view==='ranked'?'Ghép trận xếp hạng':view==='bot'?'Đấu máy':view==='room'?'Tạo phòng riêng':'Vào phòng bạn bè';
+  if(view==='bot')$('botEloInput').focus();
+  if(view==='join')$('roomCodeInput').focus();
+}
+function closePlayModeModal(){
+  if(finding)cancelFind(false).catch(()=>{});
+  playModeModal.hidden=true;
+  $('playModeLaunch').focus();
+}
+$('playModeLaunch').addEventListener('click',()=>showPlayView('home'));
+$('playModeClose').addEventListener('click',closePlayModeModal);
+playModeModal.addEventListener('click',event=>{if(event.target===playModeModal)closePlayModeModal()});
+playModeModal.addEventListener('click',event=>{
+  const choice=event.target.closest('[data-play-view]');
+  if(choice){showPlayView(choice.dataset.playView);return}
+  const back=event.target.closest('[data-play-back]');
+  if(back){
+    if(activePlayView==='ranked'&&finding)cancelFind(false).catch(()=>{});
+    showPlayView('home');
+  }
+});
+playModeModal.querySelectorAll('[data-board-picker]').forEach(picker=>{
+  picker.addEventListener('click',event=>{
+    const button=event.target.closest('[data-board-choice]');
+    if(!button)return;
+    const mode=picker.dataset.boardPicker,choice=button.dataset.boardChoice==='inf'?'inf':'normal';
+    playBoardModes[mode]=choice;
+    picker.querySelectorAll('[data-board-choice]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));
+  });
+});
+$('bBot').onclick=()=>showPlayView('bot');
+$('bShowJoinRoom').onclick=()=>{
+  $('joinRoomPanel').hidden=!$('joinRoomPanel').hidden;
+  $('bShowJoinRoom').textContent=$('joinRoomPanel').hidden?'Nhập mã phòng':'Đóng nhập mã';
+};
+const playStatusSource=$('st'),playStatusTarget=$('playModeStatus');
+function syncPlayModeStatus(){playStatusTarget.textContent=playStatusSource?playStatusSource.textContent.trim():''}
+if(playStatusSource&&playStatusTarget){
+  new MutationObserver(syncPlayModeStatus).observe(playStatusSource,{subtree:true,childList:true,characterData:true});
+  syncPlayModeStatus();
+}
+document.addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&!playModeModal.hidden)closePlayModeModal();
+});
 $('bToggleTools').onclick=()=>{
   const panel=$('extraControls'),opening=panel.hidden;
   panel.hidden=!opening;
@@ -2742,8 +2887,8 @@ if(window.caroRenderSocket){
     if(finding&&!queueJoinInFlight)resumeRankedQueue();
   });
 }
-$('bFind').onclick=startMatchmaking;
-$('bCreateRoom').onclick=createRoom;
+$('bFind').onclick=()=>startMatchmaking(playBoardModes.ranked);
+$('bCreateRoom').onclick=()=>{selectedBoardMode=playBoardModes.room;createRoom()};
 $('bShowJoinRoom').onclick=()=>{
   const panel=$('joinRoomPanel'),opening=panel.hidden;
   panel.hidden=!opening;
@@ -2753,26 +2898,23 @@ $('bShowJoinRoom').onclick=()=>{
 $('bJoinRoom').onclick=joinRoom;
 $('roomCodeInput').addEventListener('input',()=>{$('roomCodeInput').value=$('roomCodeInput').value.replace(/[^0-9]/g,'').slice(0,4)});
 $('roomCodeInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('bJoinRoom').click()});
-$('bBot').onclick=()=>{
-  const panel=$('botPanel'),opening=panel.hidden;
-  panel.hidden=!opening;
-  $('bBot').textContent=opening?'Đóng đấu máy':'Đấu máy';
-  if(opening)$('botEloInput').focus();
-};
+$('bBot').onclick=()=>showPlayView('bot');
 $('bStartBot').onclick=()=>{
+  selectedBoardMode=playBoardModes.bot;
   $('botPanel').hidden=true;
-  $('bBot').textContent='Đấu máy';
-  startGame('bot');
+  closePlayModeModal();
+  startGame('bot',selectedBoardMode);
 };
 $('bStartChampionBot').onclick=()=>{
-  if(!me.name){showOv();return}
+  if(!me.name){closePlayModeModal();showOv();return}
   $('botEloRange').value='10000';
   $('botEloInput').value='10000';
   localStorage.setItem('caroBotElo','10000');
   updateBotEloDisplay(10000);
+  selectedBoardMode=playBoardModes.bot;
   $('botPanel').hidden=true;
-  $('bBot').textContent='Đấu máy';
-  startGame('bot');
+  closePlayModeModal();
+  startGame('bot',selectedBoardMode);
 };
 const savedBotElo=clamp(Math.round(Number(localStorage.getItem('caroBotElo'))||1500),1,10000);
 $('botEloRange').value=String(savedBotElo);$('botEloInput').value=String(savedBotElo);updateBotEloDisplay(savedBotElo);
@@ -3119,7 +3261,7 @@ cv.onpointermove=e=>{if(!ptr.has(e.pointerId))return;const p=ptr.get(e.pointerId
   if(ptr.size===2){const d=dist(),r=cv.getBoundingClientRect(),[a,b]=[...ptr.values()];zoomAt((a[0]+b[0])/2-r.left,(a[1]+b[1])/2-r.top,d/(pinch||d));pinch=d;moved=99;return}
   moved+=Math.abs(dx)+Math.abs(dy);if(moved>8){cam.x-=dx/cam.s;cam.y-=dy/cam.s;scheduleDraw()}};
 cv.onpointerup=e=>{const one=ptr.size===1;ptr.delete(e.pointerId);if(!one||moved>8||!G||G.over||G.turn!==G.mine)return;
-  const r=cv.getBoundingClientRect(),x=Math.floor(cam.x+(e.clientX-r.left-r.width/2)/cam.s),y=Math.floor(cam.y+(e.clientY-r.top-r.height/2)/cam.s);if(x>=0&&x<N&&y>=0&&y<N&&!G.board.has(x+','+y))playerMove(x,y)};
+  const r=cv.getBoundingClientRect(),x=Math.floor(cam.x+(e.clientX-r.left-r.width/2)/cam.s),y=Math.floor(cam.y+(e.clientY-r.top-r.height/2)/cam.s);if(withinBoard(x,y)&&!G.board.has(x+','+y))playerMove(x,y)};
 cv.onpointercancel=e=>ptr.delete(e.pointerId);
 cv.addEventListener('wheel',e=>{e.preventDefault();const r=cv.getBoundingClientRect();zoomAt(e.clientX-r.left,e.clientY-r.top,e.deltaY<0?1.12:.89)},{passive:false});
 /* ---------- Hồ sơ người chơi ---------- */
