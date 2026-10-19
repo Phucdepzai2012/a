@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hướng dẫn Caro 5: Chơi Caro Online, Luật và Chiến thuật</title>
+  <meta name="description" content="Tìm hiểu Caro 5, cách chơi cờ Caro online trên bàn 15×15, luật thắng năm quân liên tiếp và mẹo tấn công, phòng thủ. Mở game Caro 5 miễn phí ngay trên trình duyệt.">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <link rel="canonical" href="https://phucdepzai2012.github.io/a/huong-dan-caro-5.html">
+  <meta name="theme-color" content="#17243b">
+  <meta property="og:type" content="article">
+  <meta property="og:locale" content="vi_VN">
+  <meta property="og:site_name" content="Caro 5">
+  <meta property="og:title" content="Hướng dẫn Caro 5: Chơi Caro Online">
+  <meta property="og:description" content="Luật chơi, chế độ đấu máy và xếp hạng, cùng những mẹo cơ bản để đọc thế cờ Caro 5.">
+  <meta property="og:url" content="https://phucdepzai2012.github.io/a/huong-dan-caro-5.html">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Hướng dẫn Caro 5: Chơi Caro Online, Luật và Chiến thuật",
+    "description": "Hướng dẫn luật cờ Caro, chế độ chơi và mẹo chiến thuật cơ bản trong Caro 5.",
+    "inLanguage": "vi",
+    "mainEntityOfPage": "https://phucdepzai2012.github.io/a/huong-dan-caro-5.html",
+    "dateModified": "2026-10-19",
+    "about": [
+      {"@type":"Thing","name":"Caro 5"},
+      {"@type":"Thing","name":"Cờ Caro online"},
+      {"@type":"Thing","name":"Chiến thuật cờ Caro"}
+    ]
+  }
+  </script>
+  <style>
+    :root{color-scheme:light;--ink:#202b36;--muted:#617184;--line:#dce4eb;--blue:#1c3fb7;--red:#d8322b;--paper:#fff;--bg:#eef2f5}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.75 system-ui,-apple-system,"Segoe UI",sans-serif}
+    .wrap{width:min(850px,calc(100% - 32px));margin:0 auto;padding:24px 0 44px}
+    header,article,.cta,footer{background:var(--paper);border:1px solid var(--line);border-radius:14px}
+    header{padding:24px clamp(18px,5vw,42px);margin-bottom:16px}
+    .brand{display:inline-block;margin-bottom:10px;font-weight:900;letter-spacing:-.04em;font-size:17px;color:var(--blue);text-decoration:none}
+    .brand b{color:var(--red)}
+    h1{font-size:clamp(28px,5vw,42px);line-height:1.2;letter-spacing:-.04em;margin:0 0 12px}
+    h2{font-size:22px;line-height:1.3;margin:28px 0 8px}
+    h3{font-size:17px;margin:18px 0 6px}
+    p{margin:8px 0}
+    .lead{font-size:18px;color:#465667}
+    article{padding:clamp(18px,5vw,38px)}
+    .cta{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 20px;margin:16px 0;background:#f8fafc}
+    .cta p{margin:0;font-weight:700}
+    .button{display:inline-flex;align-items:center;justify-content:center;flex:none;background:var(--blue);color:#fff;text-decoration:none;padding:11px 16px;border-radius:8px;font-weight:800}
+    .button:hover{filter:brightness(1.08)}
+    ul,ol{padding-left:24px}
+    li{margin:5px 0}
+    a{color:var(--blue)}
+    .back{font-weight:700}
+    footer{margin-top:16px;padding:14px 18px;color:var(--muted);font-size:13px}
+    @media(max-width:560px){.wrap{width:calc(100% - 20px);padding-top:10px}.cta{align-items:stretch;flex-direction:column}.button{width:100%}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a class="brand" href="./" aria-label="Caro 5 trang chủ">Caro <b>5</b></a>
+      <h1>Hướng dẫn chơi Caro 5 online</h1>
+      <p class="lead">Caro 5 là game cờ Caro trực tuyến để bạn luyện tư duy, đấu với máy hoặc tìm đối thủ trong các ván đấu xếp hạng. Bạn chơi ngay trên trình duyệt, không cần tải ứng dụng.</p>
+      <div class="cta">
+        <p>Sẵn sàng vào một ván Caro 5?</p>
+        <a class="button" href="./">Chơi Caro 5 miễn phí →</a>
+      </div>
+    </header>
+    <article>
+      <h2>1. Luật chơi Caro 5</h2>
+      <p>Trên bàn cờ, hai bên lần lượt đặt quân X và O vào ô trống. Mục tiêu thường gặp của cờ Caro là tạo thành năm quân cùng loại liên tiếp theo hàng ngang, hàng dọc hoặc đường chéo, đồng thời ngăn đối thủ hoàn thành hàng của họ.</p>
+      <p>Trước mỗi lượt, hãy quan sát cả các đường có thể nối quân mình lẫn các mối đe dọa từ đối phương. Luật chi tiết có thể khác nhau tùy biến thể hoặc phòng chơi, vì vậy hãy xem quy định đang áp dụng trong ván đấu.</p>
+
+      <h2>2. Những chế độ trong Caro 5</h2>
+      <h3>Đấu máy</h3>
+      <p>Chế độ đấu máy phù hợp để luyện tập khi chưa có đối thủ. Hãy tập nhận biết nước thắng trực tiếp, nước cần chặn và các thế có nhiều hướng tấn công.</p>
+      <h3>Ghép trận xếp hạng</h3>
+      <p>Ghép trận xếp hạng giúp bạn tìm người chơi khác và theo dõi thành tích qua các ván đấu. Hãy kiểm tra lượt đi và trạng thái trận đấu trước khi đặt quân.</p>
+      <h3>Tạo phòng cùng bạn bè</h3>
+      <p>Nếu muốn chơi với người quen, bạn có thể tạo phòng riêng và chia sẻ mã phòng theo các chức năng hiện có trong game.</p>
+
+      <h2>3. Mẹo tấn công và phòng thủ cơ bản</h2>
+      <ol>
+        <li><strong>Nhìn hai đầu của hàng quân:</strong> những khoảng trống xung quanh một hàng thường quyết định nó có thể phát triển tiếp hay không.</li>
+        <li><strong>Chặn mối đe dọa trước:</strong> nếu đối thủ đang có bốn quân liên tiếp và có ô trống để hoàn thành năm quân, hãy ưu tiên xử lý nước đó.</li>
+        <li><strong>Tạo thế có nhiều lựa chọn:</strong> các cụm quân có thể phát triển theo nhiều hướng khiến đối thủ khó phòng thủ hơn.</li>
+        <li><strong>Đừng chỉ nhìn nước kế tiếp:</strong> sau khi chọn một ô, hãy tự hỏi đối phương có thể tạo đe dọa nào ở lượt sau.</li>
+        <li><strong>Xem lại ván đã chơi:</strong> tìm thời điểm bỏ lỡ nước thắng hoặc không chặn kịp để cải thiện quyết định ở ván sau.</li>
+      </ol>
+
+      <h2>4. Bắt đầu chơi Caro 5</h2>
+      <p>Mở trang game Caro 5, đăng nhập khi được yêu cầu rồi chọn chế độ bạn muốn chơi. Bạn có thể luyện tập, ghép trận, tạo phòng với bạn bè và sử dụng sổ tay chiến thuật có trong game.</p>
+      <p><a class="back" href="./">← Quay lại Caro 5 và chơi ngay</a></p>
+    </article>
+    <footer>Trang hướng dẫn của Caro 5. Nội dung nhằm giúp người chơi làm quen với luật và chiến thuật cơ bản của cờ Caro.</footer>
+  </div>
+</body>
+</html>
