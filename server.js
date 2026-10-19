@@ -1281,7 +1281,7 @@ io.on('connection', socket => {
   });
 
   socket.on('admin:overview', (payload, ack) => {
-    try { requireAdmin(payload); reply(ack, getAdminOverview()); }
+    try { requireAdmin(payload); reply(ack, getAdminOverview(payload || {})); }
     catch (error) { reply(ack, { ok: false, error: error.message || 'Không thể đọc bảng quản trị.' }); }
   });
 
