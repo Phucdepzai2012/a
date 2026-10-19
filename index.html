@@ -1910,7 +1910,7 @@ function renderHistory(records,uid,name){
     const key=String(r.historyKey||'');
     historyRecordsByKey.set(key,r);
     const duration=Number(r.durationMs)>0?durationLabel(r.durationMs):'—';
-    return `<li><div class="history-item"><span class="history-outcome ${result[1]}">${result[0]}</span><div class="history-main"><strong>vs ${esc(r.opponentName||'Đối thủ')}</strong><small>${historyDate(r.timestamp)} · ${esc(r.gameType||'Caro')} · ${Math.max(0,Number(r.moveCount)||0)} nước · ${duration}</small></div><span class="history-rating">${ratingText}</span><button class="history-replay-button" type="button" data-history-replay="${esc(key)}">Xem lại</button></div></li>`;
+    return `<li><div class="history-item"><span class="history-outcome ${result[1]}">${result[0]}</span><div class="history-main"><strong>vs ${esc(r.opponentName||'Đối thủ')}</strong><small>${historyDate(r.timestamp)} · ${esc(r.gameType||'Caro')}${r.boardMode==='inf'?' · Bàn INF':''} · ${Math.max(0,Number(r.moveCount)||0)} nước · ${duration}</small></div><span class="history-rating">${ratingText}</span><button class="history-replay-button" type="button" data-history-replay="${esc(key)}">Xem lại</button></div></li>`;
   }).join('');
 }
 async function loadHistoryByUid(uid,nameHint=''){
@@ -2673,7 +2673,6 @@ async function openGame(gid){
   closePlayModeModal();
   const mine=v.p.findIndex(q=>q.uid===me.uid);if(mine<0)throw new Error('Ván đấu không thuộc tài khoản này.');
   chatPanelOpen=false;chatUnread=0;chatRenderFingerprint='';
-  closePlayModeModal();
   G={mode:'online',gid,ref,boardMode:v.boardMode==='inf'?'inf':'normal',mine,board:new Map(),turn:Number(v.turn)||0,n:0,over:0,startedAt:Number(v.createdAt)||now(),turnStartedAt:now(),dl:v.dl||now()+TURN,names:v.p.map(q=>`${q.name} (${q.elo})`),players:v.p.map(q=>({uid:q.uid||'',name:q.name||'Người chơi',elo:Number(q.elo)||1000,avatar:safeAvatar(q.avatar)})),myElo:Number(v.p[mine].elo)||me.elo,oppElo:Number(v.p[1-mine]?.elo)||1000,moves:[],last:null,line:null,msg:'',winner:null,review:[],roomStatus:v.status,roomCode:/^[0-9]{4}$/.test(gid)?gid:null,drawOffer:v.drawOffer||null,drawResponse:v.drawResponse||null,chat:Array.isArray(v.chat)?v.chat:[]};
   await db.ref('invite/'+me.uid).remove().catch(()=>{});setActive(true);resetCamera();ui();draw();stat();
   ref.on('value',onGame,e=>handleBackendFailure(e,'đồng bộ ván đấu'));
@@ -2821,7 +2820,7 @@ function showPlayView(view){
   if(view==='join')$('roomCodeInput').focus();
 }
 function closePlayModeModal(){
-  if(finding)cancelFind(false).catch(()=>{});
+  if(finding)cancelFind(true).catch(()=>{});
   playModeModal.hidden=true;
   $('playModeLaunch').focus();
 }
@@ -2833,7 +2832,7 @@ playModeModal.addEventListener('click',event=>{
   if(choice){showPlayView(choice.dataset.playView);return}
   const back=event.target.closest('[data-play-back]');
   if(back){
-    if(activePlayView==='ranked'&&finding)cancelFind(false).catch(()=>{});
+    if(activePlayView==='ranked'&&finding)cancelFind(true).catch(()=>{});
     showPlayView('home');
   }
 });
