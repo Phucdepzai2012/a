@@ -169,7 +169,7 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 @media(max-width:520px){.room-join-row{grid-template-columns:minmax(0,1fr) 92px}}
 @media(max-width:520px){body{padding:8px}main{gap:12px}.paper{padding:6px}.review-row{gap:4px}.tag{font-size:9px;padding:3px 4px}}
 
-/* Compact Caro loader: fixed grid, normal X/O marks and a hand-drawn victory stroke. */
+/* Compact Caro loader: fixed 3x3 board; only the X/O marks animate. */
 #gameLoader{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(228,233,236,.97);transition:opacity .28s ease,visibility .28s ease}
 #gameLoader.done{opacity:0;visibility:hidden;pointer-events:none}
 #gameLoader[hidden]{display:none}
@@ -177,11 +177,14 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 .loader-brand{font:700 38px/1 Caveat,cursive;color:var(--blue);margin:0 0 7px}
 .loader-brand b{color:var(--red)}
 .loader-caption{font-size:12px;color:var(--mut);margin:0 0 15px}
-.loader-board{position:relative;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;width:100%;aspect-ratio:7/5;padding:6px;background:#e9eef1;border:1px solid #d5dde2;border-radius:8px}
-.loader-cell{display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;background:#fff;border:1px solid #d8e0e5;border-radius:4px;color:transparent;font-size:clamp(15px,5vw,23px);font-weight:700;opacity:.45;transform:scale(.92);transition:opacity .15s ease,transform .15s ease}
-.loader-cell.show{opacity:1;transform:scale(1)}
-.loader-cell.mark-x{color:var(--blue)}
-.loader-cell.mark-o{color:var(--red)}
+.loader-board{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:min(100%,246px);aspect-ratio:1;margin:0 auto;padding:0;gap:0;background:transparent;border:0;border-radius:0}
+.loader-cell{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;aspect-ratio:1;background:transparent;border:0;border-right:2px solid #b8c6d1;border-bottom:2px solid #b8c6d1;border-radius:0}
+.loader-cell:nth-child(3n){border-right:0}
+.loader-cell:nth-child(n+7){border-bottom:0}
+.loader-mark{display:block;color:transparent;font:800 clamp(40px,8vw,64px)/1 'Be Vietnam Pro',system-ui,sans-serif;opacity:0;transform:scale(.92);transition:opacity .14s ease,transform .14s ease;-webkit-text-stroke:1px #fff;paint-order:stroke fill;text-shadow:none}
+.loader-mark.show{opacity:1;transform:scale(1)}
+.loader-mark.mark-x{color:var(--blue)}
+.loader-mark.mark-o{color:var(--red)}
 #loaderWinLine{position:absolute;inset:0;z-index:4;display:block;width:100%;height:100%;overflow:visible;opacity:0;pointer-events:none}
 #loaderWinLine.show{opacity:1}
 #loaderWinLine path{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1000;stroke-dashoffset:1000}
@@ -192,9 +195,10 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 .loader-dots:after{display:inline-block;width:1.5em;text-align:left;animation:loaderDots 1s steps(4,end) infinite;content:""}
 @keyframes loaderDots{0%{content:""}25%{content:"."}50%{content:".."}75%,100%{content:"..."}}
 @keyframes loaderWinDraw{to{stroke-dashoffset:0}}
-@media(prefers-reduced-motion:reduce){#gameLoader,.loader-cell{transition:none}#loaderWinLine.show path{animation:none;stroke-dashoffset:0}.loader-dots:after{animation:none;content:"..."}}
+@media(max-width:520px){.loader-card{padding:18px 14px 15px}.loader-board{width:min(100%,230px)}.loader-mark{font-size:clamp(38px,12vw,58px)}#loaderWinLine .win-outline{stroke-width:6}#loaderWinLine .win-stroke{stroke-width:3}}
+@media(prefers-reduced-motion:reduce){#gameLoader,.loader-mark{transition:none}#loaderWinLine.show path{animation:none;stroke-dashoffset:0}.loader-dots:after{animation:none;content:"..."}}
 
-/* During a live online match, keep the board and draw/resign controls only. */
+//* During a live online match, keep the board and draw/resign controls only. */
 body.online-match-active{min-height:100vh;min-height:100dvh;padding:10px 10px 92px;align-items:center}
 body.online-match-active main{display:flex;width:min(94vw,calc(100dvh - 145px));max-width:780px;gap:0;margin:auto;align-items:center;justify-content:center}
 body.online-match-active main>.paper{width:100%;padding:6px}
@@ -907,6 +911,15 @@ button,input,select,textarea{font-family:var(--ui-font)!important;font-kerning:n
     <div class="loader-brand">Caro <b>5</b></div>
     <p class="loader-caption">Chuẩn bị bàn cờ...</p>
     <div id="loaderBoard" class="loader-board" aria-hidden="true">
+      <span class="loader-cell"><span class="loader-mark"></span></span>
+      <span class="loader-cell"><span class="loader-mark"></span></span>
+      <span class="loader-cell"><span class="loader-mark"></span></span>
+      <span class="loader-cell"><span class="loader-mark"></span></span>
+      <span class="loader-cell"><span class="loader-mark"></span></span>
+      <span class="loader-cell"><span class="loader-mark"></span></span>
+      <span class="loader-cell"><span class="loader-mark"></span></span>
+      <span class="loader-cell"><span class="loader-mark"></span></span>
+      <span class="loader-cell"><span class="loader-mark"></span></span>
       <svg id="loaderWinLine" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
         <path class="win-outline"></path>
         <path class="win-stroke"></path>
@@ -3741,35 +3754,25 @@ setInterval(()=>{
   const winLine=document.getElementById('loaderWinLine');
   if(!overlay||!board||!result||!winLine)return;
 
-  const cells=[];
-  for(let i=0;i<35;i++){
-    const cell=document.createElement('span');
-    cell.className='loader-cell';
-    board.appendChild(cell);
-    cells.push(cell);
-  }
-  board.appendChild(winLine);
+  const cells=Array.from(board.querySelectorAll('.loader-cell'));
+  if(cells.length!==9)return;
+  const marks=cells.map(cell=>cell.querySelector('.loader-mark'));
+  if(marks.some(mark=>!mark))return;
 
+  // A normal 3x3 XO sequence. Grid lines remain fixed while marks appear.
   const moves=[
-    {x:1,y:2,p:'x'},{x:0,y:1,p:'o'},
-    {x:2,y:2,p:'x'},{x:3,y:1,p:'o'},
-    {x:3,y:2,p:'x'},{x:6,y:3,p:'o'},
-    {x:4,y:2,p:'x'},{x:0,y:3,p:'o'},
-    {x:5,y:2,p:'x'}
+    {cell:0,p:'x'},{cell:4,p:'o'},
+    {cell:1,p:'x'},{cell:3,p:'o'},
+    {cell:2,p:'x'}
   ];
   let index=0;
   const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const interval=reduced?55:175;
-  const hide=()=>{
-    overlay.classList.add('done');
-    setTimeout(()=>{overlay.hidden=true},reduced?300:380);
-  };
+  const interval=reduced?90:260;
 
   function drawWinLine(){
-    // Draw the stroke through the actual X cells so the line stays aligned on every screen size.
     const boardRect=board.getBoundingClientRect();
-    const offsets=[0,-10,10,-10,0];
-    const points=[15,16,17,18,19].map((cellIndex,i)=>{
+    const offsets=[1.5,-2.5,1];
+    const points=[0,1,2].map((cellIndex,i)=>{
       const rect=cells[cellIndex].getBoundingClientRect();
       return {
         x:rect.left+rect.width/2-boardRect.left,
@@ -3778,34 +3781,38 @@ setInterval(()=>{
     });
     winLine.setAttribute('viewBox',`0 0 ${boardRect.width} ${boardRect.height}`);
 
-    let path=`M ${points[0].x-7} ${points[0].y+2}`;
+    let path=`M ${points[0].x-2} ${points[0].y+1}`;
     for(let i=1;i<points.length;i++){
       const previous=points[i-1],point=points[i];
       const middle=(previous.x+point.x)/2;
-      path+=` C ${middle-5} ${previous.y-5}, ${middle+6} ${point.y+5}, ${point.x} ${point.y}`;
+      path+=` C ${middle-8} ${previous.y-7}, ${middle+8} ${point.y+7}, ${point.x} ${point.y}`;
     }
-    path+=` Q ${points[4].x+4} ${points[4].y-3}, ${points[4].x+8} ${points[4].y+1}`;
+    path+=` Q ${points[2].x+3} ${points[2].y-6}, ${points[2].x+9} ${points[2].y+1}`;
     winLine.querySelector('.win-outline').setAttribute('d',path);
     winLine.querySelector('.win-stroke').setAttribute('d',path);
     winLine.classList.add('show');
   }
 
   result.innerHTML='ĐANG TẢI<span class="loader-dots"></span>';
+  const hide=()=>{
+    overlay.classList.add('done');
+    setTimeout(()=>{overlay.hidden=true},reduced?300:380);
+  };
   const step=()=>{
     if(index>=moves.length)return;
     const move=moves[index++];
-    const cell=cells[move.y*7+move.x];
-    cell.textContent=move.p==='x'?'X':'O';
-    cell.classList.add('show',move.p==='x'?'mark-x':'mark-o');
+    const mark=marks[move.cell];
+    mark.textContent=move.p==='x'?'X':'O';
+    mark.classList.add('show',move.p==='x'?'mark-x':'mark-o');
     if(index===moves.length){
       drawWinLine();
-      setTimeout(hide,reduced?150:580);
+      setTimeout(hide,reduced?180:580);
     }else{
       setTimeout(step,interval);
     }
   };
-  setTimeout(step,reduced?50:180);
-})();
+  setTimeout(step,reduced?50:160);
+})();;
 </script>
 
 
