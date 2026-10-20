@@ -3785,13 +3785,13 @@ setInterval(()=>{
     });
     winLine.setAttribute('viewBox','0 0 '+boardRect.width+' '+boardRect.height);
 
-    // Nét thắng kiểu đánh rank: hơi lệch tay, chỉ uốn nhẹ để không rối mắt.
+    // Đường thắng kiểu Caro rank: 3 đoạn thẳng hơi ngoằn ngoèo, không uốn cong.
     const [a,b,c]=points,unit=a.w;
     const path=[
-      'M '+(a.x-unit*.10)+' '+(a.y-unit*.38),
-      'C '+(a.x+unit*.04)+' '+(a.y-unit*.18)+', '+(a.x-unit*.05)+' '+(a.y-unit*.06)+', '+(a.x+unit*.01)+' '+(a.y+unit*.02),
-      'C '+(b.x+unit*.05)+' '+(b.y-unit*.10)+', '+(b.x-unit*.04)+' '+(b.y+unit*.10)+', '+(b.x+unit*.02)+' '+(b.y+unit*.18),
-      'C '+(c.x+unit*.04)+' '+(c.y-unit*.12)+', '+(c.x-unit*.03)+' '+(c.y+unit*.08)+', '+(c.x+unit*.08)+' '+(c.y+unit*.38)
+      'M '+(a.x-unit*.10)+' '+(a.y-unit*.30),
+      'L '+(a.x+unit*.10)+' '+(a.y+unit*.10),
+      'L '+(b.x-unit*.10)+' '+(b.y-unit*.10),
+      'L '+(c.x+unit*.10)+' '+(c.y+unit*.30)
     ].join(' ');
     const outline=winLine.querySelector('.win-outline');
     const stroke=winLine.querySelector('.win-stroke');
