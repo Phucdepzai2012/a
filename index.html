@@ -181,9 +181,9 @@ li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li i{fo
 .loader-cell{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;aspect-ratio:1;background:transparent;border:0;border-right:2px solid #b8c6d1;border-bottom:2px solid #b8c6d1;border-radius:0}
 .loader-cell:nth-child(3n){border-right:0}
 .loader-cell:nth-child(n+7){border-bottom:0}
-.loader-mark{display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:transparent;opacity:0;transform:scale(.88);transition:opacity .14s ease,transform .14s ease;filter:none;text-shadow:none}
-.loader-mark svg{display:block;width:80%;height:80%;overflow:visible}
-.loader-mark path{fill:none;stroke:currentColor;stroke-width:3.8;stroke-linecap:round;stroke-linejoin:round}
+.loader-mark{display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:transparent;opacity:0;transform:scale(.78);transition:opacity .14s ease,transform .14s ease;filter:none;text-shadow:none}
+.loader-mark svg{display:block;width:100%;height:100%;overflow:visible}
+.loader-mark path{fill:none;stroke:currentColor;stroke-width:4.8;stroke-linecap:round;stroke-linejoin:round}
 .loader-mark.show{opacity:1;transform:scale(1)}
 .loader-mark.mark-x{color:var(--blue)}
 .loader-mark.mark-o{color:var(--red)}
@@ -3782,14 +3782,18 @@ setInterval(()=>{
     // Clearly uneven, hand-drawn stroke matching the ranked-board victory line.
     const [a,b,c]=points,unit=a.w;
     const path=[
-      'M '+(a.x-unit*.30)+' '+(a.y+unit*.04),
-      'C '+(a.x-unit*.09)+' '+(a.y-unit*.17)+', '+(a.x+unit*.17)+' '+(a.y+unit*.16)+', '+(a.x+unit*.43)+' '+(a.y+unit*.02),
-      'C '+(a.x+unit*.64)+' '+(a.y-unit*.16)+', '+(b.x-unit*.16)+' '+(b.y+unit*.19)+', '+(b.x+unit*.03)+' '+(b.y+unit*.025),
-      'C '+(b.x+unit*.27)+' '+(b.y-unit*.18)+', '+(b.x+unit*.62)+' '+(b.y+unit*.15)+', '+(c.x-unit*.02)+' '+(c.y-unit*.02),
-      'Q '+(c.x+unit*.16)+' '+(c.y-unit*.17)+', '+(c.x+unit*.30)+' '+(c.y+unit*.015)
+      'M '+(a.x-unit*.34)+' '+(a.y+unit*.03),
+      'C '+(a.x-unit*.18)+' '+(a.y-unit*.25)+', '+(a.x-unit*.04)+' '+(a.y+unit*.22)+', '+(a.x+unit*.15)+' '+(a.y+unit*.02),
+      'C '+(a.x+unit*.31)+' '+(a.y-unit*.22)+', '+(a.x+unit*.48)+' '+(a.y+unit*.24)+', '+(a.x+unit*.63)+' '+(a.y+unit*.02),
+      'C '+(a.x+unit*.76)+' '+(a.y-unit*.21)+', '+(b.x-unit*.20)+' '+(b.y+unit*.25)+', '+(b.x+unit*.00)+' '+(b.y+unit*.03),
+      'C '+(b.x+unit*.16)+' '+(b.y-unit*.24)+', '+(b.x+unit*.34)+' '+(b.y+unit*.23)+', '+(b.x+unit*.49)+' '+(b.y+unit*.01),
+      'C '+(b.x+unit*.63)+' '+(b.y-unit*.23)+', '+(b.x+unit*.78)+' '+(b.y+unit*.20)+', '+(c.x-unit*.06)+' '+(c.y+unit*.02),
+      'Q '+(c.x+unit*.16)+' '+(c.y-unit*.20)+', '+(c.x+unit*.31)+' '+(c.y+unit*.02)
     ].join(' ');
     const outline=winLine.querySelector('.win-outline');
     const stroke=winLine.querySelector('.win-stroke');
+    outline.style.strokeWidth=String(Math.max(5,unit*.22));
+    stroke.style.strokeWidth=String(Math.max(2.5,unit*.10));
     for(const element of [outline,stroke]){
       element.setAttribute('d',path);
       const length=element.getTotalLength();
@@ -3811,8 +3815,8 @@ setInterval(()=>{
     const move=moves[index++];
     const mark=marks[move.cell];
     mark.innerHTML=move.p==='x'
-      ? '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M11 10 C17 14 28 32 37 38"/><path d="M37 10 C29 16 18 32 11 38"/></svg>'
-      : '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 9 C33 9 39 15 38 24 C37 33 32 39 23 39 C14 39 9 32 10 23 C11 14 16 9 24 9 Z"/></svg>';
+      ? '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 8 C16 14 29 34 40 40"/><path d="M40 8 C31 15 18 34 8 40"/></svg>'
+      : '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 7 C32 6 40 13 40 22 C41 31 34 40 25 41 C16 42 8 34 8 25 C7 16 14 8 24 7 Z"/></svg>';
     mark.classList.add('show',move.p==='x'?'mark-x':'mark-o');
     if(index===moves.length){
       drawWinLine();
