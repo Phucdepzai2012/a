@@ -3787,18 +3787,19 @@ setInterval(()=>{
 
     // Clearly uneven, hand-drawn stroke matching the ranked-board victory line.
     const [a,b,c]=points,unit=a.w;
+    // Đường thắng uốn lượn rõ ràng qua tâm ba quân X, không phải một nét thẳng.
     const path=[
-      'M '+(a.x-unit*.06)+' '+(a.y-unit*.36),
-      'C '+(a.x-unit*.27)+' '+(a.y-unit*.12)+', '+(a.x+unit*.22)+' '+(a.y+unit*.02)+', '+(a.x-unit*.02)+' '+(a.y+unit*.18),
-      'C '+(a.x-unit*.20)+' '+(a.y+unit*.36)+', '+(b.x+unit*.20)+' '+(b.y-unit*.33)+', '+(b.x+unit*.03)+' '+(b.y-unit*.08),
-      'C '+(b.x-unit*.18)+' '+(b.y+unit*.10)+', '+(b.x+unit*.19)+' '+(b.y+unit*.28)+', '+(b.x-unit*.01)+' '+(b.y+unit*.43),
-      'C '+(b.x-unit*.18)+' '+(b.y+unit*.60)+', '+(c.x+unit*.22)+' '+(c.y-unit*.30)+', '+(c.x+unit*.02)+' '+(c.y-unit*.08),
-      'C '+(c.x-unit*.18)+' '+(c.y+unit*.10)+', '+(c.x+unit*.18)+' '+(c.y+unit*.27)+', '+(c.x+unit*.03)+' '+(c.y+unit*.40)
+      'M '+(a.x-unit*.20)+' '+(a.y-unit*.34),
+      'C '+(a.x+unit*.18)+' '+(a.y-unit*.20)+', '+(a.x-unit*.18)+' '+(a.y-unit*.04)+', '+(a.x+unit*.12)+' '+(a.y+unit*.08),
+      'C '+(a.x+unit*.30)+' '+(a.y+unit*.19)+', '+(b.x-unit*.23)+' '+(b.y-unit*.31)+', '+(b.x-unit*.04)+' '+(b.y-unit*.10),
+      'C '+(b.x+unit*.18)+' '+(b.y+unit*.02)+', '+(b.x-unit*.22)+' '+(b.y+unit*.18)+', '+(b.x+unit*.13)+' '+(b.y+unit*.31),
+      'C '+(b.x+unit*.25)+' '+(b.y+unit*.42)+', '+(c.x-unit*.20)+' '+(c.y-unit*.25)+', '+(c.x-unit*.03)+' '+(c.y-unit*.08),
+      'C '+(c.x+unit*.17)+' '+(c.y+unit*.06)+', '+(c.x-unit*.18)+' '+(c.y+unit*.22)+', '+(c.x+unit*.12)+' '+(c.y+unit*.38)
     ].join(' ');
     const outline=winLine.querySelector('.win-outline');
     const stroke=winLine.querySelector('.win-stroke');
     outline.style.strokeWidth=String(Math.max(5,unit*.22));
-    stroke.style.strokeWidth=String(Math.max(2.5,unit*.10));
+    stroke.style.strokeWidth=String(Math.max(3.2,unit*.13));
     for(const element of [outline,stroke]){
       element.setAttribute('d',path);
       const length=element.getTotalLength();
