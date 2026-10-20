@@ -3761,11 +3761,17 @@ setInterval(()=>{
   const marks=cells.map(cell=>cell.querySelector('.loader-mark'));
   if(marks.some(mark=>!mark))return;
 
-  // A normal 3x3 XO sequence. Grid lines remain fixed while marks appear.
+  // Bố cục loader cố định:
+  // O X X
+  // X X O
+  // O X O
+  // X hoàn thành đường thắng ngoằn ngoèo ở cột giữa.
   const moves=[
-    {cell:0,p:'x'},{cell:4,p:'o'},
-    {cell:1,p:'x'},{cell:3,p:'o'},
-    {cell:2,p:'x'}
+    {cell:1,p:'x'},{cell:0,p:'o'},
+    {cell:4,p:'x'},{cell:5,p:'o'},
+    {cell:2,p:'x'},{cell:6,p:'o'},
+    {cell:3,p:'x'},{cell:8,p:'o'},
+    {cell:7,p:'x'}
   ];
   let index=0;
   const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -3773,7 +3779,7 @@ setInterval(()=>{
 
   function drawWinLine(){
     const boardRect=board.getBoundingClientRect();
-    const points=[0,1,2].map(cellIndex=>{
+    const points=[1,4,7].map(cellIndex=>{
       const rect=cells[cellIndex].getBoundingClientRect();
       return {x:rect.left+rect.width/2-boardRect.left,y:rect.top+rect.height/2-boardRect.top,w:rect.width};
     });
@@ -3782,13 +3788,12 @@ setInterval(()=>{
     // Clearly uneven, hand-drawn stroke matching the ranked-board victory line.
     const [a,b,c]=points,unit=a.w;
     const path=[
-      'M '+(a.x-unit*.34)+' '+(a.y+unit*.03),
-      'C '+(a.x-unit*.18)+' '+(a.y-unit*.25)+', '+(a.x-unit*.04)+' '+(a.y+unit*.22)+', '+(a.x+unit*.15)+' '+(a.y+unit*.02),
-      'C '+(a.x+unit*.31)+' '+(a.y-unit*.22)+', '+(a.x+unit*.48)+' '+(a.y+unit*.24)+', '+(a.x+unit*.63)+' '+(a.y+unit*.02),
-      'C '+(a.x+unit*.76)+' '+(a.y-unit*.21)+', '+(b.x-unit*.20)+' '+(b.y+unit*.25)+', '+(b.x+unit*.00)+' '+(b.y+unit*.03),
-      'C '+(b.x+unit*.16)+' '+(b.y-unit*.24)+', '+(b.x+unit*.34)+' '+(b.y+unit*.23)+', '+(b.x+unit*.49)+' '+(b.y+unit*.01),
-      'C '+(b.x+unit*.63)+' '+(b.y-unit*.23)+', '+(b.x+unit*.78)+' '+(b.y+unit*.20)+', '+(c.x-unit*.06)+' '+(c.y+unit*.02),
-      'Q '+(c.x+unit*.16)+' '+(c.y-unit*.20)+', '+(c.x+unit*.31)+' '+(c.y+unit*.02)
+      'M '+(a.x-unit*.06)+' '+(a.y-unit*.36),
+      'C '+(a.x-unit*.27)+' '+(a.y-unit*.12)+', '+(a.x+unit*.22)+' '+(a.y+unit*.02)+', '+(a.x-unit*.02)+' '+(a.y+unit*.18),
+      'C '+(a.x-unit*.20)+' '+(a.y+unit*.36)+', '+(b.x+unit*.20)+' '+(b.y-unit*.33)+', '+(b.x+unit*.03)+' '+(b.y-unit*.08),
+      'C '+(b.x-unit*.18)+' '+(b.y+unit*.10)+', '+(b.x+unit*.19)+' '+(b.y+unit*.28)+', '+(b.x-unit*.01)+' '+(b.y+unit*.43),
+      'C '+(b.x-unit*.18)+' '+(b.y+unit*.60)+', '+(c.x+unit*.22)+' '+(c.y-unit*.30)+', '+(c.x+unit*.02)+' '+(c.y-unit*.08),
+      'C '+(c.x-unit*.18)+' '+(c.y+unit*.10)+', '+(c.x+unit*.18)+' '+(c.y+unit*.27)+', '+(c.x+unit*.03)+' '+(c.y+unit*.40)
     ].join(' ');
     const outline=winLine.querySelector('.win-outline');
     const stroke=winLine.querySelector('.win-stroke');
